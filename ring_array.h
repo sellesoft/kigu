@@ -226,7 +226,7 @@ template<typename T>
 inline void ring_array<T>::shrink(u32 new_capacity){
 	if(new_capacity < count){          //new_capacity < count < capacity
 		if(start) memcpy(data, data+start, sizeof(T)*new_capacity);
-#if DESHI_INTERNAL
+#if BUILD_INTERNAL
 		memset(data+new_capacity, 0, capacity-new_capacity);
 #endif
 		count = new_capacity;
@@ -246,7 +246,7 @@ inline void ring_array<T>::shrink(u32 new_capacity){
 		}else{ //if not wrapped or less than new_capacity, just copy items
 			memcpy(data, data+start, sizeof(T)*count);
 		}
-#if DESHI_INTERNAL
+#if BUILD_INTERNAL
 		memset(data+count, 0, new_capacity-count);
 #endif
 		capacity = new_capacity;
