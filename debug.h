@@ -1,14 +1,13 @@
 #pragma once
-#ifndef DESHI_DEBUG_H
-#define DESHI_DEBUG_H
+#ifndef KIGU_DEBUG_H
+#define KIGU_DEBUG_H
 
+#include "array.h"
+#include "common.h"
 #include "string.h"
 #include "string_utils.h"
-#include "array.h"
-#include "../defines.h"
 
 #include <string>
-
 
 #define TOSTDSTRING(...) to_std_string(__VA_ARGS__)
 
@@ -48,4 +47,4 @@ static std::string to_std_string(T... args) {
 	return str;
 }
 
-#endif //DESHI_DEBUG_H
+#endif //KIGU_DEBUG_H

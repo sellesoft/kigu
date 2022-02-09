@@ -2,10 +2,10 @@
 #include <cstdio>
 #include <ctime>
 
-#define DESHI_ARRAY_GROWTH_FACTOR 2
-#define DESHI_ARRAY_SPACE_ALIGNMENT 4
+#define KIGU_ARRAY_GROWTH_FACTOR 2
+#define KIGU_ARRAY_SPACE_ALIGNMENT 4
 #include "array.h"
-local void TEST_deshi_utils_array(){
+local void TEST_kigu_array(){
 	//// constructors ////
 	array<int> array1;
 	AssertAlways(typeid(array1.data) == typeid(int*));
@@ -102,7 +102,7 @@ local void TEST_deshi_utils_array(){
 	AssertAlways(array3.first == array3.data);
 	AssertAlways(array3.last == array3.data+2);
 	AssertAlways(array3.iter == array3.data);
-	AssertAlways(array3.allocator == DESHI_ARRAY_ALLOCATOR);
+	AssertAlways(array3.allocator == KIGU_ARRAY_ALLOCATOR);
 	AssertAlways(array3.data[0].value == 2);
 	AssertAlways(array3.data[1].value == 4);
 	AssertAlways(array3.data[2].value == 6);
@@ -376,11 +376,11 @@ local void TEST_deshi_utils_array(){
 	
 	//TODO(sushi) setup array special pointer testing
 	
-	printf("[DESHI-TEST] PASSED: utils/array\n");
+	printf("[KIGU-TEST] PASSED: array\n");
 }
 
 #include "array_utils.h"
-local void TEST_deshi_utils_array_utils(){
+local void TEST_kigu_array_utils(){
 #define PRINT_ARRAY_SPEEDS true
 	TIMER_START(timer);
 	
@@ -391,10 +391,10 @@ local void TEST_deshi_utils_array_utils(){
 	TIMER_RESET(timer);
 	bubble_sort(array1, [](s32 a, s32 b){return a < b;});
 #if PRINT_ARRAY_SPEEDS
-	Log("deshi-test","bubble_sort() took ",TIMER_END(timer),"ms");
+	printf("[KIGU-TEST] bubble_sort() took %fms", TIMER_END(timer));
 #endif
 	forI(1024){ if(i){ AssertAlways(array1[i] <= array1[i-1]); } }
-	printf("[DESHI-TEST] PASSED: utils/array_utils/bubble_sort()\n");
+	printf("[KIGU-TEST] PASSED: array_utils/bubble_sort()\n");
 	
 	srand(time(0));
 	array1.clear();
@@ -402,10 +402,10 @@ local void TEST_deshi_utils_array_utils(){
 	TIMER_RESET(timer);
 	bubble_sort_low_to_high(array1);
 #if PRINT_ARRAY_SPEEDS
-	Log("deshi-test","bubble_sort_low_to_high() took ",TIMER_END(timer),"ms");
+	printf("[KIGU-TEST] bubble_sort_low_to_high() took %fms", TIMER_END(timer));
 #endif
 	forI(1024){ if(i){ AssertAlways(array1[i] >= array1[i-1]); } }
-	printf("[DESHI-TEST] PASSED: utils/array_utils/bubble_sort_low_to_high()\n");
+	printf("[KIGU-TEST] PASSED: array_utils/bubble_sort_low_to_high()\n");
 	
 	srand(time(0));
 	array1.clear();
@@ -413,19 +413,19 @@ local void TEST_deshi_utils_array_utils(){
 	TIMER_RESET(timer);
 	bubble_sort_high_to_low(array1);
 #if PRINT_ARRAY_SPEEDS
-	Log("deshi-test","bubble_sort_high_to_low() took ",TIMER_END(timer),"ms");
+	printf("[KIGU-TEST] bubble_sort_high_to_low() took %fms", TIMER_END(timer));
 #endif
 	forI(1024){ if(i){ AssertAlways(array1[i] <= array1[i-1]); } }
-	printf("[DESHI-TEST] PASSED: utils/array_utils/bubble_sort_high_to_low()\n");
+	printf("[KIGU-TEST] PASSED: array_utils/bubble_sort_high_to_low()\n");
 	
 	//reverse
 	TIMER_RESET(timer);
 	reverse(array1);
 #if PRINT_ARRAY_SPEEDS
-	Log("deshi-test","reverse() took ",TIMER_END(timer),"ms");
+	printf("[KIGU-TEST] reverse() took %fms", TIMER_END(timer));
 #endif
 	forI(1024){ if(i){ AssertAlways(array1[i] >= array1[i-1]); } }
-	printf("[DESHI-TEST] PASSED: utils/array_utils/reverse()\n");
+	printf("[KIGU-TEST] PASSED: array_utils/reverse()\n");
 	
 	//binary search
 	//TODO test binary search comparator
@@ -437,13 +437,13 @@ local void TEST_deshi_utils_array_utils(){
 	AssertAlways(binary_search_low_to_high(array1, MAX_S32) != -1);
 	AssertAlways(binary_search_low_to_high(array1, MIN_S32) != -1);
 	AssertAlways(binary_search_low_to_high(array1, 0) != -1);
-	printf("[DESHI-TEST] PASSED: utils/array_utils/binary_search_low_to_high()\n");
+	printf("[KIGU-TEST] PASSED: array_utils/binary_search_low_to_high()\n");
 	
-	printf("[DESHI-TEST] PASSED: utils/array_utils\n");
+	printf("[KIGU-TEST] PASSED: array_utils\n");
 }
 
 #include "carray.h"
-local void TEST_deshi_utils_carray(){
+local void TEST_kigu_carray(){
 	int* arr0 = (int*)calloc(1, 16*sizeof(int));
 	defer{ free(arr0); };
 	forI(16){ arr0[i] = 1 << i; }
@@ -489,11 +489,11 @@ local void TEST_deshi_utils_carray(){
 	AssertAlways(arr1[4] == 1 << 5);
 	AssertAlways(arr1[11] == 1 << 12);
 	
-	printf("[DESHI-TEST] PASSED: utils/carray\n");
+	printf("[KIGU-TEST] PASSED: carray\n");
 }
 
 #include "color.h"
-local void TEST_deshi_utils_color(){
+local void TEST_kigu_color(){
 	//// constructors ////
 	color color1;
 	AssertAlways(color1.r == 000 && color1.g == 000 && color1.b == 000 && color1.a == 000);
@@ -559,36 +559,36 @@ local void TEST_deshi_utils_color(){
 	AssertAlways(test_arr2[2] == 0.f);
 	AssertAlways(abs(test_arr2[3] - .5f) <= .01f);
 	
-	printf("[DESHI-TEST] PASSED: utils/color\n");
+	printf("[KIGU-TEST] PASSED: color\n");
 }
 
 #include "cstring.h"
-local void TEST_deshi_utils_cstring(){
-	printf("[DESHI-TEST] TODO:   utils/cstring\n");
+local void TEST_kigu_cstring(){
+	printf("[KIGU-TEST] TODO:   cstring\n");
 }
 
 #include "hash.h"
-local void TEST_deshi_utils_hash(){
-	printf("[DESHI-TEST] TODO:   utils/hash\n");
+local void TEST_kigu_hash(){
+	printf("[KIGU-TEST] TODO:   hash\n");
 }
 
 #include "map.h"
-local void TEST_deshi_utils_map(){
-	printf("[DESHI-TEST] TODO:   utils/map\n");
+local void TEST_kigu_map(){
+	printf("[KIGU-TEST] TODO:   map\n");
 }
 
 #include "optional.h"
-local void TEST_deshi_utils_optional(){
-	printf("[DESHI-TEST] TODO:   utils/optional\n");
+local void TEST_kigu_optional(){
+	printf("[KIGU-TEST] TODO:   optional\n");
 }
 
 #include "ring_array.h"
-local void TEST_deshi_utils_ring_array(){
-	printf("[DESHI-TEST] TODO:   utils/ring_array\n");
+local void TEST_kigu_ring_array(){
+	printf("[KIGU-TEST] TODO:   ring_array\n");
 }
 
 #include "string.h"
-local void TEST_deshi_utils_string(){
+local void TEST_kigu_string(){
 	
 	
 	//#define teststr "ABCDEFG"
@@ -832,21 +832,21 @@ local void TEST_deshi_utils_string(){
 	//TODO(sushi) write tests for the remaining functions
 	//TODO write tests for wstring
 	
-	printf("[DESHI-TEST] PASSED: utils/string\n");
+	printf("[KIGU-TEST] PASSED: string\n");
 }
 
 #include "string_utils.h"
-local void TEST_deshi_utils_string_utils(){
-	printf("[DESHI-TEST] TODO:   utils/string_utils\n");
+local void TEST_kigu_string_utils(){
+	printf("[KIGU-TEST] TODO:   string_utils\n");
 }
 
 #include "pair.h"
-local void TEST_deshi_utils_pair(){
-	printf("[DESHI-TEST] TODO:   utils/pair\n");
+local void TEST_kigu_pair(){
+	printf("[KIGU-TEST] TODO:   pair\n");
 }
 
 #include "unicode.h"
-local void TEST_deshi_utils_unicode(){
+local void TEST_kigu_unicode(){
 #define UNICODE_BASIC_LATIN                   "! \" # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z [ \ ] ^ _ ` a b c d e f g h i j k l m n o p q r s t u v w x y z { | } ~"
 #define UNICODE_LATIN_SUPPLEMENT              "¡ ¢ £ ¤ ¥ ¦ § ¨ © ª « ¬ ­ ® ¯ ° ± ² ³ ´ µ ¶ · ¸ ¹ º » ¼ ½ ¾ ¿ À Á Â Ã Ä Å Æ Ç È É Ê Ë Ì Í Î Ï Ð Ñ Ò Ó Ô Õ Ö × Ø Ù Ú Û Ü Ý Þ ß à á â ã ä å æ ç è é ê ë ì í î ï ð ñ ò ó ô õ ö ÷ ø ù ú û ü ý þ ÿ"
 #define UNICODE_LATIN_EXTENDED_A              "Ā ā Ă ă Ą ą Ć ć Ĉ ĉ Ċ ċ Č č Ď ď Đ đ Ē ē Ĕ ĕ Ė ė Ę ę Ě ě Ĝ ĝ Ğ ğ Ġ ġ Ģ ģ Ĥ ĥ Ħ ħ Ĩ ĩ Ī ī Ĭ ĭ Į į İ ı Ĳ ĳ Ĵ ĵ Ķ ķ ĸ Ĺ ĺ Ļ ļ Ľ ľ Ŀ ŀ Ł ł Ń ń Ņ ņ Ň ň ŉ Ŋ ŋ Ō ō Ŏ ŏ Ő ő Œ œ Ŕ ŕ Ŗ ŗ Ř ř Ś ś Ŝ ŝ Ş ş Š š Ţ ţ Ť ť Ŧ ŧ Ũ ũ Ū ū Ŭ ŭ Ů ů Ű ű Ų ų Ŵ ŵ Ŷ ŷ Ÿ Ź ź Ż ż Ž ž ſ"
@@ -941,27 +941,27 @@ local void TEST_deshi_utils_unicode(){
 	str32 test32 = str32_lit(U"Ё Ђ Ѓ Є Ѕ І Ї Ј Љ Њ Ћ Ќ Ў Џ А Б В Г Д Е Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я а");
 	printf("%s\n", str8_from_str32(test32).str);
 	
-	printf("[DESHI-TEST] TODO:   utils/unicode\n");
+	printf("[KIGU-TEST] TODO:   unicode\n");
 }
 
 #include "utils.h"
-local void TEST_deshi_utils_utils(){
-	printf("[DESHI-TEST] TODO:   utils/utils\n");
+local void TEST_kigu_utils(){
+	printf("[KIGU-TEST] TODO:   utils\n");
 }
 
-local void TEST_deshi_utils(){
-	TEST_deshi_utils_array();
-	TEST_deshi_utils_array_utils();
-	TEST_deshi_utils_carray();
-	TEST_deshi_utils_color();
-	TEST_deshi_utils_cstring();
-	TEST_deshi_utils_hash();
-	TEST_deshi_utils_map();
-	TEST_deshi_utils_optional();
-	TEST_deshi_utils_ring_array();
-	TEST_deshi_utils_string();
-	TEST_deshi_utils_string_utils();
-	TEST_deshi_utils_pair();
-	TEST_deshi_utils_unicode();
-	TEST_deshi_utils_utils();
+local void TEST_kigu(){
+	TEST_kigu_array();
+	TEST_kigu_array_utils();
+	TEST_kigu_carray();
+	TEST_kigu_color();
+	TEST_kigu_cstring();
+	TEST_kigu_hash();
+	TEST_kigu_map();
+	TEST_kigu_optional();
+	TEST_kigu_ring_array();
+	TEST_kigu_string();
+	TEST_kigu_string_utils();
+	TEST_kigu_pair();
+	TEST_kigu_unicode();
+	TEST_kigu_utils();
 }

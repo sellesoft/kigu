@@ -1,11 +1,11 @@
 #pragma once
-#ifndef DESHI_UNICODE_H
-#define DESHI_UNICODE_H
+#ifndef KIGU_UNICODE_H
+#define KIGU_UNICODE_H
 //!ref: https://github.com/Dion-Systems/metadesk/blob/master/source/md.h
 //!ref: https://github.com/Dion-Systems/metadesk/blob/master/source/md.c
 //NOTE the printf defines don't work without <cstdio> included
 
-#include "../defines.h"
+#include "common.h"
 
 enum{
 	StringEncoding_ASCII,
@@ -39,7 +39,7 @@ struct generic_string{
 			void* str;
 			upt   count;
 		};
-		 cstring s_char;
+		cstring s_char;
 		str8    s_u8;
 		str16   s_u16;
 		str32   s_u32;
@@ -268,4 +268,4 @@ str32_from_str8(str8 in, Allocator* allocator = stl_allocator){
 /////////////////
 
 
-#endif //DESHI_UNICODE_H
+#endif //KIGU_UNICODE_H

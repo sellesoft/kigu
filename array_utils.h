@@ -1,8 +1,8 @@
 #pragma once
-#ifndef DESHI_ARRAY_UTILS_H
-#define DESHI_ARRAY_UTILS_H
+#ifndef KIGU_ARRAY_UTILS_H
+#define KIGU_ARRAY_UTILS_H
 
-#include "../defines.h"
+#include "common.h"
 #include "array.h"
 
 
@@ -140,4 +140,4 @@ template<typename T> FORCE_INLINE upt binary_search_low_to_high(T* first, T* las
 template<typename T> FORCE_INLINE upt binary_search_low_to_high(array<T>& arr, const T& item){ return binary_search_low_to_high(arr.data, arr.count, item); }
 template<typename T> FORCE_INLINE upt binary_search_low_to_high(carray<T> arr, const T& item){ return binary_search_low_to_high(arr.data, arr.count, item); }
 
-#endif //DESHI_ARRAY_UTILS_H
+#endif //KIGU_ARRAY_UTILS_H

@@ -1,6 +1,6 @@
 #pragma once
-#ifndef DESHI_OPTIONAL_H
-#define DESHI_OPTIONAL_H
+#ifndef KIGU_OPTIONAL_H
+#define KIGU_OPTIONAL_H
 
 template <class T>
 struct optional {
@@ -42,18 +42,18 @@ struct optional {
 	inline bool operator!=(optional& rhs){
 		return value != rhs.value;
 	}
-
-
+	
+	
 	// :)
 	T& operator()() {
 		return value;
 	}
-
-
+	
+	
 	T* operator &() {
 		return &value;
 	}
-
+	
 	//TODO(sushi) figure out a way to allow grabbing the values/functions the templated value has without having to use an operator/function >:)
 	inline T* getptr() {
 		return &value;
@@ -62,4 +62,4 @@ struct optional {
 	inline explicit operator bool(){ return has_value; }
 };
 
-#endif //DESHI_OPTIONAL_H
+#endif //KIGU_OPTIONAL_H

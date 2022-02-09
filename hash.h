@@ -1,11 +1,10 @@
 #pragma once
-#ifndef DESHI_HASH_H
-#define DESHI_HASH_H
+#ifndef KIGU_HASH_H
+#define KIGU_HASH_H
 
 #include "array.h"
+#include "common.h"
 #include "string.h"
-#include "../defines.h"
-#include "../math/math.h"
 
 template<int N>
 static constexpr const u32 compile_time_string_hash(const char(&a)[N]){
@@ -102,69 +101,4 @@ struct hash<array<T>> {
 	}
 };
 
-template<> 
-struct hash<vec2>{
-	inline size_t operator()(vec2 const& v) const{
-		size_t seed = 0;
-		hash<float> hasher; size_t hash;
-		hash = hasher(v.x); hash += 0x9e3779b9 + (seed << 6) + (seed >> 2); seed ^= hash;
-		hash = hasher(v.y); hash += 0x9e3779b9 + (seed << 6) + (seed >> 2); seed ^= hash;
-		return seed;
-	}
-};
-
-template<> 
-struct hash<vec3>{
-	inline size_t operator()(vec3 const& v) const{
-		size_t seed = 0;
-		hash<float> hasher; size_t hash;
-		hash = hasher(v.x); hash += 0x9e3779b9 + (seed << 6) + (seed >> 2); seed ^= hash;
-		hash = hasher(v.y); hash += 0x9e3779b9 + (seed << 6) + (seed >> 2); seed ^= hash;
-		hash = hasher(v.z); hash += 0x9e3779b9 + (seed << 6) + (seed >> 2); seed ^= hash;
-		return seed;
-	}
-};
-
-
-template<> 
-struct hash<vec4>{
-	inline size_t operator()(vec4 const& v) const{
-		size_t seed = 0;
-		hash<float> hasher; size_t hash;
-		hash = hasher(v.x); hash += 0x9e3779b9 + (seed << 6) + (seed >> 2); seed ^= hash;
-		hash = hasher(v.y); hash += 0x9e3779b9 + (seed << 6) + (seed >> 2); seed ^= hash;
-		hash = hasher(v.z); hash += 0x9e3779b9 + (seed << 6) + (seed >> 2); seed ^= hash;
-		hash = hasher(v.w); hash += 0x9e3779b9 + (seed << 6) + (seed >> 2); seed ^= hash;
-		return seed;
-	}
-};
-
-template<> 
-struct hash<mat3>{
-	inline size_t operator()(mat3 const& m) const{
-		size_t seed = 0;
-		hash<float> hasher; size_t hash;
-		forI(9){
-			hash = hasher(m.arr[i]);
-			hash += 0x9e3779b9 + (seed << 6) + (seed >> 2);
-			seed ^= hash;
-		}
-		return seed;
-	}
-};
-
-template<> 
-struct hash<mat4>{
-	inline size_t operator()(mat4 const& m) const{
-		size_t seed = 0;
-		hash<float> hasher; size_t hash;
-		forI(16){
-			hash = hasher(m.arr[i]);
-			hash += 0x9e3779b9 + (seed << 6) + (seed >> 2);
-			seed ^= hash;
-		}
-		return seed;
-	}
-};
-
-#endif
+#endif //KIGU_HASH_H

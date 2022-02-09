@@ -1,9 +1,8 @@
 #pragma once
-#ifndef DESHI_CSTRING_H
-#define DESHI_CSTRING_H
+#ifndef KIGU_CSTRING_H
+#define KIGU_CSTRING_H
 
-#include "../defines.h"
-#include <cstring> //strncmp, memcpy
+#include "common.h"
 
 global_ inline void
 advance(cstring* s, upt count = 1){DPZoneScoped;
@@ -293,4 +292,4 @@ b16tou64(wcstring s, wcstring* next = 0){DPZoneScoped;
 }
 
 
-#endif //DESHI_CSTRING_H
+#endif //KIGU_CSTRING_H

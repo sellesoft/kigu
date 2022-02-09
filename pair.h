@@ -1,6 +1,6 @@
 #pragma once
-#ifndef DESHI_PAIR_H
-#define DESHI_PAIR_H
+#ifndef KIGU_PAIR_H
+#define KIGU_PAIR_H
 
 //base case, never instantiated
 template<typename... Dummy> struct pair;
@@ -80,7 +80,7 @@ struct nth_element_impl;
 template <std::size_t n, std::size_t ...ignore>
 struct nth_element_impl<n, std::index_sequence<ignore...>> {
     template <typename Tn>
-    static Tn f(decltype((void*)ignore)..., Tn*, ...);
+		static Tn f(decltype((void*)ignore)..., Tn*, ...);
 };
 
 template <typename T>
@@ -88,8 +88,8 @@ struct wrapper { using type = T; };
 
 template <std::size_t n, typename ...T>
 using nth_element = typename decltype(
-    nth_element_impl<n>::f(static_cast<wrapper<T>*>(0)...)
-)::type;
+									  nth_element_impl<n>::f(static_cast<wrapper<T>*>(0)...)
+									  )::type;
 
 template<typename... T>
 constexpr u64 Sum(){
@@ -108,30 +108,25 @@ struct tuple {
 	tuple(){
 		u64 sum = 0, idx = 0;
 		((offsets[idx++] = sum, 
-		memcpy(((T*)&raw[sum]), 
-		&RunConstructor<T>(), 
-		sizeof(T)), sum+=sizeof(T)), ...);
+		  memcpy(((T*)&raw[sum]), 
+				 &RunConstructor<T>(), 
+				 sizeof(T)), sum+=sizeof(T)), ...);
 	}
-
+	
 	tuple(T...args){
 		u64 sum = 0, idx = 0;
 		((offsets[idx++] = sum, memcpy(((T*)&raw[sum]), &args, sizeof(T)), sum+=sizeof(T)), ...);
 	}
-
+	
 	template<upt n>
-	decltype(auto) get(){
+		decltype(auto) get(){
 		return *(nth_element<n, T...>*)&raw[offsets[n]];
 	} 
-
+	
 	template<upt n>
-	decltype(auto) getptr(){
+		decltype(auto) getptr(){
 		return (nth_element<n, T...>*)&raw[offsets[n]];
 	} 
-	
-	
-
-
 };
 
-
-#endif //DESHI_PAIR_H
+#endif //KIGU_PAIR_H

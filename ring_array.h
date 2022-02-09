@@ -1,6 +1,6 @@
 #pragma once
-#ifndef RINGARRAY_H
-#define RINGARRAY_H
+#ifndef KIGU_RINGARRAY_H
+#define KIGU_RINGARRAY_H
 
 // ring_array is implemented as a contiguous block of memory that does not automatically
 // grow when adding past the initial 'capacity', instead it overwrites old data when full. 
@@ -9,7 +9,7 @@
 // the original allocation. Lastly, all unused but within 'capacity' items are zero-filled.
 // TLDR: back insertion only, front removal only, insertion overwrites old data if array is full
 
-#include "../defines.h"
+#include "common.h"
 
 template<typename T>
 struct ring_array{

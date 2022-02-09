@@ -1,12 +1,11 @@
 #pragma once
-#ifndef DESHI_STRING_UTILS_H
-#define DESHI_STRING_UTILS_H
+#ifndef KIGU_STRING_UTILS_H
+#define KIGU_STRING_UTILS_H
 
 #include "string.h"
 #include "cstring.h"
 #include "color.h"
-#include "../defines.h"
-#include "../math/math.h" //TODO maybe declare the math conversions here, but define them elsewhere so we dont have to include math here
+#include "common.h"
 
 #include <cstdarg>
 #include <string>
@@ -191,119 +190,6 @@ to_string(const color& x){
 	return s;
 }
 
-global_ string 
-to_string(const vec2& x, bool trunc = true){
-	string s;
-	if(trunc){
-		s.count = snprintf(nullptr, 0, "(%g, %g)", x.x, x.y);
-		s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
-		s.allocator->commit(s.str, s.count+1);
-		s.space = s.count+1;
-		snprintf(s.str, s.count+1, "(%g, %g)", x.x, x.y);
-	}else{
-		s.count = snprintf(nullptr, 0, "(%+f, %+f)", x.x, x.y);
-		s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
-		s.allocator->commit(s.str, s.count+1);
-		s.space = s.count+1;
-		snprintf(s.str, s.count+1, "(%+f, %+f)", x.x, x.y);
-	}
-	return s;
-}
-
-global_ string 
-to_string(const vec3& x, bool trunc = true){
-	string s;
-	if(trunc){
-		s.count = snprintf(nullptr, 0, "(%g, %g, %g)", x.x, x.y, x.z);
-		s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
-		s.allocator->commit(s.str, s.count+1);
-		s.space = s.count+1;
-		snprintf(s.str, s.count+1, "(%g, %g, %g)", x.x, x.y, x.z);
-	}else{
-		s.count = snprintf(nullptr, 0, "(%+f, %+f, %+f)", x.x, x.y, x.z);
-		s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
-		s.allocator->commit(s.str, s.count+1);
-		s.space = s.count+1;
-		snprintf(s.str, s.count+1, "(%+f, %+f, %+f)", x.x, x.y, x.z);
-	}
-	return s;
-}
-
-global_ string 
-to_string(const vec4& x, bool trunc = true){
-	string s;
-	if(trunc){
-		s.count = snprintf(nullptr, 0, "(%g, %g, %g, %g)", x.x, x.y, x.z, x.w);
-		s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
-		s.allocator->commit(s.str, s.count+1);
-		s.space = s.count+1;
-		snprintf(s.str, s.count+1, "(%g, %g, %g, %g)", x.x, x.y, x.z, x.w);
-	}else{
-		s.count = snprintf(nullptr, 0, "(%+f, %+f, %+f, %+f)", x.x, x.y, x.z, x.w);
-		s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
-		s.allocator->commit(s.str, s.count+1);
-		s.space = s.count+1;
-		snprintf(s.str, s.count+1, "(%+f, %+f, %+f, %+f)", x.x, x.y, x.z, x.w);
-	}
-	return s;
-}
-
-global_ string 
-to_string(const mat3& x, bool trunc = true){
-	string s;
-	forI(3){ 
-		s += to_string(*((vec3*)(x.arr+(i*3))), trunc);
-		s += "\n";
-	}
-	return s;
-}
-
-global_ string 
-to_string(const mat4& x, bool trunc = true){
-	string s;
-	forI(4){ 
-		s += to_string(*((vec4*)(x.arr+(i*4))), trunc);
-		s += "\n";
-	}
-	return s;
-}
-
-global_ string
-to_string(const matN& x, bool trunc = true) {
-	if (x.rows == 0 || x.cols == 0) {
-		return "|Zero dimension matrix|";
-	}
-	
-	string str = to_string(x.rows) + "x" + to_string(x.cols) + " matN<n,m>:\n|";
-	if (x.rows == 1) {
-		for (u32 i = 0; i < x.cols - 1; ++i) {
-			char buffer[15];
-			snprintf(buffer, 15, "%+g", x.data[i]);
-			str += string(buffer) + ", ";
-		}
-		char buffer[15];
-		snprintf(buffer, 15, "%+g", x.data[x.elementCount - 1]);
-		str += string(buffer) + "|";
-		return str;
-	}
-	
-	for (u32 i = 0; i < x.elementCount - 1; ++i) {
-		char buffer[15];
-		snprintf(buffer, 15, "%+g", x.data[i]);
-		str += string(buffer);
-		if ((i + 1) % x.cols != 0) {
-			str += ", ";
-		}
-		else {
-			str += "|\n|";
-		}
-	}
-	char buffer[15];
-	snprintf(buffer, 15, "%+g", x.data[x.elementCount - 1]);
-	str += string(buffer) + "|";
-	return str;
-}
-
 #define toStr(...) (ToString(__VA_ARGS__))
 template<class... T> global_ string 
 ToString(T... args){
@@ -417,4 +303,4 @@ global_ b32 str_contains(const cstring& buf1, const char*    buf2) { return str_
 global_ b32 str_contains(const char*    buf1, const char*    buf2) { return str_contains(buf1, strlen(buf1), buf2, strlen(buf2)); }
 
 
-#endif //DESHI_STRING_UTILS_H
+#endif //KIGU_STRING_UTILS_H

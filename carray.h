@@ -1,8 +1,8 @@
 #pragma once
-#ifndef DESHI_CARRAY_H
-#define DESHI_CARRAY_H
+#ifndef KIGU_CARRAY_H
+#define KIGU_CARRAY_H
 
-#include "../defines.h"
+#include "common.h"
 
 //NOTE The purposed of these functions is to avoid rewriting their implementations everywhere, not to be fully functional.
 //     As such, they do no error checking and do not change external values, so that stuff should be handled externally.
@@ -69,4 +69,4 @@ array_clear(T* arr, upt arr_count, u8 value = 0){DPZoneScoped;
 template<typename T> FORCE_INLINE void array_clear(carray<T> arr, u8 value = 0){ array_clear(arr.data, arr.count, value); }
 template<typename T> FORCE_INLINE void clear(carray<T> arr, u8 value = 0){ array_clear(arr.data, arr.count, value); }
 
-#endif //DESHI_CARRAY_H
+#endif //KIGU_CARRAY_H

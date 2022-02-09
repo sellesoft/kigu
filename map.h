@@ -1,6 +1,6 @@
 #pragma once
-#ifndef DESHI_MAP_H
-#define DESHI_MAP_H
+#ifndef KIGU_MAP_H
+#define KIGU_MAP_H
 
 #include "array.h"
 #include "hash.h"
@@ -149,4 +149,4 @@ findkey(const Key& key)const{
 	return -1;
 }
 
-#endif //DESHI_MAP_H
+#endif //KIGU_MAP_H

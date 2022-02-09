@@ -1,6 +1,7 @@
 #pragma once
-#ifndef DEFINES_H
-#define DEFINES_H
+#ifndef KIGU_COMMON_H
+#define KIGU_COMMON_H
+
 ////////////////////////////////////////// compilers: COMPILER_CL, COMPILER_CLANG, COMPILER_GCC
 //// compiler, platform, architecture //// platforms: OS_WINDOWS. OS_LINUX, OS_MAC
 ////////////////////////////////////////// architectures: ARCH_X64, ARCH_X86, ARCH_ARM64, ARCH_ARM32
@@ -411,10 +412,10 @@ template<typename T> T& deref_if_ptr(T* x){return *x;}
 #define AssertBreakpoint(expression, ...) STMNT( if(!(expression)){ DebugBreakpoint; } )
 #define StaticAssertAlways(expression, ...) char GLUE(__ignore__, GLUE(__LINE__,__default__))[(expression)?1:-1]
 
-#if   DESHI_INTERNAL
+#if   BUILD_INTERNAL
 #  define Assert(expression, ...) AssertBreakpoint(expression)
 #  define StaticAssert(expression, ...) StaticAssertAlways(expression)
-#elif DESHI_SLOW
+#elif BUILD_SLOW
 #  define Assert(expression, ...) AssertAlways(expression)
 #  define StaticAssert(expression, ...) StaticAssertAlways(expression)
 #else
@@ -426,7 +427,7 @@ template<typename T> T& deref_if_ptr(T* x){return *x;}
 #define InvalidPath Assert(false, "invalid path")
 #define TestMe AssertBreakpoint(false, "this needs to be tested")
 #define FixMe AssertBreakpoint(false, "this is broken in some way")
-#define DontCompile (0=__deshi_dont_compile_this__)
+#define DontCompile (0=__dont_compile_this__)
 #define WarnFuncNotImplemented(extra) LogW("FUNC", "Function ", __FUNCTION__, " has not been implemented or is not finished", (extra ? "\n" : ""), extra);
 
 /////////////////////////
@@ -484,8 +485,7 @@ global_ Allocator* stl_allocator = &stl_allocator_;
 ///////////////////////////// //TODO remove/rework/rename these
 //// to-be-redone macros ////
 /////////////////////////////
-#define DESHI_NAME_SIZE 64 //NOTE arbitrarily chosen size, but its convenient to have a fixed size for names
 #define cpystr(dst,src,bytes) strncpy((dst), (src), (bytes)); (dst)[(bytes)-1] = '\0' //copy c-string and null-terminate
 #define dyncast(child,base) dynamic_cast<child*>(base) //dynamic cast short-hand
 
-#endif //DEFINES_H
+#endif //KIGU_COMMON_H

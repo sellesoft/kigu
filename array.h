@@ -1,22 +1,22 @@
 #pragma once
-#ifndef DESHI_ARRAY_H
-#define DESHI_ARRAY_H
+#ifndef KIGU_ARRAY_H
+#define KIGU_ARRAY_H
 
-#ifndef DESHI_ARRAY_GROWTH_FACTOR
-#  define DESHI_ARRAY_GROWTH_FACTOR 2
+#ifndef KIGU_ARRAY_GROWTH_FACTOR
+#  define KIGU_ARRAY_GROWTH_FACTOR 2
 #endif
-#ifndef DESHI_ARRAY_SPACE_ALIGNMENT
-#  define DESHI_ARRAY_SPACE_ALIGNMENT 4
+#ifndef KIGU_ARRAY_SPACE_ALIGNMENT
+#  define KIGU_ARRAY_SPACE_ALIGNMENT 4
 #endif
-#ifndef DESHI_ARRAY_ALLOCATOR
-#  define DESHI_ARRAY_ALLOCATOR stl_allocator
+#ifndef KIGU_ARRAY_ALLOCATOR
+#  define KIGU_ARRAY_ALLOCATOR stl_allocator
 #endif
 
 #ifdef TRACY_ENABLE
 #include "Tracy.hpp"
 #endif
 
-#include "../defines.h"
+#include "common.h"
 #include <cstdlib>
 #include <cstring>
 #include <initializer_list>
@@ -33,11 +33,11 @@ struct array{
 	
 	array();
 	array(Allocator* a);
-	array(u32 _count, Allocator* a = DESHI_ARRAY_ALLOCATOR);
-	array(std::initializer_list<T> l, Allocator* a = DESHI_ARRAY_ALLOCATOR);
-	array(const array<T>& array, Allocator* a = DESHI_ARRAY_ALLOCATOR);
-	array(T* _data, u32 _count, Allocator* a = DESHI_ARRAY_ALLOCATOR);
-	array(carray<T> arr, Allocator* a = DESHI_ARRAY_ALLOCATOR);
+	array(u32 _count, Allocator* a = KIGU_ARRAY_ALLOCATOR);
+	array(std::initializer_list<T> l, Allocator* a = KIGU_ARRAY_ALLOCATOR);
+	array(const array<T>& array, Allocator* a = KIGU_ARRAY_ALLOCATOR);
+	array(T* _data, u32 _count, Allocator* a = KIGU_ARRAY_ALLOCATOR);
+	array(carray<T> arr, Allocator* a = KIGU_ARRAY_ALLOCATOR);
 	~array();
 	
 	//copies the values and allocator from rhs
@@ -99,7 +99,7 @@ struct array{
 ///////////////////////
 template<typename T> inline array<T>::
 array(){DPZoneScoped;
-	allocator = DESHI_ARRAY_ALLOCATOR;
+	allocator = KIGU_ARRAY_ALLOCATOR;
 	
 	space = 0;
 	count = 0;
@@ -126,7 +126,7 @@ array(u32 _count, Allocator* a){DPZoneScoped;
 	allocator = a;
 	
 	count = 0;
-	space = RoundUpTo(_count, DESHI_ARRAY_SPACE_ALIGNMENT);
+	space = RoundUpTo(_count, KIGU_ARRAY_SPACE_ALIGNMENT);
 	data  = (T*)allocator->reserve(space*sizeof(T));
 	
 	first = 0;
@@ -139,7 +139,7 @@ array(std::initializer_list<T> l, Allocator* a){DPZoneScoped;
 	allocator = a;
 	
 	count = l.size();
-	space = RoundUpTo(l.size(), DESHI_ARRAY_SPACE_ALIGNMENT);
+	space = RoundUpTo(l.size(), KIGU_ARRAY_SPACE_ALIGNMENT);
 	data  = (T*)allocator->reserve(space*sizeof(T));
 	allocator->commit(data, count*sizeof(T));
 	
@@ -174,7 +174,7 @@ array(T* _data, u32 _count, Allocator* a){DPZoneScoped;
 	allocator = a;
 	
 	count = _count;
-	space = RoundUpTo(_count, DESHI_ARRAY_SPACE_ALIGNMENT);
+	space = RoundUpTo(_count, KIGU_ARRAY_SPACE_ALIGNMENT);
 	data  = (T*)allocator->reserve(space*sizeof(T));
 	allocator->commit(data, count*sizeof(T));
 	memcpy(data, _data, _count*sizeof(T));
@@ -189,7 +189,7 @@ array(carray<T> arr, Allocator* a){DPZoneScoped;
 	allocator = a;
 	
 	count = arr.count;
-	space = RoundUpTo(arr.count, DESHI_ARRAY_SPACE_ALIGNMENT);
+	space = RoundUpTo(arr.count, KIGU_ARRAY_SPACE_ALIGNMENT);
 	data  = (T*)allocator->reserve(space*sizeof(T));
 	allocator->commit(data, count*sizeof(T));
 	
@@ -217,7 +217,7 @@ template<typename T> inline array<T>::
 ////////////////////
 template<typename T> inline array<T>& array<T>::
 operator= (const array<T>& rhs){
-	if(!allocator) allocator = DESHI_ARRAY_ALLOCATOR;
+	if(!allocator) allocator = KIGU_ARRAY_ALLOCATOR;
 	forI(count){ data[i].~T(); }
 	allocator->release(data);  //TODO maybe resize rather than release and reserve
 	
@@ -259,7 +259,7 @@ size() const{
 template<typename T> inline void array<T>::
 add(const T& t){DPZoneScoped;
 	if(space == 0){ //if first item, allocate memory
-		space = DESHI_ARRAY_SPACE_ALIGNMENT;
+		space = KIGU_ARRAY_SPACE_ALIGNMENT;
 		data  = (T*)allocator->reserve(space*sizeof(T));
 		allocator->commit(data, 1*sizeof(T));
 		
@@ -270,7 +270,7 @@ add(const T& t){DPZoneScoped;
 		data[0] = t;
 		count = 1;
 	}else if(count == space){ //if array is full, resize the memory by the growth factor
-		space *= DESHI_ARRAY_GROWTH_FACTOR;
+		space *= KIGU_ARRAY_GROWTH_FACTOR;
 		data = (T*)allocator->resize(data, space*sizeof(T));
 		memset(data+count, 0, (space-count)*sizeof(T)); //NOTE STL doesnt guarantee memory is zero on realloc
 		allocator->commit(data+count, 1*sizeof(T));
@@ -304,7 +304,7 @@ template<typename T> inline void array<T>::
 insert(const T& t, u32 idx){DPZoneScoped;
 	Assert(idx <= count);
 	if(space == 0){ //if first item, allocate memory
-		space = DESHI_ARRAY_SPACE_ALIGNMENT;
+		space = KIGU_ARRAY_SPACE_ALIGNMENT;
 		data  = (T*)allocator->reserve(space*sizeof(T));
 		allocator->commit(data, 1*sizeof(T));
 		
@@ -315,7 +315,7 @@ insert(const T& t, u32 idx){DPZoneScoped;
 		count = 1;
 		data[0] = t;
 	}else if(count == space){ //if array is full, resize the memory by the growth factor
-		space *= DESHI_ARRAY_GROWTH_FACTOR;
+		space *= KIGU_ARRAY_GROWTH_FACTOR;
 		data = (T*)allocator->resize(data, space*sizeof(T));
 		memset(data+count, 0, (space-count)*sizeof(T)); //NOTE STL doesnt guarantee memory is zero on realloc
 		allocator->commit(data+count, 1*sizeof(T));
@@ -439,7 +439,7 @@ resize(u32 new_count){DPZoneScoped;
 template<typename T> inline void array<T>::
 reserve(u32 new_space){DPZoneScoped;
 	if(new_space > space){
-		space = RoundUpTo(new_space, DESHI_ARRAY_SPACE_ALIGNMENT);
+		space = RoundUpTo(new_space, KIGU_ARRAY_SPACE_ALIGNMENT);
 		data = (T*)allocator->resize(data, space*sizeof(T));
 		memset(data+count, 0, (new_space-count)*sizeof(T)); //NOTE STL doesnt guarantee memory is zero on realloc
 		
@@ -531,4 +531,4 @@ lookbackptr(u32 i){DPZoneScoped;
 	else return nullptr;
 }
 
-#endif //DESHI_ARRAY_H
+#endif //KIGU_ARRAY_H

@@ -1,9 +1,9 @@
 #pragma once
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef KIGU_UTILS_H
+#define KIGU_UTILS_H
 
+#include "common.h"
 #include "pair.h"
-#include "../defines.h"
 
 #include <string>
 #include <vector>
@@ -320,4 +320,4 @@ findCharFromLeft(char* text, char character, u32 offset){
 	return -1;
 }
 
-#endif //UTILS_H
+#endif //KIGU_UTILS_H

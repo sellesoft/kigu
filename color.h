@@ -1,8 +1,8 @@
 #pragma once
-#ifndef DESHI_COLOR_H
-#define DESHI_COLOR_H
+#ifndef KIGU_COLOR_H
+#define KIGU_COLOR_H
 
-#include "../defines.h"
+#include "common.h"
 
 #define COLORU32_RMASK 0x000000FF
 #define COLORU32_GMASK 0x0000FF00
@@ -140,4 +140,4 @@ inline void color::FillFloat4FromU32(f32* floats, u32 color){DPZoneScoped;
 	*(floats+3) = (f32)((color >> COLORU32_ASHIFT) & 0xFF) / 255.0f;
 }
 
-#endif //DESHI_COLOR_H
+#endif //KIGU_COLOR_H

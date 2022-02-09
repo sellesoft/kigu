@@ -1,16 +1,16 @@
 #pragma once
-#ifndef DESHI_STRING_H
-#define DESHI_STRING_H
+#ifndef KIGU_STRING_H
+#define KIGU_STRING_H
 
-#ifndef DESHI_STRING_ALLOCATOR
-#  define DESHI_STRING_ALLOCATOR stl_allocator
+#ifndef KIGU_STRING_ALLOCATOR
+#  define KIGU_STRING_ALLOCATOR stl_allocator
 #endif
 
 #ifdef TRACY_ENABLE
 #include "Tracy.hpp"
 #endif
 
-#include "../defines.h"
+#include "common.h"
 
 #include <cstdio>
 #include <iostream> //std::ostream operator<<
@@ -29,10 +29,10 @@ struct string{
 	
 	string();
 	string(Allocator* a);
-	string(const CHAR* s, Allocator* a = DESHI_STRING_ALLOCATOR);
-	string(const CHAR* s, u32 count, Allocator* a = DESHI_STRING_ALLOCATOR);
-	string(const string& s, Allocator* a = DESHI_STRING_ALLOCATOR);
-	string(const cstring& s, Allocator* a = DESHI_STRING_ALLOCATOR);
+	string(const CHAR* s, Allocator* a = KIGU_STRING_ALLOCATOR);
+	string(const CHAR* s, u32 count, Allocator* a = KIGU_STRING_ALLOCATOR);
+	string(const string& s, Allocator* a = KIGU_STRING_ALLOCATOR);
+	string(const cstring& s, Allocator* a = KIGU_STRING_ALLOCATOR);
 	~string();
 	
 	CHAR&  operator[](u32 idx);
@@ -80,7 +80,7 @@ struct string{
 ///////////////////////
 
 inline string::string(){DPZoneScoped;
-	allocator = DESHI_STRING_ALLOCATOR;
+	allocator = KIGU_STRING_ALLOCATOR;
 	count = 0;
 	space = 0;
 	str   = 0;
@@ -154,7 +154,7 @@ inline void string::operator= (const CHAR* s){DPZoneScoped;
 	if(allocator){
 		allocator->release(str);
 	}else{
-		allocator = DESHI_STRING_ALLOCATOR;
+		allocator = KIGU_STRING_ALLOCATOR;
 	}
 	
 	count = strlen(s);
@@ -182,7 +182,7 @@ inline void string::operator+=(const CHAR* s){DPZoneScoped;
 	if(str_len == 0) return;
 	count += str_len;
 	
-	if(!allocator) allocator = DESHI_STRING_ALLOCATOR;
+	if(!allocator) allocator = KIGU_STRING_ALLOCATOR;
 	if(space == 0){
 		space = RoundUpTo(count+1, 4);
 		str   = (CHAR*)allocator->reserve(space*CHAR_SIZE); Assert(str, "Failed to allocate memory");
@@ -204,7 +204,7 @@ inline void string::operator+=(const string& s){DPZoneScoped;
 	if(str_len == 0) return;
 	count += str_len;
 	
-	if(!allocator) allocator = DESHI_STRING_ALLOCATOR;
+	if(!allocator) allocator = KIGU_STRING_ALLOCATOR;
 	if(space == 0){
 		space = RoundUpTo(count+1, 4);
 		str = (CHAR*)allocator->reserve(space*CHAR_SIZE); Assert(str, "Failed to allocate memory");
@@ -305,7 +305,7 @@ inline void string::clear(){DPZoneScoped;
 	if(allocator){
 		allocator->release(str);
 	}else{
-		allocator = DESHI_STRING_ALLOCATOR;
+		allocator = KIGU_STRING_ALLOCATOR;
 	}
 	count = 0;
 	space = 0;
@@ -324,7 +324,7 @@ inline void string::insert(CHAR c, u32 idx){DPZoneScoped;
 	Assert(idx <= count);
 	count += 1;
 	
-	if(!allocator) allocator = DESHI_STRING_ALLOCATOR;
+	if(!allocator) allocator = KIGU_STRING_ALLOCATOR;
 	if(space == 0){
 		space = 4;
 		str = (CHAR*)allocator->reserve(space*CHAR_SIZE); Assert(str, "Failed to allocate memory");
@@ -492,9 +492,9 @@ struct wstring {
 	
 	wstring();
 	wstring(Allocator* a);
-	wstring(const CHAR* s, Allocator* a = DESHI_STRING_ALLOCATOR);
-	wstring(const CHAR* s, u32 count, Allocator* a = DESHI_STRING_ALLOCATOR);
-	wstring(const wstring& s, Allocator* a = DESHI_STRING_ALLOCATOR);
+	wstring(const CHAR* s, Allocator* a = KIGU_STRING_ALLOCATOR);
+	wstring(const CHAR* s, u32 count, Allocator* a = KIGU_STRING_ALLOCATOR);
+	wstring(const wstring& s, Allocator* a = KIGU_STRING_ALLOCATOR);
 	~wstring();
 	
 	CHAR& operator[](u32 idx);
@@ -542,7 +542,7 @@ struct wstring {
 ///////////////////////
 
 inline wstring::wstring(){DPZoneScoped;
-	allocator = DESHI_STRING_ALLOCATOR;
+	allocator = KIGU_STRING_ALLOCATOR;
 	count  = 0;
 	space = 0;
 	str   = 0;
@@ -601,7 +601,7 @@ inline void wstring::operator= (const CHAR* s){DPZoneScoped;
 	if(allocator){
 		allocator->release(str);
 	}else{
-		allocator = DESHI_STRING_ALLOCATOR;
+		allocator = KIGU_STRING_ALLOCATOR;
 	}
 	
 	count = wcslen(s);
@@ -629,7 +629,7 @@ inline void wstring::operator+=(const CHAR* s){DPZoneScoped;
 	if(str_len == 0) return;
 	count += str_len;
 	
-	if(!allocator) allocator = DESHI_STRING_ALLOCATOR;
+	if(!allocator) allocator = KIGU_STRING_ALLOCATOR;
 	if(space == 0){
 		space = RoundUpTo(count+1, 4);
 		str   = (CHAR*)allocator->reserve(space*CHAR_SIZE); Assert(str, "Failed to allocate memory");
@@ -651,7 +651,7 @@ inline void wstring::operator+=(const wstring& s){DPZoneScoped;
 	if(str_len == 0) return;
 	count += str_len;
 	
-	if(!allocator) allocator = DESHI_STRING_ALLOCATOR;
+	if(!allocator) allocator = KIGU_STRING_ALLOCATOR;
 	if(space == 0){
 		space = RoundUpTo(count+1, 4);
 		str   = (CHAR*)allocator->reserve(space*CHAR_SIZE); Assert(str, "Failed to allocate memory");
@@ -741,7 +741,7 @@ inline void wstring::clear(){DPZoneScoped;
 	if(allocator){
 		allocator->release(str);
 	}else{
-		allocator = DESHI_STRING_ALLOCATOR;
+		allocator = KIGU_STRING_ALLOCATOR;
 	}
 	count = 0;
 	space = 0;
@@ -760,7 +760,7 @@ inline void wstring::insert(CHAR c, u32 idx){DPZoneScoped;
 	Assert(idx <= count);
 	count += 1;
 	
-	if(!allocator) allocator = DESHI_STRING_ALLOCATOR;
+	if(!allocator) allocator = KIGU_STRING_ALLOCATOR;
 	if(space == 0){
 		space = 4;
 		str = (CHAR*)allocator->reserve(space*CHAR_SIZE); Assert(str, "Failed to allocate memory");
@@ -874,4 +874,4 @@ inline wstring wstring::toLower(const wstring& in){DPZoneScoped;
 }
 
 
-#endif //DESHI_wstring_H
+#endif //KIGU_WSTRING_H

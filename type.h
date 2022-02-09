@@ -1,9 +1,9 @@
 #pragma once
-#ifndef DESHI_TYPE_H
-#define DESHI_TYPE_H
+#ifndef KIGU_TYPE_H
+#define KIGU_TYPE_H
 
+#include "common.h"
 #include "utils.h"
-#include "../defines.h"
 
 //left over idea for trying to store type info for metaprogramming
 //i dont know of anyway to actually use this info in any meaningful way,
@@ -33,4 +33,4 @@ struct type {
 #define t_b32(name, sname) new type<b32>{{0}, 1, offsetof(sname, name), b32size}
 #define t_uchar(name) new type{"uchar", 1, 0, ucharsize, {0}}
 
-#endif //DESHI_TYPE_H
+#endif //KIGU_TYPE_H
