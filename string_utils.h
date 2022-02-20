@@ -2,6 +2,7 @@
 #ifndef KIGU_STRING_UTILS_H
 #define KIGU_STRING_UTILS_H
 
+#include "array.h"
 #include "string.h"
 #include "cstring.h"
 #include "color.h"
@@ -313,5 +314,22 @@ global_ cstring substr(const cstring& buf, u32 start, u32 end = npos){return sub
 global_ cstring substr(const string&  buf, u32 start, u32 end = npos){return substr(buf.str, buf.count, start,end);}
 global_ cstring substr(const char*    buf, u32 start, u32 end = npos){return substr((char*)buf, strlen(buf), start,end);}
 
+global_ array<cstring>
+chunkstr(char* buf, u32 buflen, char delimiter){
+	array<cstring> chunks;
+	char* start = buf;
+	forI(buflen){
+		if(buf[i]==delimiter){
+			chunks.add({start, upt((buf+i)-start)});
+			start=buf+i+1;
+		}else if(i==buflen-1){
+			chunks.add({start, upt((buf+i+1)-start)});
+		}
+	}
+	return chunks;
+}
+global_ array<cstring> chunkstr(const string&  buf, char delimiter) {return chunkstr(buf.str, buf.count, delimiter);}
+global_ array<cstring> chunkstr(const cstring& buf, char delimiter) {return chunkstr(buf.str, buf.count, delimiter);}
+global_ array<cstring> chunkstr(const char*    buf, char delimiter) {return chunkstr((char*)buf, strlen(buf), delimiter);}
 
 #endif //KIGU_STRING_UTILS_H
