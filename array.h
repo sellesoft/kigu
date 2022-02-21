@@ -50,6 +50,7 @@ struct array{
 	void add_array(const array<T>& t);
 	//for taking in something without copying it
 	void emplace(const T& t);
+	//inserts before the specified idx
 	void insert(const T& t, u32 idx);
 	//removes _count elements from the end
 	void pop(u32 _count = 1);
