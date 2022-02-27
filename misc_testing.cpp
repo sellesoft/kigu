@@ -2,7 +2,8 @@
 #include "../core/renderer.h"
 #include "../core/window.h"
 #include "array.h"
-#include "geometry/Edge.h"
+#include "math/edge.h"
+#include "type.h"
 
 struct RandDrawObj {
 	vec2 pos;
@@ -88,6 +89,7 @@ RandDrawObj rwa;
 TIMER_START(rwawalk);
 TIMER_START(histreset);
 void random_walk_avoid() {
+	
 	if (!rwainit) {
 		srand(time(0));
 		rwainit = 1;
@@ -165,8 +167,8 @@ void random_walk_avoid() {
 void vector_field() {
 	f32 precision = 100;
 	static f32 zoom = 1;
-	if (DeshInput->ScrollDown()) zoom += 0.1;
-	if (DeshInput->ScrollUp()) zoom -= 0.1;
+	//if (DeshInput->ScrollDown()) zoom += 0.1;
+	//if (DeshInput->ScrollUp()) zoom -= 0.1;
 	
 	
 	static vec2 postrack(0, 0);
@@ -235,5 +237,72 @@ void vector_field() {
 		}
 	}
 	
+	
+}
+
+void electric_field() {
+	//array<charge> pcharges{
+	//	{{ 1.,  0.}, 1.},
+	//	{{ 1.,  1.},-1.},
+	//	{{ 0.,  1.}, 1.},
+	//	{{-1.,  1.},-1.},
+	//	{{-1.,  0.}, 1.},
+	//	{{-1., -1.},-1.},
+	//	{{ 0., -1.}, 1.},
+	//	{{ 1., -1.},-1.},
+	//};
+	//f32 scale = 30;
+	//Render::StartNewTwodCmd(0, 0, vec2::ZERO, DeshWinSize);
+	//vec2 coff = DeshWinSize/2;
+	//
+	//u32 res = 10;
+	//f64 ar = DeshWinSize.y/DeshWinSize.x;
+	//for(u32 i = 0; i < res; i++){
+	//	for(u32 j = 0; j < res; j++){
+	//		vec2 pos = vec2((i/f32(res)+1/(2*f32(res)))*DeshWinSize.x, (j/f32(res)+1/(2*f32(res)))*DeshWinSize.y);
+	//		vec2 e;
+	//		for(charge c : pcharges){
+	//			e+=1000*c.q/((pos-c.r).magSq())*(pos-c.r).normalized();
+	//		}
+//
+	//		Render::DrawLine2D(pos, pos+e, 1, Color_White, 0, vec2(0,0), DeshWinSize);
+	//	}
+	//}
+	//
+	//
+	//
+	//for(charge c : pcharges){
+	//	vec2 pos = c.r * scale + coff;
+	//	color col = color(155, 155 * Remap(c.q, 0., 1., -1., 1.), 0); 
+	//	Render::FillCircle2D(pos, 4, 30, col, 0);
+	//}
+			
+}
+
+void draw_pixels(){DPZoneScoped;
+	Render::StartNewTwodCmd(0, 0, vec2::ZERO, DeshWinSize);
+	u32 size = 8;
+	static u64 frames = 0;
+	static s64 chance = 1;
+	forX(i, 100){
+		forX(j, 100){
+			
+			//flashing growing thing
+			//f64 lhs = 0;
+			//f64 rhs = sin(DeshTotalTime/100*i*(j)-2*(i-(j+DeshTotalTime/100))+1);
+
+			f64 lhs = i;
+			f64 rhs = j;
+
+
+			if(lhs < rhs){
+				Render::FillRect2D(vec2(i*size,j*size), vec2::ONE*size, color(100,75,14));
+			}
+		}
+	}
+}
+
+void grow_pixels(){DPZoneScoped;
+	Render::StartNewTwodCmd(0,0,vec2::ZERO, DeshWinSize);
 	
 }
