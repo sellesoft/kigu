@@ -2,6 +2,7 @@
 #ifndef KIGU_STRING_UTILS_H
 #define KIGU_STRING_UTILS_H
 
+#include "array.h"
 #include "string.h"
 #include "cstring.h"
 #include "color.h"
@@ -203,6 +204,8 @@ ToString(T... args){
 ///////////////
 //// @find ////
 ///////////////
+//NOTE these functions do not do any safety/bounds checking
+//TODO decide if we should do that here
 global_ u32 
 find_first_char(const char* str, u32 strsize, char c, u32 offset = 0) {
 	for (u32 i = offset; i < strsize; ++i)
@@ -302,5 +305,31 @@ global_ b32 str_contains(const char*    buf1, const cstring& buf2) { return str_
 global_ b32 str_contains(const cstring& buf1, const char*    buf2) { return str_contains(buf1.str, buf1.count, buf2, strlen(buf2)); }
 global_ b32 str_contains(const char*    buf1, const char*    buf2) { return str_contains(buf1, strlen(buf1), buf2, strlen(buf2)); }
 
+//includes start and end indexes
+global_ cstring
+substr(char* buf, u32 buflen, u32 start, u32 end = npos){
+	return cstring{buf+start, (end==npos ? buflen-start : (end-start)+1)};
+}
+global_ cstring substr(const cstring& buf, u32 start, u32 end = npos){return substr(buf.str, buf.count, start,end);}
+global_ cstring substr(const string&  buf, u32 start, u32 end = npos){return substr(buf.str, buf.count, start,end);}
+global_ cstring substr(const char*    buf, u32 start, u32 end = npos){return substr((char*)buf, strlen(buf), start,end);}
+
+global_ array<cstring>
+chunkstr(char* buf, u32 buflen, char delimiter){
+	array<cstring> chunks;
+	char* start = buf;
+	forI(buflen){
+		if(buf[i]==delimiter){
+			chunks.add({start, upt((buf+i)-start)});
+			start=buf+i+1;
+		}else if(i==buflen-1){
+			chunks.add({start, upt((buf+i+1)-start)});
+		}
+	}
+	return chunks;
+}
+global_ array<cstring> chunkstr(const string&  buf, char delimiter) {return chunkstr(buf.str, buf.count, delimiter);}
+global_ array<cstring> chunkstr(const cstring& buf, char delimiter) {return chunkstr(buf.str, buf.count, delimiter);}
+global_ array<cstring> chunkstr(const char*    buf, char delimiter) {return chunkstr((char*)buf, strlen(buf), delimiter);}
 
 #endif //KIGU_STRING_UTILS_H
