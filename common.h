@@ -504,6 +504,7 @@ global_ inline void remove_horizontally(TNode* node) {
 
 global_ void insert_last(TNode* parent, TNode* child) {
 	if (parent == 0) { child->parent = 0; return; }
+	if(parent==child){DebugBreakpoint;}
 	
 	child->parent = parent;
 	if (parent->first_child) {

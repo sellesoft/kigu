@@ -195,30 +195,54 @@ if you are using deshi and want the program to wait until tracy is connected def
 struct FunctionCall{
     cstring name;
     TNode node; //TNode that points to other function calls 
+    u32 hash;
+    b32 ended = 0;
+    ~FunctionCall(){
+        Assert(ended, "Forgot to call KPFuncEnd for a KPFuncBegin or the scope KPFuncStart was called in ended earlier than expected");
+    }
 };
 
+#ifdef KIGU_ENABLE_PROFILER
+//maybe do an atom approach where we just make a static varaible that is a handle to an element of a map
+//since this should only be called once per function it should work fine 
 #define KPFuncStart\
- u32 ___Func___KiguProfilerVariableDONOTTOUCHplease = hash<char*>()(__func__);\
- g_profiler->funccall(__func__, ___Func___KiguProfilerVariableDONOTTOUCHplease)
+ FunctionCall ___Func___KiguProfilerVariableDONOTTOUCHplease; \
+ ___Func___KiguProfilerVariableDONOTTOUCHplease.hash = hash<char*>()(toStr(__func__, __LINE__, g_profiler->stackcount).str); \
+ g_profiler->funccall(__func__, ___Func___KiguProfilerVariableDONOTTOUCHplease.hash)
 
 #define KPFuncEnd\
- g_profiler->funcend(___Func___KiguProfilerVariableDONOTTOUCHplease);
+ ___Func___KiguProfilerVariableDONOTTOUCHplease.ended = true; \
+ g_profiler->funcend(___Func___KiguProfilerVariableDONOTTOUCHplease.hash);
+#else
+
+#define KPFuncStart
+#define KPFuncEnd
+
+#endif
 
 struct Profiler{
     TNode* currfunc;
     map<u32, FunctionCall> knownFuncs;
+    u64 stackcount = 0; //for differenciating between a function being called at different stack levels
     
     void funccall(const char* name, u32 hash) {
+        stackcount++;
         if(!knownFuncs.has(hash)) knownFuncs.add(hash);
         FunctionCall* fc = knownFuncs.at(hash);
         fc->name={(char*)name,strlen(name)}; //make this not happen everytime or something
-        if(currfunc) insert_last(currfunc, &fc->node);
+        if(currfunc){ 
+            //check if current function has already called this function
+            b32 exists=false;
+            for_node(currfunc->first_child) if(it==&fc->node) { exists=true; break; }
+            if(!exists) insert_last(currfunc, &fc->node);
+        }
         currfunc = &fc->node;
     }
 
     //enforce passing hash so we make sure that the function we are ending is the same as current
     //TODO setup checking that the function is the same eventually
     void funcend(u32 hash){
+        stackcount--;
         if(!knownFuncs.has(hash)) Assert(0, "attempted to use funcend with a hash that is unknown");
         if(currfunc)
             currfunc = currfunc->parent;
