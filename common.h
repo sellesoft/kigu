@@ -71,6 +71,11 @@
 #    error "unhandled architecture"
 #  endif
 
+//// Unhandled Compiler ////
+#else //__GNUC__ || __GNUG__
+#  error "unhandled compiler"
+#endif
+
 #if !defined(COMPILER_CL)
 #  define COMPILER_CL 0
 #endif
@@ -102,11 +107,6 @@
 #endif
 #if !defined(ARCH_ARM32)
 #  define ARCH_ARM32 0
-#endif
-
-//// Unhandled Compiler ////
-#else //__GNUC__ || __GNUG__
-#  error "unhandled compiler"
 #endif
 
 ///////////////////////// //NOTE this file is included is almost every other file of the project, so be frugal with includes here
@@ -346,8 +346,8 @@ global_const u64 wcharsize = sizeof(wchar);
 #define STRINGIZE(a) STRINGIZE_(a)
 #define GLUE_(a,b) a##b
 #define GLUE(a,b) GLUE_(a,b)
-#define PRINTLN(x) std::cout << x << std::endl;
-#define __FILENAME__ (std::strrchr(__FILE__, '\\') ? std::strrchr(__FILE__, '\\') + 1 : __FILE__)
+#define PRINTLN(x) std::cout << x << std::endl
+#define __FILENAME__ (std::strrchr(__FILE__, '\\') ? std::strrchr(__FILE__, '\\') + 1 : __FILE__) //TODO make this compile-time; ref: https://www.stderr.nl/Blog/Software/Cpp/CompiletimeBasename.html
 #define ToggleBool(variable) variable = !variable
 #define Kilobytes(a) (((u64)(a)) << 10)
 #define Megabytes(a) (((u64)(a)) << 20)
@@ -384,9 +384,6 @@ global_const u64 wcharsize = sizeof(wchar);
 FORCE_INLINE void ZeroMemory(void* ptr, upt bytes){memset(ptr, 0, bytes);}
 FORCE_INLINE void CopyMemory(void* dst, void* src, upt bytes){memcpy(dst,src,bytes);}
 FORCE_INLINE b32  IsPow2(u64 value)       {return (value != 0) && ((value & (value-1)) == 0);}
-FORCE_INLINE upt  roundUpToPow2(upt x)    { return (upt)1 << (upt)((upt)log2(f64(--x)) + 1); }
-FORCE_INLINE char bytesUnit(upt bytes)    { return (bytes > Kilobytes(1) ? bytes > Megabytes(1) ? bytes > Gigabytes(1) ? bytes > Terabytes(1) ? 'T' : 'G' : 'M' : 'K' : 'B'); }
-FORCE_INLINE f32  bytesDivisor(upt bytes) { return (bytes > Kilobytes(1) ? bytes > Megabytes(1) ? bytes > Gigabytes(1) ? bytes > Terabytes(1) ? Terabytes(1) : Gigabytes(1) : Megabytes(1) : Kilobytes(1) : 1); }
 template<typename T> FORCE_INLINE void Swap(T& a, T& b){T temp = a; a = b; b = temp;}
 template<typename T> FORCE_INLINE T Min(T a, T b){return (a < b) ? a : b;}
 template<typename T> FORCE_INLINE T Max(T a, T b){return (a > b) ? a : b;}
@@ -401,6 +398,10 @@ template<typename T,typename U> FORCE_INLINE T ClampMax(T value, U max){return (
 template<typename T> FORCE_INLINE T Nudge(T val, T target, T delta) {return (val != target) ? (val < target) ? ((val + delta < target) ? val + delta : target) : ((val - delta > target) ? val - delta : target) : target;}
 template<typename T> FORCE_INLINE b32 EpsilonEqual(T a, T b){ return abs(a - b) < M_EPSILON; }
 template<typename T> FORCE_INLINE T Remap(T val, T nu_min, T nu_max, T old_min, T old_max) { return (val - old_min) / (old_max - old_min) * (nu_max - nu_min); }
+
+FORCE_INLINE upt  roundUpToPow2(upt x)    { return (upt)1 << (upt)((upt)log2(f64(--x)) + 1); }
+FORCE_INLINE char bytesUnit(upt bytes)    { return (bytes > Kilobytes(1) ? bytes > Megabytes(1) ? bytes > Gigabytes(1) ? bytes > Terabytes(1) ? 'T' : 'G' : 'M' : 'K' : 'B'); }
+FORCE_INLINE f32  bytesDivisor(upt bytes) { return (bytes > Kilobytes(1) ? bytes > Megabytes(1) ? bytes > Gigabytes(1) ? bytes > Terabytes(1) ? Terabytes(1) : Gigabytes(1) : Megabytes(1) : Kilobytes(1) : 1); }
 template<typename... T, typename A> inline b32 match_any(A tested, T... in) { return((tested == in) || ...); }
 template<typename T> T& deref_if_ptr(T& x){return x;}
 template<typename T> T& deref_if_ptr(T* x){return *x;}
@@ -479,13 +480,11 @@ global_ Allocator stl_allocator_{
 };
 global_ Allocator* stl_allocator = &stl_allocator_;
 
-//// for quick reference when i forget again ////
-#define PRINTBASICTYPESIZES PRINTLN("   s8 size: " << s8size); PRINTLN("  s16 size: " << s16size); PRINTLN("  s32 size: " << s32size); PRINTLN("  s64 size: " << s64size); PRINTLN("  spt size: " << sptsize); PRINTLN("   u8 size: " << u8size); PRINTLN("  u16 size: " << u16size); PRINTLN("  u32 size: " << u32size); PRINTLN("  u64 size: " << u64size); PRINTLN("  upt size: " << uptsize); PRINTLN("  f32 size: " << f32size); PRINTLN("  f64 size: " << f64size); PRINTLN("  b32 size: " << b32size); PRINTLN("wchar size: " << wcharsize);
-
 ///////////////////////////// //TODO remove/rework/rename these
 //// to-be-redone macros ////
 /////////////////////////////
 #define cpystr(dst,src,bytes) strncpy((dst), (src), (bytes)); (dst)[(bytes)-1] = '\0' //copy c-string and null-terminate
 #define dyncast(child,base) dynamic_cast<child*>(base) //dynamic cast short-hand
+#define PRINTBASICTYPESIZES PRINTLN("   s8 size: " << s8size); PRINTLN("  s16 size: " << s16size); PRINTLN("  s32 size: " << s32size); PRINTLN("  s64 size: " << s64size); PRINTLN("  spt size: " << sptsize); PRINTLN("   u8 size: " << u8size); PRINTLN("  u16 size: " << u16size); PRINTLN("  u32 size: " << u32size); PRINTLN("  u64 size: " << u64size); PRINTLN("  upt size: " << uptsize); PRINTLN("  f32 size: " << f32size); PRINTLN("  f64 size: " << f64size); PRINTLN("  b32 size: " << b32size); PRINTLN("wchar size: " << wcharsize);
 
 #endif //KIGU_COMMON_H
