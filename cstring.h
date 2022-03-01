@@ -3,6 +3,8 @@
 #define KIGU_CSTRING_H
 
 #include "common.h"
+#include "profiling.h"  
+
 
 global_ inline void
 advance(cstring* s, upt count = 1){DPZoneScoped;

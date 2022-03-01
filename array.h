@@ -17,6 +17,8 @@
 #endif
 
 #include "common.h"
+#include "profiling.h"
+
 #include <cstdlib>
 #include <cstring>
 #include <initializer_list>

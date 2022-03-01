@@ -2,8 +2,8 @@
 #ifndef KIGU_HASH_H
 #define KIGU_HASH_H
 
-#include "array.h"
 #include "common.h"
+#include "array.h"
 #include "string.h"
 
 template<int N>

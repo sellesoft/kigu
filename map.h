@@ -2,9 +2,11 @@
 #ifndef KIGU_MAP_H
 #define KIGU_MAP_H
 
+#include "common.h"
 #include "array.h"
 #include "hash.h"
 #include "pair.h"
+#include "profiling.h"
 
 //TODO rename this to unordered_map
 template<typename Key, typename Value, typename HashStruct = hash<Key>>

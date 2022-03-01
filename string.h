@@ -11,6 +11,8 @@
 #endif
 
 #include "common.h"
+#include "profiling.h" 
+
 
 #include <cstdio>
 #include <iostream> //std::ostream operator<<
@@ -18,7 +20,6 @@
 
 struct string{
 	typedef char CHAR;
-	//static constexpr u32 npos = -1;
 	static constexpr u32 CHAR_SIZE = sizeof(CHAR);
 	
 	u32   count;
