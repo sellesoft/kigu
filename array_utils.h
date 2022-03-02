@@ -140,4 +140,29 @@ template<typename T> FORCE_INLINE upt binary_search_low_to_high(T* first, T* las
 template<typename T> FORCE_INLINE upt binary_search_low_to_high(array<T>& arr, const T& item){ return binary_search_low_to_high(arr.data, arr.count, item); }
 template<typename T> FORCE_INLINE upt binary_search_low_to_high(carray<T> arr, const T& item){ return binary_search_low_to_high(arr.data, arr.count, item); }
 
+template<typename T> T
+find_max(T* arr, upt count){
+	T max = *arr;
+	for(u32 i = 1; i < count; i++){max = Max(arr[i], max);}
+	return max;
+}
+
+template<typename T> FORCE_INLINE T find_max(T* first, T* last){ Assert(first<=last); return find_max(first, last-first); }
+template<typename T> FORCE_INLINE T find_max(array<T>& arr){ return find_max(arr.data, arr.count); }
+template<typename T> FORCE_INLINE T find_max(carray<T> arr){ return find_max(arr.data, arr.count); }
+
+template<typename T> T
+find_min(T* arr, upt count){
+	T min = *arr;
+	for(u32 i = 1; i < count; i++){min = Min(arr[i], min);}
+	return min;
+}
+
+template<typename T> FORCE_INLINE T find_min(T* first, T* last){ Assert(first<=last); return find_min(first, last-first); }
+template<typename T> FORCE_INLINE T find_min(array<T>& arr){ return find_min(arr.data, arr.count); }
+template<typename T> FORCE_INLINE T find_min(carray<T> arr){ return find_min(arr.data, arr.count); }
+
+
+
+
 #endif //KIGU_ARRAY_UTILS_H
