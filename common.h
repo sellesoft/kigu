@@ -191,6 +191,7 @@ struct cstring{
 	FORCE_INLINE const char* end()  const{ return &str[count]; }
 #define cstring_lit(s) cstring{(char*)s, sizeof(s)-1}
 #define cstr_lit(s) cstring{(char*)s, sizeof(s)-1}
+#define cstr(s) cstring{(char*)s, sizeof(s)-1} //:)
 };
 
 template<typename T>
@@ -309,6 +310,7 @@ global_const f32 M_FOURTHPI        = 0.78539816339f;
 global_const f32 M_HALFPI          = 1.57079632679f;
 global_const f32 M_PI              = 3.14159265359f;
 global_const f64 M_PId             = 3.14159265358979323846;
+global_const f64 π                 = M_PId;
 global_const f32 M_2PI             = 6.28318530718f;
 global_const f32 M_TAU             = M_2PI;
 global_const f32 M_E               = 2.71828182846f;
