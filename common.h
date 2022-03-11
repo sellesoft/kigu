@@ -470,19 +470,23 @@ struct Node{
 
 //// tree node ////
 struct TNode {
+	Type  type;
+	Flags flags;
+	
 	TNode* next = 0;
 	TNode* prev = 0;
 	TNode* parent = 0;
 	TNode* first_child = 0;
 	TNode* last_child = 0;
-	u32   child_count = 0;
+	u32    child_count = 0;
 	
-	//debug vars
-	//string comment;
+#if BUILD_INTERNAL
+	cstring debug;
+#endif
 };
 
-#define for_node(node) for(TNode* it = node; it != 0; it = it->next)
-#define for_node_reverse(node) for(TNode* it = node; it != 0; it = it->prev)
+#define for_node(node) for(auto it = node; it != 0; it = it->next)
+#define for_node_reverse(node) for(auto it = node; it != 0; it = it->prev)
 
 global_ inline void insert_after(TNode* target, TNode* node) {
 	if (target->next) target->next->prev = node;
