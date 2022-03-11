@@ -41,8 +41,8 @@ eat_spaces(cstring s){DPZoneScoped;
 }
 
 global_ inline char*
-to_c_string(cstring s){DPZoneScoped;
-    char* cs = (char*)calloc(s.count+1, sizeof(char));
+to_c_string(cstring s, Allocator* a = stl_allocator){DPZoneScoped;
+    char* cs = (char*)a->reserve((s.count+1)*sizeof(char));
     memcpy(cs, s.str, s.count);
     return cs;
 }
@@ -190,8 +190,8 @@ eat_spaces(wcstring s){DPZoneScoped;
 }
 
 global_ inline wchar_t*
-to_c_string(wcstring s){DPZoneScoped;
-    wchar_t* cs = (wchar_t*)calloc(s.count + 1, sizeof(wchar_t));
+to_c_string(wcstring s, Allocator* a = stl_allocator){DPZoneScoped;
+    wchar_t* cs = (wchar_t*)a->reserve((s.count + 1)*sizeof(wchar_t));
     memcpy(cs, s.str, s.count);
     return cs;
 }

@@ -57,39 +57,38 @@ FORCE_INLINE f64 stod(const string& s){ return stod(s.str); }
 //// @to_string ////
 ////////////////////
 global_ string 
-to_string(cstring x){
-	return string(x.str, x.count);
+to_string(cstring x, Allocator* a = KIGU_STRING_ALLOCATOR){
+	return string(x.str, x.count, a);
 }
 
 global_ string 
-to_string(char* str){ 
-	return string(str); 
+to_string(char* str, Allocator* a = KIGU_STRING_ALLOCATOR){ 
+	return string(str, a);
 }
 
 global_ string 
-to_string(const char* str){ 
-	return string(str); 
+to_string(const char* str, Allocator* a = KIGU_STRING_ALLOCATOR){ 
+	return string(str, a);
 }
 
 global_ string 
-to_string(const string& str){ 
-	return str; 
+to_string(const string& str, Allocator* a = KIGU_STRING_ALLOCATOR){ 
+	return string(str, a);
 }
 
 global_ string 
-to_string(const std::string& str){ 
-	return str.c_str(); 
+to_string(const std::string& str, Allocator* a = KIGU_STRING_ALLOCATOR){ 
+	return string(str.c_str(), str.size(), a); 
 }
 
 global_ string 
-to_string(char x){
-	string s(&x, 1);
-	return s;
+to_string(char x, Allocator* a = KIGU_STRING_ALLOCATOR){
+	return string(&x, 1, a);
 }
 
 global_ string 
-to_string(s32 x){
-	string s;
+to_string(s32 x, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
 	s.count = snprintf(nullptr, 0, "%d", x);
 	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
 	s.allocator->commit(s.str, s.count+1);
@@ -99,8 +98,8 @@ to_string(s32 x){
 }
 
 global_ string 
-to_string(s64 x){
-	string s;
+to_string(s64 x, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
 	s.count = snprintf(nullptr, 0, "%lld", x);
 	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
 	s.allocator->commit(s.str, s.count+1);
@@ -110,8 +109,8 @@ to_string(s64 x){
 }
 
 global_ string 
-to_string(u32 x){
-	string s;
+to_string(u32 x, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
 	s.count = snprintf(nullptr, 0, "%u", x);
 	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
 	s.allocator->commit(s.str, s.count+1);
@@ -121,8 +120,8 @@ to_string(u32 x){
 }
 
 global_ string 
-to_string(f32 x, bool trunc = true){
-	string s;
+to_string(f32 x, bool trunc = true, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
 	if(trunc){
 		s.count = snprintf(nullptr, 0, "%g", x);
 		s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
@@ -140,8 +139,8 @@ to_string(f32 x, bool trunc = true){
 }
 
 global_ string 
-to_string(f64 x, bool trunc = true){
-	string s;
+to_string(f64 x, bool trunc = true, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
 	if(trunc){
 		s.count = snprintf(nullptr, 0, "%g", x);
 		s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
@@ -159,8 +158,8 @@ to_string(f64 x, bool trunc = true){
 }
 
 global_ string 
-to_string(upt x){
-	string s;
+to_string(upt x, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
 	s.count = snprintf(nullptr, 0, "%zu", x);
 	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
 	s.allocator->commit(s.str, s.count+1);
@@ -170,8 +169,8 @@ to_string(upt x){
 }
 
 global_ string
-to_string(void* ptr) {
-	string s;
+to_string(void* ptr, Allocator* a = KIGU_STRING_ALLOCATOR) {
+	string s(a);
 	s.count = snprintf(nullptr, 0, "%p", ptr);
 	s.str = (char*)s.allocator->reserve(s.count + 1); Assert(s.str, "Failed to allocate memory");
 	s.allocator->commit(s.str, s.count + 1);
@@ -181,8 +180,8 @@ to_string(void* ptr) {
 }
 
 global_ string 
-to_string(const color& x){
-	string s;
+to_string(const color& x, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
 	s.count = snprintf(nullptr, 0, "{R:%d, G:%d, B:%d, A:%d}", x.r, x.g, x.b, x.a);
 	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
 	s.allocator->commit(s.str, s.count+1);
