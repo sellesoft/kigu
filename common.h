@@ -539,36 +539,6 @@ global_ void insert_first(TNode* parent, TNode* child) {
 	parent->child_count++;
 }
 
-global_ void remove(TNode* node) {
-	//remove self from parent
-	if (node->parent) {
-		if (node->parent->child_count > 1) {
-			if (node == node->parent->first_child) node->parent->first_child = node->next;
-			if (node == node->parent->last_child)  node->parent->last_child = node->prev;
-		}
-		else {
-			Assert(node == node->parent->first_child && node == node->parent->last_child, "if node is the only child node, it should be both the first and last child nodes");
-			node->parent->first_child = 0;
-			node->parent->last_child = 0;
-		}
-		node->parent->child_count--;
-	}
-	
-	//add children to parent (and remove self from children)
-	if (node->child_count > 1) {
-		for (TNode* child = node->first_child; child != 0; child = child->next) {
-			insert_last(node->parent, child);
-		}
-	}
-	
-	//remove self horizontally
-	remove_horizontally(node);
-	
-	//reset self  //TODO not necessary if we are deleting this node, so exclude this logic in another function TNodeDelete?
-	node->parent = node->first_child = node->last_child = 0;
-	node->child_count = 0;
-}
-
 global_ void change_parent(TNode* new_parent, TNode* node) {
 	//if old parent, remove self from it 
 	if (node->parent) {
@@ -591,7 +561,30 @@ global_ void change_parent(TNode* new_parent, TNode* node) {
 	insert_last(new_parent, node);
 }
 
-
+global_ void remove(TNode* node) {
+	//add children to parent (and remove self from children)
+	for_node(node->first_child) {
+		change_parent(node->parent, it);
+	}
+	
+	//remove self from parent
+	if (node->parent) {
+		if (node->parent->child_count > 1) {
+			if (node == node->parent->first_child) node->parent->first_child = node->next;
+			if (node == node->parent->last_child)  node->parent->last_child = node->prev;
+		}
+		else {
+			Assert(node == node->parent->first_child && node == node->parent->last_child, "if node is the only child node, it should be both the first and last child nodes");
+			node->parent->first_child = 0;
+			node->parent->last_child = 0;
+		}
+		node->parent->child_count--;
+	}
+	node->parent = 0;
+	
+	//remove self horizontally
+	remove_horizontally(node);
+}
 
 //// C/C++ STL allocator //// //TODO rename this to libc allocator (STL is something different)
 global_ void* STLAllocator_Reserve(upt size){void* a = calloc(1,size); Assert(a); return a;}
