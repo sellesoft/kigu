@@ -563,8 +563,10 @@ global_ void change_parent(TNode* new_parent, TNode* node) {
 
 global_ void remove(TNode* node) {
 	//add children to parent (and remove self from children)
-	for_node(node->first_child) {
+	for(TNode* it = node->first_child; it != 0; ) {
+		TNode* next = it->next;
 		change_parent(node->parent, it);
+		it = next;
 	}
 	
 	//remove self from parent
