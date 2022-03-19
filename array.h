@@ -417,6 +417,7 @@ clear(){DPZoneScoped;
 
 template<typename T> inline void array<T>::
 resize(u32 new_count){DPZoneScoped;
+	if(!new_count){ this->~array(); return; } //this may not be the appropriate thing to do here
 	if(new_count > space){
 		space = new_count;
 		data = (T*)allocator->resize(data, space*sizeof(T));
