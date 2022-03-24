@@ -25,6 +25,20 @@ stringf(const char* fmt, ...){
 	return s;
 }
 
+global_ string 
+stringf(Allocator* a, const char* fmt, ...){
+	va_list argptr;
+	va_start(argptr, fmt);
+	string s(a);
+	s.count = vsnprintf(nullptr, 0, fmt, argptr);
+	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
+	s.allocator->commit(s.str, s.count+1);
+	s.space = s.count+1;
+	vsnprintf(s.str, s.count+1, fmt, argptr);
+	va_end(argptr);
+	return s;
+}
+
 ///////////////
 //// @stox ////
 ///////////////
