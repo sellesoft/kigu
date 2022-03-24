@@ -392,6 +392,8 @@ FORCE_INLINE f32  bytesDivisor(upt bytes) { return (bytes > Kilobytes(1) ? bytes
 template<typename T> FORCE_INLINE void Swap(T& a, T& b){T temp = a; a = b; b = temp;}
 template<typename T> FORCE_INLINE T Min(T a, T b){return (a < b) ? a : b;}
 template<typename T> FORCE_INLINE T Max(T a, T b){return (a > b) ? a : b;}
+template<typename T,typename U> FORCE_INLINE T Min(T a, U b){return (a < b) ? a : b;}
+template<typename T,typename U> FORCE_INLINE T Max(T a, U b){return (a > b) ? a : b;}
 template<typename T> FORCE_INLINE T Clamp(T value, T min, T max){return (value < min) ? min : ((value > max) ? max : value);};
 template<typename T,typename U> FORCE_INLINE T Clamp(T value, U min, T max){return (value < min) ? min : ((value > max) ? max : value);}
 template<typename T,typename U> FORCE_INLINE T Clamp(T value, T min, U max){return (value < min) ? min : ((value > max) ? max : value);}
