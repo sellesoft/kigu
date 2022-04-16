@@ -143,11 +143,10 @@ decoded_codepoint_from_wchar(wchar_t* str, u64 max_advance){
 #if COMPILER_CL
 	return decoded_codepoint_from_utf16((u16*)str, max_advance);
 #elif COMPILER_CLANG || COMPILER_GCC
-	return decoded_codepoint_from_utf16((u32*)str, max_advance);
+	return DecodedCodepoint{str[0], 1};
 #else
 #  error "unhandled compiler"
 #endif
-	return result;
 }
 
 global_ u32
