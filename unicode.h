@@ -2,6 +2,7 @@
 Notes:
 str8 is the expected usage type thruout the projects, and as such, has string functions for it.
 strings are null-terminated (ending in '\0') in order for libc functions to work, but we don't use it internally.
+str16 and str32 use big endian UTF encodings
 
 Terminology:
 codepoint:   the value or set of values that represent one unicode character
@@ -22,6 +23,7 @@ Index:
 !ref: https://github.com/Dion-Systems/metadesk/blob/master/source/md.h
 !ref: https://github.com/Dion-Systems/metadesk/blob/master/source/md.c
 !ref: https://unicodebook.readthedocs.io/unicode_encodings.html
+!ref: https://unicode-table.com/
 */
 
 #pragma once
@@ -46,14 +48,14 @@ struct str16{
 	u16* str;
 	s64  count;
 	FORCE_INLINE explicit operator bool(){ return str && count; }
-#define str16_lit(s) str16{(u16*)GLUE(u,s), sizeof(GLUE(u,s))-1}
+#define str16_lit(s) str16{(u16*)GLUE(u,s), (sizeof(GLUE(u,s))/sizeof(u16))-1}
 };
 
 struct str32{
 	u32* str;
 	s64  count;
 	FORCE_INLINE explicit operator bool(){ return str && count; }
-#define str32_lit(s) str32{(u32*)GLUE(U,s), sizeof(GLUE(U,s))-1}
+#define str32_lit(s) str32{(u32*)GLUE(U,s), (sizeof(GLUE(U,s))/sizeof(u32))-1}
 };
 
 
@@ -75,11 +77,12 @@ struct DecodedCodepoint{
 	u32 advance;
 };
 
+//returns the next codepoint and advance from the UTF-8 string `str`
 global_ DecodedCodepoint
 decoded_codepoint_from_utf8(u8* str, u64 max_advance){
 	persist u8 utf8_class[32] = { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,2,2,2,2,3,3,4,5, };
 	
-	DecodedCodepoint result = {MAX_U32, 1};
+	DecodedCodepoint result = {(u32)-1, 1};
 	u8 byte = str[0];
 	u8 byte_class = utf8_class[byte >> 3];
 	switch(byte_class){
@@ -90,8 +93,8 @@ decoded_codepoint_from_utf8(u8* str, u64 max_advance){
 			if(2 <= max_advance){
 				u8 next_byte = str[1];
 				if(utf8_class[next_byte >> 3] == 0){
-					result.codepoint  = (byte & unicode_bitmask5) << 6;
-					result.codepoint |= next_byte & unicode_bitmask6;
+					result.codepoint  = (     byte & unicode_bitmask5) << 6;
+					result.codepoint |= (next_byte & unicode_bitmask6);
 					result.advance = 2;
 				}
 			}
@@ -101,9 +104,9 @@ decoded_codepoint_from_utf8(u8* str, u64 max_advance){
 				u8 next_byte[2] = {str[1], str[2]};
 				if(   (utf8_class[next_byte[0] >> 3] == 0)
 				   && (utf8_class[next_byte[1] >> 3] == 0)){
-					result.codepoint  = (byte & unicode_bitmask4) << 12;
+					result.codepoint  = (        byte & unicode_bitmask4) << 12;
 					result.codepoint |= (next_byte[0] & unicode_bitmask6) << 6;
-					result.codepoint |=  next_byte[1] & unicode_bitmask6;
+					result.codepoint |= (next_byte[1] & unicode_bitmask6);
 					result.advance = 3;
 				}
 			}
@@ -114,7 +117,7 @@ decoded_codepoint_from_utf8(u8* str, u64 max_advance){
 				if(   (utf8_class[next_byte[0] >> 3] == 0)
 				   && (utf8_class[next_byte[1] >> 3] == 0)
 				   && (utf8_class[next_byte[2] >> 3] == 0)){
-					result.codepoint  = (byte & unicode_bitmask3) << 18;
+					result.codepoint  = (        byte & unicode_bitmask3) << 18;
 					result.codepoint |= (next_byte[0] & unicode_bitmask6) << 12;
 					result.codepoint |= (next_byte[1] & unicode_bitmask6) << 6;
 					result.codepoint |=  next_byte[2] & unicode_bitmask6;
@@ -126,18 +129,20 @@ decoded_codepoint_from_utf8(u8* str, u64 max_advance){
 	return result;
 }
 
+//returns the next codepoint and advance from the UTF-16 string `str`
 global_ DecodedCodepoint
 decoded_codepoint_from_utf16(u16* str, u64 max_advance){
-	DecodedCodepoint result = {MAX_U32, 1};
+	DecodedCodepoint result = {(u32)-1, 1};
 	result.codepoint = str[0];
 	result.advance = 1;
 	if((1 < max_advance) && (0xD800 <= str[0]) && (str[0] < 0xDC00) && (0xDC00 <= str[1]) && (str[1] < 0xE000)){
-        result.codepoint = ((str[0] - 0xD800) << 10) | (str[1] - 0xDC00);
+        result.codepoint = ((str[0] - 0xD800) << 10) | (str[1] - 0xDC00) + 0x10000;
         result.advance = 2;
     }
 	return result;
 }
 
+//returns the next codepoint and advance from the wchar_t string `str`
 global_ DecodedCodepoint
 decoded_codepoint_from_wchar(wchar_t* str, u64 max_advance){
 #if COMPILER_CL
@@ -149,50 +154,75 @@ decoded_codepoint_from_wchar(wchar_t* str, u64 max_advance){
 #endif
 }
 
+//fills the u8 string `out` with the Unicode `codepoint`; returns the advance in number of u8, -1 if invalid codepoint
 global_ u32
 utf8_from_codepoint(u8* out, u32 codepoint){
 #define unicode_bit8 0x80
-	u32 advance = 0;
+	u32 advance = 1;
 	if      (codepoint <= 0x7F){
-		out[0] = u8(codepoint);
-		advance = 1;
+		if(out){
+			out[0] = u8(codepoint);
+		}
 	}else if(codepoint <= 0x7FF){
-		out[0] = (unicode_bitmask2 << 6) | ((codepoint >> 6) & unicode_bitmask5);
-		out[1] = unicode_bit8 | (codepoint & unicode_bitmask6);
 		advance = 2;
+		if(out){
+			out[0] = (unicode_bitmask2 << 6) | ((codepoint >> 6 ) & unicode_bitmask5);
+			out[1] = unicode_bit8 | (codepoint & unicode_bitmask6);
+		}
 	}else if(codepoint <= 0xFFFF){
-		out[0] = (unicode_bitmask3 << 5) | ((codepoint >> 12) & unicode_bitmask4);
-		out[1] = unicode_bit8 | ((codepoint >> 6) & unicode_bitmask6);
-		out[2] = unicode_bit8 | ( codepoint       & unicode_bitmask6);
 		advance = 3;
+		if(out){
+			out[0] = (unicode_bitmask3 << 5) | ((codepoint >> 12) & unicode_bitmask4);
+			out[1] = unicode_bit8 | ((codepoint >> 6) & unicode_bitmask6);
+			out[2] = unicode_bit8 | ( codepoint       & unicode_bitmask6);
+		}
 	}else if(codepoint <= 0x10FFFF){
-		out[0] = (unicode_bitmask4 << 3) | ((codepoint >> 18) & unicode_bitmask3);
-		out[1] = unicode_bit8 | ((codepoint >> 12) & unicode_bitmask6);
-		out[2] = unicode_bit8 | ((codepoint >>  6) & unicode_bitmask6);
-		out[3] = unicode_bit8 | ( codepoint        & unicode_bitmask6);
 		advance = 4;
+		if(out){
+			out[0] = (unicode_bitmask4 << 4) | ((codepoint >> 18) & unicode_bitmask3);
+			out[1] = unicode_bit8 | ((codepoint >> 12) & unicode_bitmask6);
+			out[2] = unicode_bit8 | ((codepoint >>  6) & unicode_bitmask6);
+			out[3] = unicode_bit8 | ( codepoint        & unicode_bitmask6);
+		}
 	}else{
-		out[0] = '?';
-		advance = 1;
+		advance = -1;
 	}
 	return advance;
 #undef unicode_bit8
 }
 
+//fills the u16 string `out` with the Unicode `codepoint`; returns the number of u16 advance, -1 if invalid codepoint
 global_ u32
 utf16_from_codepoint(u16* out, u32 codepoint){
 	u32 advance = 1;
-	if(codepoint == MAX_U32){
-		out[0] = u16('?');
-	}else if(codepoint < 0x10000){
-		out[0] = u16(codepoint);
-	}else{
-		u64 v = codepoint - 0x10000;
-		out[0] = 0xD800 + (v >> 10);
-		out[1] = 0xDC00 + (v & unicode_bitmask10);
+	if(codepoint < 0x10000){
+		if(out){
+			out[0] = u16(codepoint);
+		}
+	}else if(codepoint <= 0x10FFFF){
 		advance = 2;
+		if(out){
+			u64 v = codepoint - 0x10000;
+			out[0] = 0xD800 + (v >> 10);
+			out[1] = 0xDC00 + (v & unicode_bitmask10);
+		}
+	}else{
+		advance = -1;
 	}
 	return advance;
+}
+
+//fills the wchar_t string `out` with the Unicode `codepoint`; returns the number of wchar_t advance, -1 if invalid codepoint
+global_ u32
+wchar_from_codepoint(wchar_t* out, u32 codepoint){
+#if COMPILER_CL
+	return utf16_from_codepoint((u16*)out, codepoint);
+#elif COMPILER_CLANG || COMPILER_GCC
+	out[0] = codepoint;
+	return 1;
+#else
+#  error "unhandled compiler"
+#endif
 }
 
 #undef unicode_bitmask1
@@ -246,7 +276,7 @@ str8_from_str32(str32 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 }
 
 global_ str8
-str8_from_wchar(wchar_t* in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){ //nocheckin !TestMe
+str8_from_wchar(wchar_t* in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 	s64 in_count = 0;
 	for(wchar_t* a = in; *a != L'\0'; ++a) ++in_count;
 #if COMPILER_CL
@@ -298,7 +328,7 @@ str32_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 }
 
 global_ wchar_t*
-wchar_from_str8(str8 in, s64* out_count = 0, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){ //nocheckin !TestMe
+wchar_from_str8(str8 in, s64* out_count = 0, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 #if COMPILER_CL
 	str16 out = str16_from_str8(in, allocator);
 	if(out_count) *out_count = out.count;
@@ -317,7 +347,7 @@ wchar_from_str8(str8 in, s64* out_count = 0, Allocator* allocator = KIGU_UNICODE
 //// @str8_advancing
 //advances the utf8 string `a` by one codepoint and returns that codepoint
 global_ DecodedCodepoint
-str8_advance(str8* a){ //nocheckin !TestMe
+str8_advance(str8* a){
 	DecodedCodepoint decoded{};
 	if(a && *a){
 		decoded = decoded_codepoint_from_utf8(a->str, 4);
@@ -329,9 +359,9 @@ str8_advance(str8* a){ //nocheckin !TestMe
 
 //advances the utf8 string `a` by `n` codepoints and returns the last codepoint (n-1 starting from 0)
 global_ DecodedCodepoint
-str8_nadvance(str8* a, u64 n){ //nocheckin !TestMe
+str8_nadvance(str8* a, u64 n){
 	DecodedCodepoint decoded{};
-	if(a){
+	if(a && n){
 		while(*a && n--){
 			decoded = decoded_codepoint_from_utf8(a->str, 4);
 			a->str   += decoded.advance;
@@ -343,7 +373,7 @@ str8_nadvance(str8* a, u64 n){ //nocheckin !TestMe
 
 //advances the utf8 string `a` until the codepoint `c` is encountered and returns the last codepoint
 global_ void
-str8_advance_until(str8* a, u32 c){ //nocheckin !TestMe
+str8_advance_until(str8* a, u32 c){
 	if(a){
 		while(*a){
 			DecodedCodepoint decoded = decoded_codepoint_from_utf8(a->str, 4);
@@ -356,7 +386,7 @@ str8_advance_until(str8* a, u32 c){ //nocheckin !TestMe
 
 //advances the utf8 string `a` while the codepoint `c` is encountered and returns the last codepoint
 global_ void
-str8_advance_while(str8* a, u32 c){ //nocheckin !TestMe
+str8_advance_while(str8* a, u32 c){
 	if(a){
 		while(*a){
 			DecodedCodepoint decoded = decoded_codepoint_from_utf8(a->str, 4);
