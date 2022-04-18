@@ -2,13 +2,14 @@
 Notes:
 str8 is the expected usage type thruout the projects, and as such, has string functions for it.
 strings are null-terminated (ending in '\0') in order for libc functions to work, but we don't use it internally.
-str16 and str32 use big endian UTF encodings
+str16 and str32 use big endian UTF encodings.
 
 Terminology:
-codepoint:   the value or set of values that represent one unicode character
-advance:     the number of values of the underlying type (u8 for utf8, u16 for utf16, etc) a codepoint takes up to represent
-fixed-width: the number of values equals the number of characters and the advance is always one (ASCII, UCS2, UTF32)
-multibyte:   the number of values depends on the character's codepoint and the advance can vary
+codepoint       the value or set of values that represent one unicode character
+advance         the number of values of the underlying type (u8 for UTF8, u16 for UTF16, etc) a codepoint takes up to represent
+fixed-width     the number of values equals the number of characters and the advance is always one (ASCII, UCS2, UTF32)
+multibyte       the number of values depends on the character's codepoint and the advance can vary (UTF8, UTF16)
+surrogate pair  in UTF16, codepoints above U+010000 require two 16bit code units called surrogate pairs
 
 Index:
 @utf_types
@@ -403,13 +404,13 @@ str8_advance_while(str8* a, u32 c){
 //returns the `n`th codepoint (starting from 0) in the utf8 string `a`
 //returns the last codepoint of the string if `n` is greater than the length of the string
 global_ inline u32
-str8_index(str8 a, u64 n){ //nocheckin !TestMe
+str8_index(str8 a, u64 n){
 	return str8_nadvance(&a, n+1).codepoint;
 }
 
 //returns the number of codepoints in the unicode string `a`
 global_ inline s64
-str8_length(str8 a){ //nocheckin !TestMe
+str8_length(str8 a){
 	s64 result = 0;
 	while(str8_advance(&a).codepoint) result++;
 	return result;
@@ -423,7 +424,8 @@ str8_length(str8 a){ //nocheckin !TestMe
 //returns <0 if the first character that doesn't match has a lower value codepoint in `a` than in `b`
 //returns >0 if the first character that doesn't match has a lower value codepoint in `b` than in `a`
 global_ s64
-str8_compare(str8 a, str8 b){ //nocheckin !TestMe
+str8_compare(str8 a, str8 b){
+	if(a.str == b.str && a.count == b.count) return 0;
 	s64 diff = 0;
 	while(diff == 0 && (a || b)) diff = (s64)str8_advance(&a).codepoint - (s64)str8_advance(&b).codepoint;
 	return diff;
@@ -434,7 +436,8 @@ str8_compare(str8 a, str8 b){ //nocheckin !TestMe
 //returns <0 if the first character that doesn't match has a lower value codepoint in `a` than in `b`
 //returns >0 if the first character that doesn't match has a lower value codepoint in `b` than in `a`
 global_ s64
-str8_ncompare(str8 a, str8 b, u64 n){ //nocheckin !TestMe
+str8_ncompare(str8 a, str8 b, u64 n){
+	if(a.str == b.str && a.count == b.count) return 0;
 	s64 diff = 0;
 	while(diff == 0 && n-- && (a || b)) diff = (s64)str8_advance(&a).codepoint - (s64)str8_advance(&b).codepoint;
 	return diff;
@@ -442,13 +445,13 @@ str8_ncompare(str8 a, str8 b, u64 n){ //nocheckin !TestMe
 
 //returns true if the utf8 strings `a` and `b` are equal for all codepoints of the strings
 global_ inline b32
-str8_equal(str8 a, str8 b){ //nocheckin !TestMe
+str8_equal(str8 a, str8 b){
 	return a.count == b.count && str8_compare(a, b) == 0;
 }
 
 //returns true if the utf8 strings `a` and `b` are equal for `n` codepoints
 global_ inline b32
-str8_nequal(str8 a, str8 b, u64 n){ //nocheckin !TestMe
+str8_nequal(str8 a, str8 b, u64 n){
 	return str8_ncompare(a, b, n) == 0;
 }
 
@@ -457,22 +460,26 @@ str8_nequal(str8 a, str8 b, u64 n){ //nocheckin !TestMe
 //// @str8_searching
 //returns true if utf8 string `a` begins with utf8 string `b`
 global_ inline b32
-str8_begins_with(str8 a, str8 b){ //nocheckin !TestMe
-	return a.count >= b.count && str8_compare(a, b) == 0;
+str8_begins_with(str8 a, str8 b){
+	if(a.str == b.str && a.count == b.count) return true;
+	return a.count >= b.count && str8_ncompare(a, b, str8_length(b)) == 0;
 }
 
 //returns true if utf8 string `a` ends with utf8 string `b`
 global_ inline b32
-str8_ends_with(str8 a, str8 b){ //nocheckin !TestMe
+str8_ends_with(str8 a, str8 b){
+	if(a.str == b.str && a.count == b.count) return true;
 	return a.count >= b.count && str8_compare(str8{a.str+a.count-b.count,b.count}, b) == 0;
 }
 
 //returns true if utf8 string `a` contains utf8 string `b`
 global_ b32
-str8_contains(str8 a, str8 b){ //nocheckin !TestMe
+str8_contains(str8 a, str8 b){
+	if(a.str == b.str && a.count == b.count) return true;
+	u32 b_len = str8_length(b);
 	while(a){
 		if(b.count > a.count) return false;
-		if(str8_compare(a, b) == 0) return true;
+		if(str8_ncompare(a, b, b_len) == 0) return true;
 		str8_advance(&a);
 	}
 	return false;
@@ -483,21 +490,21 @@ str8_contains(str8 a, str8 b){ //nocheckin !TestMe
 //// @str8_slicing
 //returns a slice of the utf8 string `a` starting after the first character until the end of the string
 global_ inline str8
-str8_eat_one(str8 a){ //nocheckin !TestMe
+str8_eat_one(str8 a){
 	str8_advance(&a);
 	return a;
 }
 
 //returns a slice of the utf8 string `a` starting after the `n`th character from the beginning until the end of the string
 global_ inline str8
-str8_eat_count(str8 a, u64 n){ //nocheckin !TestMe
+str8_eat_count(str8 a, u64 n){
 	str8_nadvance(&a, n);
 	return a;
 }
 
 //returns a slice of the utf8 string `a` starting at the first occurance of the codepoint `c` until the end of the string
 global_ str8
-str8_eat_until(str8 a, u32 c){ //nocheckin !TestMe
+str8_eat_until(str8 a, u32 c){
 	while(a){
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(a.str, 4);
 		if(decoded.codepoint == c) break;
@@ -509,7 +516,7 @@ str8_eat_until(str8 a, u32 c){ //nocheckin !TestMe
 
 //returns a slice of the utf8 string `a` starting at the first occurance of a codepoint that is not the codepoint `c` until the end of the string
 global_ str8
-str8_eat_while(str8 a, u32 c){ //nocheckin !TestMe
+str8_eat_while(str8 a, u32 c){
 	while(a){
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(a.str, 4);
 		if(decoded.codepoint != c) break;
