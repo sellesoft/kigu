@@ -54,14 +54,14 @@ struct DecodedCodepoint{
 ///////////////////
 //// @decoding ////
 ///////////////////
-#define unicode_bitmask1 0x01
-#define unicode_bitmask2 0x03
-#define unicode_bitmask3 0x07
-#define unicode_bitmask4 0x0F
-#define unicode_bitmask5 0x1F
-#define unicode_bitmask6 0x3F
-#define unicode_bitmask7 0x7F
-#define unicode_bitmask8 0xFF
+#define unicode_bitmask1  0x01
+#define unicode_bitmask2  0x03
+#define unicode_bitmask3  0x07
+#define unicode_bitmask4  0x0F
+#define unicode_bitmask5  0x1F
+#define unicode_bitmask6  0x3F
+#define unicode_bitmask7  0x7F
+#define unicode_bitmask8  0xFF
 #define unicode_bitmask9  0x01FF
 #define unicode_bitmask10 0x03FF
 
