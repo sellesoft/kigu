@@ -1,6 +1,17 @@
 #include <typeinfo>
 #include <cstdio>
-#include <ctime>
+#include <chrono>
+
+#define TEST_KIGU_TIMER_START(name) std::chrono::time_point<std::chrono::high_resolution_clock> name = std::chrono::high_resolution_clock::now()
+#define TEST_KIGU_TIMER_RESET(name) name = std::chrono::high_resolution_clock::now()
+#define TEST_KIGU_TIMER_END(name) std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - name).count()
+
+#define TEST_KIGU_PRINT_VERBOSE true
+#if TEST_KIGU_PRINT_VERBOSE
+#define print_verbose(fmt,...) printf(fmt,__VA_ARGS__)
+#else
+#  define print_verbose(fmt,...) (void)0
+#endif
 
 #define KIGU_ARRAY_GROWTH_FACTOR 2
 #define KIGU_ARRAY_SPACE_ALIGNMENT 4
@@ -381,51 +392,42 @@ local void TEST_kigu_array(){
 
 #include "array_utils.h"
 local void TEST_kigu_array_utils(){
-#define PRINT_ARRAY_SPEEDS true
-	TIMER_START(timer);
+	TEST_KIGU_TIMER_START(timer);
 	
 	//bubble sort
 	srand(time(0));
 	array<s32> array1(1024);
 	forI(1024) array1.add(rand() % 1024);
-	TIMER_RESET(timer);
+	TEST_KIGU_TIMER_RESET(timer);
 	bubble_sort(array1, [](s32 a, s32 b){return a < b;});
-#if PRINT_ARRAY_SPEEDS
-	printf("[KIGU-TEST] bubble_sort() took %fms", TIMER_END(timer));
-#endif
+	print_verbose("[KIGU-TEST] bubble_sort() took %fms\n", TEST_KIGU_TIMER_END(timer));
 	forI(1024){ if(i){ AssertAlways(array1[i] <= array1[i-1]); } }
-	printf("[KIGU-TEST] PASSED: array_utils/bubble_sort()\n");
+	print_verbose("[KIGU-TEST] PASSED: array_utils/bubble_sort\n");
 	
 	srand(time(0));
 	array1.clear();
 	forI(1024) array1.add(rand() % 1024);
-	TIMER_RESET(timer);
+	TEST_KIGU_TIMER_RESET(timer);
 	bubble_sort_low_to_high(array1);
-#if PRINT_ARRAY_SPEEDS
-	printf("[KIGU-TEST] bubble_sort_low_to_high() took %fms", TIMER_END(timer));
-#endif
+	print_verbose("[KIGU-TEST] bubble_sort_low_to_high() took %fms\n", TEST_KIGU_TIMER_END(timer));
 	forI(1024){ if(i){ AssertAlways(array1[i] >= array1[i-1]); } }
-	printf("[KIGU-TEST] PASSED: array_utils/bubble_sort_low_to_high()\n");
+	print_verbose("[KIGU-TEST] PASSED: array_utils/bubble_sort_low_to_high\n");
 	
 	srand(time(0));
 	array1.clear();
 	forI(1024) array1.add(rand() % 1024);
-	TIMER_RESET(timer);
+	TEST_KIGU_TIMER_RESET(timer);
 	bubble_sort_high_to_low(array1);
-#if PRINT_ARRAY_SPEEDS
-	printf("[KIGU-TEST] bubble_sort_high_to_low() took %fms", TIMER_END(timer));
-#endif
+	print_verbose("[KIGU-TEST] bubble_sort_high_to_low() took %fms\n", TEST_KIGU_TIMER_END(timer));
 	forI(1024){ if(i){ AssertAlways(array1[i] <= array1[i-1]); } }
-	printf("[KIGU-TEST] PASSED: array_utils/bubble_sort_high_to_low()\n");
+	print_verbose("[KIGU-TEST] PASSED: array_utils/bubble_sort_high_to_low\n");
 	
 	//reverse
-	TIMER_RESET(timer);
+	TEST_KIGU_TIMER_RESET(timer);
 	reverse(array1);
-#if PRINT_ARRAY_SPEEDS
-	printf("[KIGU-TEST] reverse() took %fms", TIMER_END(timer));
-#endif
+	print_verbose("[KIGU-TEST] reverse() took %fms\n", TEST_KIGU_TIMER_END(timer));
 	forI(1024){ if(i){ AssertAlways(array1[i] >= array1[i-1]); } }
-	printf("[KIGU-TEST] PASSED: array_utils/reverse()\n");
+	print_verbose("[KIGU-TEST] PASSED: array_utils/reverse\n");
 	
 	//binary search
 	//TODO test binary search comparator
@@ -437,7 +439,7 @@ local void TEST_kigu_array_utils(){
 	AssertAlways(binary_search_low_to_high(array1, MAX_S32) != -1);
 	AssertAlways(binary_search_low_to_high(array1, MIN_S32) != -1);
 	AssertAlways(binary_search_low_to_high(array1, 0) != -1);
-	printf("[KIGU-TEST] PASSED: array_utils/binary_search_low_to_high()\n");
+	print_verbose("[KIGU-TEST] PASSED: array_utils/binary_search_low_to_high\n");
 	
 	printf("[KIGU-TEST] PASSED: array_utils\n");
 }
@@ -845,103 +847,400 @@ local void TEST_kigu_pair(){
 	printf("[KIGU-TEST] TODO:   pair\n");
 }
 
+#include <io.h>
+#include <fcntl.h>
 #include "unicode.h"
 local void TEST_kigu_unicode(){
-#define UNICODE_BASIC_LATIN                   "! \" # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z [ \ ] ^ _ ` a b c d e f g h i j k l m n o p q r s t u v w x y z { | } ~"
-#define UNICODE_LATIN_SUPPLEMENT              "¡ ¢ £ ¤ ¥ ¦ § ¨ © ª « ¬ ­ ® ¯ ° ± ² ³ ´ µ ¶ · ¸ ¹ º » ¼ ½ ¾ ¿ À Á Â Ã Ä Å Æ Ç È É Ê Ë Ì Í Î Ï Ð Ñ Ò Ó Ô Õ Ö × Ø Ù Ú Û Ü Ý Þ ß à á â ã ä å æ ç è é ê ë ì í î ï ð ñ ò ó ô õ ö ÷ ø ù ú û ü ý þ ÿ"
-#define UNICODE_LATIN_EXTENDED_A              "Ā ā Ă ă Ą ą Ć ć Ĉ ĉ Ċ ċ Č č Ď ď Đ đ Ē ē Ĕ ĕ Ė ė Ę ę Ě ě Ĝ ĝ Ğ ğ Ġ ġ Ģ ģ Ĥ ĥ Ħ ħ Ĩ ĩ Ī ī Ĭ ĭ Į į İ ı Ĳ ĳ Ĵ ĵ Ķ ķ ĸ Ĺ ĺ Ļ ļ Ľ ľ Ŀ ŀ Ł ł Ń ń Ņ ņ Ň ň ŉ Ŋ ŋ Ō ō Ŏ ŏ Ő ő Œ œ Ŕ ŕ Ŗ ŗ Ř ř Ś ś Ŝ ŝ Ş ş Š š Ţ ţ Ť ť Ŧ ŧ Ũ ũ Ū ū Ŭ ŭ Ů ů Ű ű Ų ų Ŵ ŵ Ŷ ŷ Ÿ Ź ź Ż ż Ž ž ſ"
-#define UNICODE_LATIN_EXTENDED_B              "ƀ Ɓ Ƃ ƃ Ƅ ƅ Ɔ Ƈ ƈ Ɖ Ɗ Ƌ ƌ ƍ Ǝ Ə Ɛ Ƒ ƒ Ɠ Ɣ ƕ Ɩ Ɨ Ƙ ƙ ƚ ƛ Ɯ Ɲ ƞ Ɵ Ơ ơ Ƣ ƣ Ƥ ƥ Ʀ Ƨ ƨ Ʃ ƪ ƫ Ƭ ƭ Ʈ Ư ư Ʊ Ʋ Ƴ ƴ Ƶ ƶ Ʒ Ƹ ƹ ƺ ƻ Ƽ ƽ ƾ ƿ ǀ ǁ ǂ ǃ Ǆ ǅ ǆ Ǉ ǈ ǉ Ǌ ǋ ǌ Ǎ ǎ Ǐ ǐ Ǒ ǒ Ǔ ǔ Ǖ ǖ Ǘ ǘ Ǚ ǚ Ǜ ǜ ǝ Ǟ ǟ Ǡ ǡ Ǣ ǣ Ǥ ǥ Ǧ ǧ Ǩ ǩ Ǫ ǫ Ǭ ǭ Ǯ ǯ ǰ Ǳ ǲ ǳ Ǵ ǵ Ǻ ǻ Ǽ ǽ Ǿ ǿ Ȁ ȁ Ȃ ȃ"
-#define UNICODE_IPA_EXTENSIONS                "ɐ ɑ ɒ ɓ ɔ ɕ ɖ ɗ ɘ ə ɚ ɛ ɜ ɝ ɞ ɟ ɠ ɡ ɢ ɣ ɤ ɥ ɦ ɧ ɨ ɩ ɪ ɫ ɬ ɭ ɮ ɯ ɰ ɱ ɲ ɳ ɴ ɵ ɶ ɷ ɸ ɹ ɺ ɻ ɼ ɽ ɾ ɿ ʀ ʁ ʂ ʃ ʄ ʅ ʆ ʇ ʈ ʉ ʊ ʋ ʌ ʍ ʎ ʏ ʐ ʑ ʒ ʓ ʔ ʕ ʖ ʗ ʘ ʙ ʚ ʛ ʜ ʝ ʞ ʟ ʠ ʡ ʢ ʣ ʤ ʥ ʦ ʧ ʨ"
-#define UNICODE_SPACING_MODIFIERS             "ʰ ʱ ʲ ʳ ʴ ʵ ʶ ʷ ʸ ʹ ʺ ʻ ʼ ʽ ʾ ʿ ˀ ˁ ˂ ˃ ˄ ˅ ˆ ˇ ˈ ˉ ˊ ˋ ˌ ˍ ˎ ˏ ː ˑ ˒ ˓ ˔ ˕ ˖ ˗ ˘ ˙ ˚ ˛ ˜ ˝ ˞ ˠ ˡ ˢ ˣ ˤ ˥ ˦ ˧ ˨ ˩"
-#define UNICODE_DIACRITICAL_MARKS             "̀ ́ ̂ ̃ ̄ ̅ ̆ ̇ ̈ ̉ ̊ ̋ ̌ ̍ ̎ ̏ ̐ ̑ ̒ ̓ ̔ ̕ ̖ ̗ ̘ ̙ ̚ ̛ ̜ ̝ ̞ ̟ ̠ ̡ ̢ ̣ ̤ ̥ ̦ ̧ ̨ ̩ ̪ ̫ ̬ ̭ ̮ ̯ ̰ ̱ ̲ ̳ ̴ ̵ ̶ ̷ ̸ ̹ ̺ ̻ ̼ ̽ ̾ ̿ ̀ ́ ͂ ̓ ̈́ ͅ ͠ ͡"
-#define UNICODE_GREEK                         "ʹ ͵ ͺ ; ΄ ΅ Ά · Έ Ή Ί Ό Ύ Ώ ΐ Α Β Γ Δ Ε Ζ Η Θ Ι Κ Λ Μ Ν Ξ Ο Π Ρ Σ Τ Υ Φ Χ Ψ Ω Ϊ Ϋ ά έ ή ί ΰ α β γ δ ε ζ η θ ι κ λ μ ν ξ ο π ρ ς σ τ υ φ χ ψ ω ϊ ϋ ό ύ ώ ϐ ϑ ϒ ϓ ϔ ϕ ϖ Ϛ Ϝ Ϟ Ϡ Ϣ ϣ Ϥ ϥ Ϧ ϧ Ϩ ϩ Ϫ ϫ Ϭ ϭ Ϯ ϯ ϰ ϱ ϲ ϳ"
-#define UNICODE_CYRILLIC                      "Ё Ђ Ѓ Є Ѕ І Ї Ј Љ Њ Ћ Ќ Ў Џ А Б В Г Д Е Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я а б в г д е ж з и й к л м н о п р с т у ф х ц ч ш щ ъ ы ь э ю я ё ђ ѓ є ѕ і ї ј љ њ ћ ќ ў џ Ѡ ѡ Ѣ ѣ Ѥ ѥ Ѧ ѧ Ѩ ѩ Ѫ ѫ Ѭ ѭ Ѯ ѯ Ѱ ѱ Ѳ ѳ Ѵ ѵ Ѷ ѷ Ѹ ѹ Ѻ ѻ Ѽ ѽ Ѿ ѿ Ҁ ҁ ҂ ҃ "
-#define UNICODE_ARMENIAN                      "Ա Բ Գ Դ Ե Զ Է Ը Թ Ժ Ի Լ Խ Ծ Կ Հ Ձ Ղ Ճ Մ Յ Ն Շ Ո Չ Պ Ջ Ռ Ս Վ Տ Ր Ց Ւ Փ Ք Օ Ֆ ՙ ՚ ՛ ՜ ՝ ՞ ՟ ա բ գ դ ե զ է ը թ ժ ի լ խ ծ կ հ ձ ղ ճ մ յ ն շ ո չ պ ջ ռ ս վ տ ր ց ւ փ ք օ ֆ և ։"
-#define UNICODE_HEBREW                        "֑ ֒ ֓ ֔ ֕ ֖ ֗ ֘ ֙ ֚ ֛ ֜ ֝ ֞ ֟ ֠ ֡ ֣ ֤ ֥ ֦ ֧ ֨ ֩ ֪ ֫ ֬ ֭ ֮ ֯ ְ ֱ ֲ ֳ ִ ֵ ֶ ַ ָ ֹ ֻ ּ ֽ ־ ֿ ׀ ׁ ׂ ׃ ׄ א ב ג ד ה ו ז ח ט י ך כ ל ם מ ן נ ס ע ף פ ץ צ ק ר ש ת װ ױ ײ ׳ ״"
-#define UNICODE_ARABIC                        "، ؛ ؟ ء آ أ ؤ إ ئ ا ب ة ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ـ ف ق ك ل م ن ه و ى ي ً ٌ ٍ َ ُ ِ ّ ْ ٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩ ٪ ٫ ٬ ٭ ٰ ٱ ٲ ٳ ٴ ٵ ٶ ٷ ٸ ٹ ٺ ٻ ټ ٽ پ ٿ ڀ ځ ڂ ڃ ڄ څ چ ڇ ڈ ډ ڊ ڋ ڌ ڍ ڎ ڏ ڐ ڑ ڒ ړ ڔ ڕ ږ ڗ ژ ڙ ښ ڛ ڜ ڝ ڞ ڟ ڠ ڡ ڢ ڣ ڤ ڥ ڦ ڧ ڨ ک ڪ ګ ڬ ڭ ڮ گ ڰ ڱ"
-#define UNICODE_DEVANAGARI                    "ँ ं ः अ आ इ ई उ ऊ ऋ ऌ ऍ ऎ ए ऐ ऑ ऒ ओ औ क ख ग घ ङ च छ ज झ ञ ट ठ ड ढ ण त थ द ध न ऩ प फ ब भ म य र ऱ ल ळ ऴ व श ष स ह ़ ऽ ा ि ी ु ू ृ ॄ ॅ ॆ े ै ॉ ॊ ो ौ ् ॐ ॑ ॒ ॓ ॔ क़ ख़ ग़ ज़ ड़ ढ़ फ़ य़ ॠ ॡ ॢ ॣ । ॥ ० १ २ ३ ४ ५ ६ ७ ८ ९ ॰"
-#define UNICODE_BENGALI                       "ঁ ং ঃ অ আ ই ঈ উ ঊ ঋ ঌ এ ঐ ও ঔ ক খ গ ঘ ঙ চ ছ জ ঝ ঞ ট ঠ ড ঢ ণ ত থ দ ধ ন প ফ ব ভ ম য র ল শ ষ স হ ় া ি ী ু ূ ৃ ৄ ে ৈ ো ৌ ্ ৗ ড় ঢ় য় ৠ ৡ ৢ ৣ ০ ১ ২ ৩ ৪ ৫ ৬ ৭ ৮ ৯ ৰ ৱ ৲ ৳ ৴ ৵ ৶ ৷ ৸ ৹ ৺"
-#define UNICODE_GURMUKHHI                     "ਂ ਅ ਆ ਇ ਈ ਉ ਊ ਏ ਐ ਓ ਔ ਕ ਖ ਗ ਘ ਙ ਚ ਛ ਜ ਝ ਞ ਟ ਠ ਡ ਢ ਣ ਤ ਥ ਦ ਧ ਨ ਪ ਫ ਬ ਭ ਮ ਯ ਰ ਲ ਲ਼ ਵ ਸ਼ ਸ ਹ ਼ ਾ ਿ ੀ ੁ ੂ ੇ ੈ ੋ ੌ ੍ ਖ਼ ਗ਼ ਜ਼ ੜ ਫ਼ ੦ ੧ ੨ ੩ ੪ ੫ ੬ ੭ ੮ ੯ ੰ ੱ ੲ ੳ ੴ"
-#define UNICODE_GUJARATI                      "ઁ ં ઃ અ આ ઇ ઈ ઉ ઊ ઋ ઍ એ ઐ ઑ ઓ ઔ ક ખ ગ ઘ ઙ ચ છ જ ઝ ઞ ટ ઠ ડ ઢ ણ ત થ દ ધ ન પ ફ બ ભ મ ય ર લ ળ વ શ ષ સ હ ઼ ઽ ા િ ી ુ ૂ ૃ ૄ ૅ ે ૈ ૉ ો ૌ ્ ૐ ૠ ૦ ૧ ૨ ૩ ૪ ૫ ૬ ૭ ૮ ૯"
-#define UNICODE_ORIYA                         "ଁ ଂ ଃ ଅ ଆ ଇ ଈ ଉ ଊ ଋ ଌ ଏ ଐ ଓ ଔ କ ଖ ଗ ଘ ଙ ଚ ଛ ଜ ଝ ଞ ଟ ଠ ଡ ଢ ଣ ତ ଥ ଦ ଧ ନ ପ ଫ ବ ଭ ମ ଯ ର ଲ ଳ ଶ ଷ ସ ହ ଼ ଽ ା ି ୀ ୁ ୂ ୃ େ ୈ ୋ ୌ ୍ ୖ ୗ ଡ଼ ଢ଼ ୟ ୠ ୡ ୦ ୧ ୨ ୩ ୪ ୫ ୬ ୭ ୮ ୯ ୰"
-#define UNICODE_TAMIL                         "ஂ ஃ அ ஆ இ ஈ உ ஊ எ ஏ ஐ ஒ ஓ ஔ க ங ச ஜ ஞ ட ண த ந ன ப ம ய ர ற ல ள ழ வ ஷ ஸ ஹ ா ி ீ ு ூ ெ ே ை ொ ோ ௌ ் ௗ ௧ ௨ ௩ ௪ ௫ ௬ ௭ ௮ ௯ ௰ ௱ ௲"
-#define UNICODE_TELUGU                        "ఁ ం ః అ ఆ ఇ ఈ ఉ ఊ ఋ ఌ ఎ ఏ ఐ ఒ ఓ ఔ క ఖ గ ఘ ఙ చ ఛ జ ఝ ఞ ట ఠ డ ఢ ణ త థ ద ధ న ప ఫ బ భ మ య ర ఱ ల ళ వ శ ష స హ ా ి ీ ు ూ ృ ౄ ె ే ై ొ ో ౌ ్ ౕ ౖ ౠ ౡ ౦ ౧ ౨ ౩ ౪ ౫ ౬ ౭ ౮ ౯"
-#define UNICODE_KANNADA                       "ಂ ಃ ಅ ಆ ಇ ಈ ಉ ಊ ಋ ಌ ಎ ಏ ಐ ಒ ಓ ಔ ಕ ಖ ಗ ಘ ಙ ಚ ಛ ಜ ಝ ಞ ಟ ಠ ಡ ಢ ಣ ತ ಥ ದ ಧ ನ ಪ ಫ ಬ ಭ ಮ ಯ ರ ಱ ಲ ಳ ವ ಶ ಷ ಸ ಹ ಾ ಿ ೀ ು ೂ ೃ ೄ ೆ ೇ ೈ ೊ ೋ ೌ ್ ೕ ೖ ೞ ೠ ೡ ೦ ೧ ೨ ೩ ೪ ೫ ೬ ೭ ೮ ೯"
-#define UNICODE_MALAYALAM                     "ം ഃ അ ആ ഇ ഈ ഉ ഊ ഋ ഌ എ ഏ ഐ ഒ ഓ ഔ ക ഖ ഗ ഘ ങ ച ഛ ജ ഝ ഞ ട ഠ ഡ ഢ ണ ത ഥ ദ ധ ന പ ഫ ബ ഭ മ യ ര റ ല ള ഴ വ ശ ഷ സ ഹ ാ ി ീ ു ൂ ൃ െ േ ൈ ൊ ോ ൌ ് ൗ ൠ ൡ ൦ ൧ ൨ ൩ ൪ ൫ ൬ ൭ ൮ ൯"
-#define UNICODE_THAI                          "ก ข ฃ ค ฅ ฆ ง จ ฉ ช ซ ฌ ญ ฎ ฏ ฐ ฑ ฒ ณ ด ต ถ ท ธ น บ ป ผ ฝ พ ฟ ภ ม ย ร ฤ ล ฦ ว ศ ษ ส ห ฬ อ ฮ ฯ ะ ั า ำ ิ ี ึ ื ุ ู ฺ ฿ เ แ โ ใ ไ ๅ ๆ ็ ่ ้ ๊ ๋ ์ ํ ๎ ๏ ๐ ๑ ๒ ๓ ๔ ๕ ๖ ๗ ๘ ๙ ๚ ๛"
-#define UNICODE_LAO                           "ກ ຂ ຄ ງ ຈ ຊ ຍ ດ ຕ ຖ ທ ນ ບ ປ ຜ ຝ ພ ຟ ມ ຢ ຣ ລ ວ ສ ຫ ອ ຮ ຯ ະ ັ າ ຳ ິ ີ ຶ ື ຸ ູ ົ ຼ ຽ ເ ແ ໂ ໃ ໄ ໆ ່ ້ ໊ ໋ ໌ ໍ ໐ ໑ ໒ ໓ ໔ ໕ ໖ ໗ ໘ ໙ ໜ ໝ"
-#define UNICODE_TIBETAN                       "ༀ ༁ ༂ ༃ ༄ ༅ ༆ ༇ ༈ ༉ ༊ ་ ༌ ། ༎ ༏ ༐ ༑ ༒ ༓ ༔ ༕ ༖ ༗ ༘ ༙ ༚ ༛ ༜ ༝ ༞ ༟ ༠ ༡ ༢ ༣ ༤ ༥ ༦ ༧ ༨ ༩ ༪ ༫ ༬ ༭ ༮ ༯ ༰ ༱ ༲ ༳ ༴ ༵ ༶ ༷ ༸ ༹ ༺ ༻ ༼ ༽ ༾ ༿ ཀ ཁ ག གྷ ང ཅ ཆ ཇ ཉ ཊ ཋ ཌ ཌྷ ཎ ཏ ཐ ད དྷ ན པ ཕ བ བྷ མ ཙ ཚ ཛ ཛྷ ཝ ཞ ཟ འ ཡ ར ལ ཤ ཥ ས ཧ ཨ ཀྵ ཱ ི ཱི ུ ཱུ ྲྀ ཷ ླྀ ཹ ེ ཻ ོ ཽ ཾ ཿ ྀ ཱྀ ྂ ྃ ྄ ྅ ྆ ྇"
-#define UNICODE_GEORGIAN                      "Ⴀ Ⴁ Ⴂ Ⴃ Ⴄ Ⴅ Ⴆ Ⴇ Ⴈ Ⴉ Ⴊ Ⴋ Ⴌ Ⴍ Ⴎ Ⴏ Ⴐ Ⴑ Ⴒ Ⴓ Ⴔ Ⴕ Ⴖ Ⴗ Ⴘ Ⴙ Ⴚ Ⴛ Ⴜ Ⴝ Ⴞ Ⴟ Ⴠ Ⴡ Ⴢ Ⴣ Ⴤ Ⴥ ა ბ გ დ ე ვ ზ თ ი კ ლ მ ნ ო პ ჟ რ ს ტ უ ფ ქ ღ ყ შ ჩ ც ძ წ ჭ ხ ჯ ჰ ჱ ჲ ჳ ჴ ჵ ჶ ჻"
-#define UNICODE_HANGUL_JAMO                   "ᄀ ᄁ ᄂ ᄃ ᄄ ᄅ ᄆ ᄇ ᄈ ᄉ ᄊ ᄋ ᄌ ᄍ ᄎ ᄏ ᄐ ᄑ ᄒ ᄓ ᄔ ᄕ ᄖ ᄗ ᄘ ᄙ ᄚ ᄛ ᄜ ᄝ ᄞ ᄟ ᄠ ᄡ ᄢ ᄣ ᄤ ᄥ ᄦ ᄧ ᄨ ᄩ ᄪ ᄫ ᄬ ᄭ ᄮ ᄯ ᄰ ᄱ ᄲ ᄳ ᄴ ᄵ ᄶ ᄷ ᄸ ᄹ ᄺ ᄻ ᄼ ᄽ ᄾ ᄿ ᅀ ᅁ ᅂ ᅃ ᅄ ᅅ ᅆ ᅇ ᅈ ᅉ ᅊ ᅋ ᅌ ᅍ ᅎ ᅏ ᅐ ᅑ ᅒ ᅓ ᅔ ᅕ ᅖ ᅗ ᅘ ᅙ ᅟ ᅠ ᅡ ᅢ ᅣ ᅤ ᅥ ᅦ ᅧ ᅨ ᅩ ᅪ ᅫ ᅬ ᅭ ᅮ ᅯ ᅰ ᅱ ᅲ ᅳ ᅴ ᅵ ᅶ ᅷ ᅸ ᅹ ᅺ ᅻ ᅼ ᅽ ᅾ ᅿ ᆀ ᆁ ᆂ ᆃ ᆄ"
-#define UNICODE_LATIN_EXTENDED_ADDITIONAL     "Ḁ ḁ Ḃ ḃ Ḅ ḅ Ḇ ḇ Ḉ ḉ Ḋ ḋ Ḍ ḍ Ḏ ḏ Ḑ ḑ Ḓ ḓ Ḕ ḕ Ḗ ḗ Ḙ ḙ Ḛ ḛ Ḝ ḝ Ḟ ḟ Ḡ ḡ Ḣ ḣ Ḥ ḥ Ḧ ḧ Ḩ ḩ Ḫ ḫ Ḭ ḭ Ḯ ḯ Ḱ ḱ Ḳ ḳ Ḵ ḵ Ḷ ḷ Ḹ ḹ Ḻ ḻ Ḽ ḽ Ḿ ḿ Ṁ ṁ Ṃ ṃ Ṅ ṅ Ṇ ṇ Ṉ ṉ Ṋ ṋ Ṍ ṍ Ṏ ṏ Ṑ ṑ Ṓ ṓ Ṕ ṕ Ṗ ṗ Ṙ ṙ Ṛ ṛ Ṝ ṝ Ṟ ṟ Ṡ ṡ Ṣ ṣ Ṥ ṥ Ṧ ṧ Ṩ ṩ Ṫ ṫ Ṭ ṭ Ṯ ṯ Ṱ ṱ Ṳ ṳ Ṵ ṵ Ṷ ṷ Ṹ ṹ Ṻ ṻ Ṽ ṽ Ṿ ṿ"
-#define UNICODE_GREEK_EXTENDED                "ἀ ἁ ἂ ἃ ἄ ἅ ἆ ἇ Ἀ Ἁ Ἂ Ἃ Ἄ Ἅ Ἆ Ἇ ἐ ἑ ἒ ἓ ἔ ἕ Ἐ Ἑ Ἒ Ἓ Ἔ Ἕ ἠ ἡ ἢ ἣ ἤ ἥ ἦ ἧ Ἠ Ἡ Ἢ Ἣ Ἤ Ἥ Ἦ Ἧ ἰ ἱ ἲ ἳ ἴ ἵ ἶ ἷ Ἰ Ἱ Ἲ Ἳ Ἴ Ἵ Ἶ Ἷ ὀ ὁ ὂ ὃ ὄ ὅ Ὀ Ὁ Ὂ Ὃ Ὄ Ὅ ὐ ὑ ὒ ὓ ὔ ὕ ὖ ὗ Ὑ Ὓ Ὕ Ὗ ὠ ὡ ὢ ὣ ὤ ὥ ὦ ὧ Ὠ Ὡ Ὢ Ὣ Ὤ Ὥ Ὦ Ὧ ὰ ά ὲ έ ὴ ή ὶ ί ὸ ό ὺ ύ ὼ ώ ᾀ ᾁ ᾂ ᾃ ᾄ ᾅ ᾆ ᾇ ᾈ ᾉ ᾊ ᾋ ᾌ ᾍ"
-#define UNICODE_PUNCTUATION                   "                      ​ ‌ ‍ ‎ ‏ ‐ ‑ ‒ – — ― ‖ ‗ ‘ ’ ‚ ‛ “ ” „ ‟ † ‡ • ‣ ․ ‥ … ‧     ‪ ‫ ‬ ‭ ‮ ‰ ‱ ′ ″ ‴ ‵ ‶ ‷ ‸ ‹ › ※ ‼ ‽ ‾ ‿ ⁀ ⁁ ⁂ ⁃ ⁄ ⁅ ⁆ ⁪ ⁫ ⁬ ⁭ ⁮ ⁯"
-#define UNICODE_SUPERSUB_SCRIPTS              "⁰ ⁴ ⁵ ⁶ ⁷ ⁸ ⁹ ⁺ ⁻ ⁼ ⁽ ⁾ ⁿ ₀ ₁ ₂ ₃ ₄ ₅ ₆ ₇ ₈ ₉ ₊ ₋ ₌ ₍ ₎"
-#define UNICODE_CURRENCY                      "₠ ₡ ₢ ₣ ₤ ₥ ₦ ₧ ₨ ₩ ₪ ₫"
-#define UNICODE_COMBINING_MARKS               "⃐ ⃑ ⃒ ⃓ ⃔ ⃕ ⃖ ⃗ ⃘ ⃙ ⃚ ⃛ ⃜ ⃝ ⃞ ⃟ ⃠ ⃡"
-#define UNICODE_LETTERLIKE                    "℀ ℁ ℂ ℃ ℄ ℅ ℆ ℇ ℈ ℉ ℊ ℋ ℌ ℍ ℎ ℏ ℐ ℑ ℒ ℓ ℔ ℕ № ℗ ℘ ℙ ℚ ℛ ℜ ℝ ℞ ℟ ℠ ℡ ™ ℣ ℤ ℥ Ω ℧ ℨ ℩ K Å ℬ ℭ ℮ ℯ ℰ ℱ Ⅎ ℳ ℴ ℵ ℶ ℷ ℸ"
-#define UNICODE_NUMBER_FORMS                  "⅓ ⅔ ⅕ ⅖ ⅗ ⅘ ⅙ ⅚ ⅛ ⅜ ⅝ ⅞ ⅟ Ⅰ Ⅱ Ⅲ Ⅳ Ⅴ Ⅵ Ⅶ Ⅷ Ⅸ Ⅹ Ⅺ Ⅻ Ⅼ Ⅽ Ⅾ Ⅿ ⅰ ⅱ ⅲ ⅳ ⅴ ⅵ ⅶ ⅷ ⅸ ⅹ ⅺ ⅻ ⅼ ⅽ ⅾ ⅿ ↀ ↁ ↂ"
-#define UNICODE_ARROWS                        "← ↑ → ↓ ↔ ↕ ↖ ↗ ↘ ↙ ↚ ↛ ↜ ↝ ↞ ↟ ↠ ↡ ↢ ↣ ↤ ↥ ↦ ↧ ↨ ↩ ↪ ↫ ↬ ↭ ↮ ↯ ↰ ↱ ↲ ↳ ↴ ↵ ↶ ↷ ↸ ↹ ↺ ↻ ↼ ↽ ↾ ↿ ⇀ ⇁ ⇂ ⇃ ⇄ ⇅ ⇆ ⇇ ⇈ ⇉ ⇊ ⇋ ⇌ ⇍ ⇎ ⇏ ⇐ ⇑ ⇒ ⇓ ⇔ ⇕ ⇖ ⇗ ⇘ ⇙ ⇚ ⇛ ⇜ ⇝ ⇞ ⇟ ⇠ ⇡ ⇢ ⇣ ⇤ ⇥ ⇦ ⇧ ⇨ ⇩ ⇪"
-#define UNICODE_ARROWS_SUPPLEMENT_A           "⟰ ⟱ ⟲ ⟳ ⟴ ⟵ ⟶ ⟷ ⟸ ⟹ ⟺ ⟻ ⟼ ⟽ ⟾ ⟿"
-#define UNICODE_ARROWS_SUPPLEMENT_B           "⤀ ⤁ ⤂ ⤃ ⤄ ⤅ ⤆ ⤇ ⤈ ⤉ ⤊ ⤋ ⤌ ⤍ ⤎ ⤏ ⤐ ⤑ ⤒ ⤓ ⤔ ⤕ ⤖ ⤗ ⤘ ⤙ ⤚ ⤛ ⤜ ⤝ ⤞ ⤟ ⤠ ⤡ ⤢ ⤣ ⤤ ⤥ ⤦ ⤧ ⤨ ⤩ ⤪ ⤫ ⤬ ⤭ ⤮ ⤯ ⤰ ⤱ ⤲ ⤳ ⤴ ⤵ ⤶ ⤷ ⤸ ⤹ ⤺ ⤻ ⤼ ⤽ ⤾ ⤿ ⥀ ⥁ ⥂ ⥃ ⥄ ⥅ ⥆ ⥇ ⥈ ⥉ ⥊ ⥋ ⥌ ⥍ ⥎ ⥏ ⥐ ⥑ ⥒ ⥓ ⥔ ⥕ ⥖ ⥗ ⥘ ⥙ ⥚ ⥛ ⥜ ⥝ ⥞ ⥟ ⥠ ⥡ ⥢ ⥣ ⥤ ⥥ ⥦ ⥧ ⥨ ⥩ ⥪ ⥫ ⥬ ⥭ ⥮ ⥯ ⥰ ⥱ ⥲ ⥳ ⥴ ⥵ ⥶ ⥷ ⥸ ⥹ ⥺ ⥻ ⥼ ⥽ ⥾ ⥿"
-#define UNICODE_MATH_OPERATORS                "∀ ∁ ∂ ∃ ∄ ∅ ∆ ∇ ∈ ∉ ∊ ∋ ∌ ∍ ∎ ∏ ∐ ∑ − ∓ ∔ ∕ ∖ ∗ ∘ ∙ √ ∛ ∜ ∝ ∞ ∟ ∠ ∡ ∢ ∣ ∤ ∥ ∦ ∧ ∨ ∩ ∪ ∫ ∬ ∭ ∮ ∯ ∰ ∱ ∲ ∳ ∴ ∵ ∶ ∷ ∸ ∹ ∺ ∻ ∼ ∽ ∾ ∿ ≀ ≁ ≂ ≃ ≄ ≅ ≆ ≇ ≈ ≉ ≊ ≋ ≌ ≍ ≎ ≏ ≐ ≑ ≒ ≓ ≔ ≕ ≖ ≗ ≘ ≙ ≚ ≛ ≜ ≝ ≞ ≟ ≠ ≡ ≢ ≣ ≤ ≥ ≦ ≧ ≨ ≩ ≪ ≫ ≬ ≭ ≮ ≯ ≰ ≱ ≲ ≳ ≴ ≵ ≶ ≷ ≸ ≹ ≺ ≻ ≼ ≽ ≾ ≿"
-#define UNICODE_MATH_OPERATORS_SUPPLEMENT     "⨀ ⨁ ⨂ ⨃ ⨄ ⨅ ⨆ ⨇ ⨈ ⨉ ⨊ ⨋ ⨌ ⨍ ⨎ ⨏ ⨐ ⨑ ⨒ ⨓ ⨔ ⨕ ⨖ ⨗ ⨘ ⨙ ⨚ ⨛ ⨜ ⨝ ⨞ ⨟ ⨠ ⨡ ⨢ ⨣ ⨤ ⨥ ⨦ ⨧ ⨨ ⨩ ⨪ ⨫ ⨬ ⨭ ⨮ ⨯ ⨰ ⨱ ⨲ ⨳ ⨴ ⨵ ⨶ ⨷ ⨸ ⨹ ⨺ ⨻ ⨼ ⨽ ⨾ ⨿ ⩀ ⩁ ⩂ ⩃ ⩄ ⩅ ⩆ ⩇ ⩈ ⩉ ⩊ ⩋ ⩌ ⩍ ⩎ ⩏ ⩐ ⩑ ⩒ ⩓ ⩔ ⩕ ⩖ ⩗ ⩘ ⩙ ⩚ ⩛ ⩜ ⩝ ⩞ ⩟ ⩠ ⩡ ⩢ ⩣ ⩤ ⩥ ⩦ ⩧ ⩨ ⩩ ⩪ ⩫ ⩬ ⩭ ⩮ ⩯ ⩰ ⩱ ⩲ ⩳ ⩴ ⩵ ⩶ ⩷ ⩸ ⩹ ⩺ ⩻ ⩼ ⩽ ⩾ ⩿"
-#define UNICODE_MATH_MISC_A                   "⟐ ⟑ ⟒ ⟓ ⟔ ⟕ ⟖ ⟗ ⟘ ⟙ ⟚ ⟛ ⟜ ⟝ ⟞ ⟟ ⟠ ⟡ ⟢ ⟣ ⟤ ⟥ ⟦ ⟧ ⟨ ⟩ ⟪ ⟫"
-#define UNICODE_CONTROL_PICTURES              "␀ ␁ ␂ ␃ ␄ ␅ ␆ ␇ ␈ ␉ ␊ ␋ ␌ ␍ ␎ ␏ ␐ ␑ ␒ ␓ ␔ ␕ ␖ ␗ ␘ ␙ ␚ ␛ ␜ ␝ ␞ ␟ ␠ ␡ ␢ ␣ ␤"
-#define UNICODE_OPTICAL_CHARACTERS            "⑀ ⑁ ⑂ ⑃ ⑄ ⑅ ⑆ ⑇ ⑈ ⑉ ⑊"
-#define UNICODE_ENCLOSED_ALPHANUMERICS        "① ② ③ ④ ⑤ ⑥ ⑦ ⑧ ⑨ ⑩ ⑪ ⑫ ⑬ ⑭ ⑮ ⑯ ⑰ ⑱ ⑲ ⑳ ⑴ ⑵ ⑶ ⑷ ⑸ ⑹ ⑺ ⑻ ⑼ ⑽ ⑾ ⑿ ⒀ ⒁ ⒂ ⒃ ⒄ ⒅ ⒆ ⒇ ⒈ ⒉ ⒊ ⒋ ⒌ ⒍ ⒎ ⒏ ⒐ ⒑ ⒒ ⒓ ⒔ ⒕ ⒖ ⒗ ⒘ ⒙ ⒚ ⒛ ⒜ ⒝ ⒞ ⒟ ⒠ ⒡ ⒢ ⒣ ⒤ ⒥ ⒦ ⒧ ⒨ ⒩ ⒪ ⒫ ⒬ ⒭ ⒮ ⒯ ⒰ ⒱ ⒲ ⒳ ⒴ ⒵ Ⓐ Ⓑ Ⓒ Ⓓ Ⓔ Ⓕ Ⓖ Ⓗ Ⓘ Ⓙ Ⓚ Ⓛ Ⓜ Ⓝ Ⓞ Ⓟ Ⓠ Ⓡ Ⓢ Ⓣ Ⓤ Ⓥ Ⓦ Ⓧ Ⓨ Ⓩ ⓐ ⓑ ⓒ ⓓ ⓔ ⓕ ⓖ ⓗ ⓘ ⓙ ⓚ ⓛ ⓜ ⓝ ⓞ ⓟ"
-#define UNICODE_BOX_DRAWING                   "─ ━ │ ┃ ┄ ┅ ┆ ┇ ┈ ┉ ┊ ┋ ┌ ┍ ┎ ┏ ┐ ┑ ┒ ┓ └ ┕ ┖ ┗ ┘ ┙ ┚ ┛ ├ ┝ ┞ ┟ ┠ ┡ ┢ ┣ ┤ ┥ ┦ ┧ ┨ ┩ ┪ ┫ ┬ ┭ ┮ ┯ ┰ ┱ ┲ ┳ ┴ ┵ ┶ ┷ ┸ ┹ ┺ ┻ ┼ ┽ ┾ ┿ ╀ ╁ ╂ ╃ ╄ ╅ ╆ ╇ ╈ ╉ ╊ ╋ ╌ ╍ ╎ ╏ ═ ║ ╒ ╓ ╔ ╕ ╖ ╗ ╘ ╙ ╚ ╛ ╜ ╝ ╞ ╟ ╠ ╡ ╢ ╣ ╤ ╥ ╦ ╧ ╨ ╩ ╪ ╫ ╬ ╭ ╮ ╯ ╰ ╱ ╲ ╳ ╴ ╵ ╶ ╷ ╸ ╹ ╺ ╻ ╼ ╽ ╾ ╿"
-#define UNICODE_BLOCK_ELEMENTS                "▀ ▁ ▂ ▃ ▄ ▅ ▆ ▇ █ ▉ ▊ ▋ ▌ ▍ ▎ ▏ ▐ ░ ▒ ▓ ▔ ▕"
-#define UNICODE_GEOMETRIC_SHAPES              "■ □ ▢ ▣ ▤ ▥ ▦ ▧ ▨ ▩ ▪ ▫ ▬ ▭ ▮ ▯ ▰ ▱ ▲ △ ▴ ▵ ▶ ▷ ▸ ▹ ► ▻ ▼ ▽ ▾ ▿ ◀ ◁ ◂ ◃ ◄ ◅ ◆ ◇ ◈ ◉ ◊ ○ ◌ ◍ ◎ ● ◐ ◑ ◒ ◓ ◔ ◕ ◖ ◗ ◘ ◙ ◚ ◛ ◜ ◝ ◞ ◟ ◠ ◡ ◢ ◣ ◤ ◥ ◦ ◧ ◨ ◩ ◪ ◫ ◬ ◭ ◮ ◯"
-#define UNICODE_MISC_SYMBOLS                  "☀ ☁ ☂ ☃ ☄ ★ ☆ ☇ ☈ ☉ ☊ ☋ ☌ ☍ ☎ ☏ ☐ ☑ ☒ ☓ ☚ ☛ ☜ ☝ ☞ ☟ ☠ ☡ ☢ ☣ ☤ ☥ ☦ ☧ ☨ ☩ ☪ ☫ ☬ ☭ ☮ ☯ ☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷ ☸ ☹ ☺ ☻ ☼ ☽ ☾ ☿ ♀ ♁ ♂ ♃ ♄ ♅ ♆ ♇ ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓ ♔ ♕ ♖ ♗ ♘ ♙ ♚ ♛ ♜ ♝ ♞ ♟ ♠ ♡ ♢ ♣ ♤ ♥ ♦ ♧ ♨ ♩ ♪ ♫ ♬ ♭ ♮ ♯"
-#define UNICODE_DINGBATS                      "✁ ✂ ✃ ✄ ✆ ✇ ✈ ✉ ✌ ✍ ✎ ✏ ✐ ✑ ✒ ✓ ✔ ✕ ✖ ✗ ✘ ✙ ✚ ✛ ✜ ✝ ✞ ✟ ✠ ✡ ✢ ✣ ✤ ✥ ✦ ✧ ✩ ✪ ✫ ✬ ✭ ✮ ✯ ✰ ✱ ✲ ✳ ✴ ✵ ✶ ✷ ✸ ✹ ✺ ✻ ✼ ✽ ✾ ✿ ❀ ❁ ❂ ❃ ❄ ❅ ❆ ❇ ❈ ❉ ❊ ❋ ❍ ❏ ❐ ❑ ❒ ❖ ❘ ❙ ❚ ❛ ❜ ❝ ❞ ❡ ❢ ❣ ❤ ❥ ❦ ❧ ❶ ❷ ❸ ❹ ❺ ❻ ❼ ❽ ❾ ❿ ➀ ➁ ➂ ➃ ➄ ➅ ➆ ➇ ➈ ➉ ➊ ➋ ➌ ➍ ➎ ➏ ➐ ➑ ➒ ➓ ➔ ➘ ➙ ➚ ➛ ➜ ➝"
-#define UNICODE_CJK                           "　 、 。 〃 〄 々 〆 〇 〈 〉 《 》 「 」 『 』 【 】 〒 〓 〔 〕 〖 〗 〘 〙 〚 〛 〜 〝 〞 〟 〠 〡 〢 〣 〤 〥 〦 〧 〨 〩 〪 〫 〬 〭 〮 〯 〰 〱 〲 〳 〴 〵 〶 〷 〿"
-#define UNICODE_HIRAGANA                      "ぁ あ ぃ い ぅ う ぇ え ぉ お か が き ぎ く ぐ け げ こ ご さ ざ し じ す ず せ ぜ そ ぞ た だ ち ぢ っ つ づ て で と ど な に ぬ ね の は ば ぱ ひ び ぴ ふ ぶ ぷ へ べ ぺ ほ ぼ ぽ ま み む め も ゃ や ゅ ゆ ょ よ ら り る れ ろ ゎ わ ゐ ゑ を ん ゔ ゙ ゚ ゛ ゜ ゝ ゞ"
-#define UNICODE_KATAKANA                      "ァ ア ィ イ ゥ ウ ェ エ ォ オ カ ガ キ ギ ク グ ケ ゲ コ ゴ サ ザ シ ジ ス ズ セ ゼ ソ ゾ タ ダ チ ヂ ッ ツ ヅ テ デ ト ド ナ ニ ヌ ネ ノ ハ バ パ ヒ ビ ピ フ ブ プ ヘ ベ ペ ホ ボ ポ マ ミ ム メ モ ャ ヤ ュ ユ ョ ヨ ラ リ ル レ ロ ヮ ワ ヰ ヱ ヲ ン ヴ ヵ ヶ ヷ ヸ ヹ ヺ ・ ー ヽ ヾ"
-#define UNICODE_BOPOMOFO                      "ㄅ ㄆ ㄇ ㄈ ㄉ ㄊ ㄋ ㄌ ㄍ ㄎ ㄏ ㄐ ㄑ ㄒ ㄓ ㄔ ㄕ ㄖ ㄗ ㄘ ㄙ ㄚ ㄛ ㄜ ㄝ ㄞ ㄟ ㄠ ㄡ ㄢ ㄣ ㄤ ㄥ ㄦ ㄧ ㄨ ㄩ ㄪ ㄫ ㄬ"
-#define UNICODE_HANGUL_COMPATIBILITY_JAMO     "ㄱ ㄲ ㄳ ㄴ ㄵ ㄶ ㄷ ㄸ ㄹ ㄺ ㄻ ㄼ ㄽ ㄾ ㄿ ㅀ ㅁ ㅂ ㅃ ㅄ ㅅ ㅆ ㅇ ㅈ ㅉ ㅊ ㅋ ㅌ ㅍ ㅎ ㅏ ㅐ ㅑ ㅒ ㅓ ㅔ ㅕ ㅖ ㅗ ㅘ ㅙ ㅚ ㅛ ㅜ ㅝ ㅞ ㅟ ㅠ ㅡ ㅢ ㅣ ㅤ ㅥ ㅦ ㅧ ㅨ ㅩ ㅪ ㅫ ㅬ ㅭ ㅮ ㅯ ㅰ ㅱ ㅲ ㅳ ㅴ ㅵ ㅶ ㅷ ㅸ ㅹ ㅺ ㅻ ㅼ ㅽ ㅾ ㅿ ㆀ ㆁ ㆂ ㆃ ㆄ ㆅ ㆆ ㆇ ㆈ ㆉ ㆊ ㆋ ㆌ ㆍ ㆎ"
-#define UNICODE_KANBUN                        "㆐ ㆑ ㆒ ㆓ ㆔ ㆕ ㆖ ㆗ ㆘ ㆙ ㆚ ㆛ ㆜ ㆝ ㆞ ㆟"
-#define UNICODE_CJK_ENCLOSED                  "㈀ ㈁ ㈂ ㈃ ㈄ ㈅ ㈆ ㈇ ㈈ ㈉ ㈊ ㈋ ㈌ ㈍ ㈎ ㈏ ㈐ ㈑ ㈒ ㈓ ㈔ ㈕ ㈖ ㈗ ㈘ ㈙ ㈚ ㈛ ㈜ ㈠ ㈡ ㈢ ㈣ ㈤ ㈥ ㈦ ㈧ ㈨ ㈩ ㈪ ㈫ ㈬ ㈭ ㈮ ㈯ ㈰ ㈱ ㈲ ㈳ ㈴ ㈵ ㈶ ㈷ ㈸ ㈹ ㈺ ㈻ ㈼ ㈽ ㈾ ㈿ ㉀ ㉁ ㉂ ㉃ ㉠ ㉡ ㉢ ㉣ ㉤ ㉥ ㉦ ㉧ ㉨ ㉩ ㉪ ㉫ ㉬ ㉭ ㉮ ㉯ ㉰ ㉱ ㉲ ㉳ ㉴ ㉵ ㉶ ㉷ ㉸ ㉹ ㉺ ㉻ ㉿ ㊀ ㊁ ㊂ ㊃ ㊄ ㊅ ㊆ ㊇ ㊈ ㊉ ㊊ ㊋ ㊌ ㊍ ㊎ ㊏ ㊐ ㊑ ㊒ ㊓ ㊔ ㊕ ㊖ ㊗ ㊘ ㊙ ㊚ ㊛ ㊜ ㊝ ㊞ ㊟ ㊠ ㊡"
-#define UNICODE_CJK_COMPATIBILITY             "㌀ ㌁ ㌂ ㌃ ㌄ ㌅ ㌆ ㌇ ㌈ ㌉ ㌊ ㌋ ㌌ ㌍ ㌎ ㌏ ㌐ ㌑ ㌒ ㌓ ㌔ ㌕ ㌖ ㌗ ㌘ ㌙ ㌚ ㌛ ㌜ ㌝ ㌞ ㌟ ㌠ ㌡ ㌢ ㌣ ㌤ ㌥ ㌦ ㌧ ㌨ ㌩ ㌪ ㌫ ㌬ ㌭ ㌮ ㌯ ㌰ ㌱ ㌲ ㌳ ㌴ ㌵ ㌶ ㌷ ㌸ ㌹ ㌺ ㌻ ㌼ ㌽ ㌾ ㌿ ㍀ ㍁ ㍂ ㍃ ㍄ ㍅ ㍆ ㍇ ㍈ ㍉ ㍊ ㍋ ㍌ ㍍ ㍎ ㍏ ㍐ ㍑ ㍒ ㍓ ㍔ ㍕ ㍖ ㍗ ㍘ ㍙ ㍚ ㍛ ㍜ ㍝ ㍞ ㍟ ㍠ ㍡ ㍢ ㍣ ㍤ ㍥ ㍦ ㍧ ㍨ ㍩ ㍪ ㍫ ㍬ ㍭ ㍮ ㍯ ㍰ ㍱ ㍲ ㍳ ㍴ ㍵ ㍶ ㍻ ㍼ ㍽ ㍾ ㍿ ㎀ ㎁ ㎂ ㎃"
-#define UNICODE_CJK_UNIFIED_IDEOGRAPHS        "一 丁 丂 七 丄 丅 丆 万 丈 三 上 下 丌 不 与 丏 丐 丑 丒 专 且 丕 世 丗 丘 丙 业 丛 东 丝 丞 丟 丠 両 丢 丣 两 严 並 丧 丨 丩 个 丫 丬 中 丮 丯 丰 丱 串 丳 临 丵 丶 丷 丸 丹 为 主 丼 丽 举 丿 乀 乁 乂 乃 乄 久 乆 乇 么 义 乊 之 乌 乍 乎 乏 乐 乑 乒 乓 乔 乕 乖 乗 乘 乙 乚 乛 乜 九 乞 也 习 乡 乢 乣 乤 乥 书 乧 乨 乩 乪 乫 乬 乭 乮 乯 买 乱 乲 乳 乴 乵 乶 乷 乸 乹 乺 乻 乼 乽 乾 乿"
-#define UNICODE_HANGUL_SYLLABLES              "가 각 갂 갃 간 갅 갆 갇 갈 갉 갊 갋 갌 갍 갎 갏 감 갑 값 갓 갔 강 갖 갗 갘 같 갚 갛 개 객 갞 갟 갠 갡 갢 갣 갤 갥 갦 갧 갨 갩 갪 갫 갬 갭 갮 갯 갰 갱 갲 갳 갴 갵 갶 갷 갸 갹 갺 갻 갼 갽 갾 갿 걀 걁 걂 걃 걄 걅 걆 걇 걈 걉 걊 걋 걌 걍 걎 걏 걐 걑 걒 걓 걔 걕 걖 걗 걘 걙 걚 걛 걜 걝 걞 걟 걠 걡 걢 걣 걤 걥 걦 걧 걨 걩 걪 걫 걬 걭 걮 걯 거 걱 걲 걳 건 걵 걶 걷 걸 걹 걺 걻 걼 걽 걾 걿"
-#define UNICODE_PRIVATE_USE                   "                                                                                                                               "
-#define UNICODE_CJK_COMPATIBILITY_IDEOGRAPHS  "豈 更 車 賈 滑 串 句 龜 龜 契 金 喇 奈 懶 癩 羅 蘿 螺 裸 邏 樂 洛 烙 珞 落 酪 駱 亂 卵 欄 爛 蘭 鸞 嵐 濫 藍 襤 拉 臘 蠟 廊 朗 浪 狼 郎 來 冷 勞 擄 櫓 爐 盧 老 蘆 虜 路 露 魯 鷺 碌 祿 綠 菉 錄 鹿 論 壟 弄 籠 聾 牢 磊 賂 雷 壘 屢 樓 淚 漏 累 縷 陋 勒 肋 凜 凌 稜 綾 菱 陵 讀 拏 樂 諾 丹 寧 怒 率 異 北 磻 便 復 不 泌 數 索 參 塞 省 葉 說 殺 辰 沈 拾 若 掠 略 亮 兩 凉 梁 糧 良 諒 量 勵"
-#define UNICODE_ALPHABETIC_PRESENTATION_FORMS "ﬀ ﬁ ﬂ ﬃ ﬄ ﬅ ﬆ ﬓ ﬔ ﬕ ﬖ ﬗ ﬞ ײַ ﬠ ﬡ ﬢ ﬣ ﬤ ﬥ ﬦ ﬧ ﬨ ﬩ שׁ שׂ שּׁ שּׂ אַ אָ אּ בּ גּ דּ הּ וּ זּ טּ יּ ךּ כּ לּ מּ נּ סּ ףּ פּ צּ קּ רּ שּ תּ וֹ בֿ כֿ פֿ ﭏ"
-#define UNICODE_ARABIC_PRESENTATION_FORMS_A   "ﭐ ﭑ ﭒ ﭓ ﭔ ﭕ ﭖ ﭗ ﭘ ﭙ ﭚ ﭛ ﭜ ﭝ ﭞ ﭟ ﭠ ﭡ ﭢ ﭣ ﭤ ﭥ ﭦ ﭧ ﭨ ﭩ ﭪ ﭫ ﭬ ﭭ ﭮ ﭯ ﭰ ﭱ ﭲ ﭳ ﭴ ﭵ ﭶ ﭷ ﭸ ﭹ ﭺ ﭻ ﭼ ﭽ ﭾ ﭿ ﮀ ﮁ ﮂ ﮃ ﮄ ﮅ ﮆ ﮇ ﮈ ﮉ ﮊ ﮋ ﮌ ﮍ ﮎ ﮏ ﮐ ﮑ ﮒ ﮓ ﮔ ﮕ ﮖ ﮗ ﮘ ﮙ ﮚ ﮛ ﮜ ﮝ ﮞ ﮟ ﮠ ﮡ ﮢ ﮣ ﮤ ﮥ ﮦ ﮧ ﮨ ﮩ ﮪ ﮫ ﮬ ﮭ ﮮ ﮯ ﮰ ﮱ ﯓ ﯔ ﯕ ﯖ ﯗ ﯘ ﯙ ﯚ ﯛ ﯜ ﯝ ﯞ ﯟ ﯠ ﯡ ﯢ ﯣ ﯤ ﯥ ﯦ ﯧ ﯨ ﯩ ﯪ ﯫ ﯬ ﯭ ﯮ ﯯ ﯰ"
-#define UNICODE_COMBINING_HALF_MARKS          "︠ ︡ ︢ ︣"
-#define UNICODE_CJK_COMPATIBILITY_FORMS       "︰ ︱ ︲ ︳ ︴ ︵ ︶ ︷ ︸ ︹ ︺ ︻ ︼ ︽ ︾ ︿ ﹀ ﹁ ﹂ ﹃ ﹄ ﹉ ﹊ ﹋ ﹌ ﹍ ﹎ ﹏"
-#define UNICODE_SMALL_FORM_VARIANTS           "﹐ ﹑ ﹒ ﹔ ﹕ ﹖ ﹗ ﹘ ﹙ ﹚ ﹛ ﹜ ﹝ ﹞ ﹟ ﹠ ﹡ ﹢ ﹣ ﹤ ﹥ ﹦ ﹨ ﹩ ﹪ ﹫"
-#define UNICODE_ARABIC_PRESENTATION_FORMS_B   "ﹰ ﹱ ﹲ ﹴ ﹶ ﹷ ﹸ ﹹ ﹺ ﹻ ﹼ ﹽ ﹾ ﹿ ﺀ ﺁ ﺂ ﺃ ﺄ ﺅ ﺆ ﺇ ﺈ ﺉ ﺊ ﺋ ﺌ ﺍ ﺎ ﺏ ﺐ ﺑ ﺒ ﺓ ﺔ ﺕ ﺖ ﺗ ﺘ ﺙ ﺚ ﺛ ﺜ ﺝ ﺞ ﺟ ﺠ ﺡ ﺢ ﺣ ﺤ ﺥ ﺦ ﺧ ﺨ ﺩ ﺪ ﺫ ﺬ ﺭ ﺮ ﺯ ﺰ ﺱ ﺲ ﺳ ﺴ ﺵ ﺶ ﺷ ﺸ ﺹ ﺺ ﺻ ﺼ ﺽ ﺾ ﺿ ﻀ ﻁ ﻂ ﻃ ﻄ ﻅ ﻆ ﻇ ﻈ ﻉ ﻊ ﻋ ﻌ ﻍ ﻎ ﻏ ﻐ ﻑ ﻒ ﻓ ﻔ ﻕ ﻖ ﻗ ﻘ ﻙ ﻚ ﻛ ﻜ ﻝ ﻞ ﻟ ﻠ ﻡ ﻢ ﻣ ﻤ ﻥ ﻦ ﻧ ﻨ ﻩ ﻪ ﻫ ﻬ ﻭ ﻮ ﻯ ﻰ ﻱ"
-#define UNICODE_HALFWIDTH_AND_FULLWIDTH_FORMS "！ ＂ ＃ ＄ ％ ＆ ＇ （ ） ＊ ＋ ， － ． ／ ０ １ ２ ３ ４ ５ ６ ７ ８ ９ ： ； ＜ ＝ ＞ ？ ＠ Ａ Ｂ Ｃ Ｄ Ｅ Ｆ Ｇ Ｈ Ｉ Ｊ Ｋ Ｌ Ｍ Ｎ Ｏ Ｐ Ｑ Ｒ Ｓ Ｔ Ｕ Ｖ Ｗ Ｘ Ｙ Ｚ ［ ＼ ］ ＾ ＿ ｀ ａ ｂ ｃ ｄ ｅ ｆ ｇ ｈ ｉ ｊ ｋ ｌ ｍ ｎ ｏ ｐ ｑ ｒ ｓ ｔ ｕ ｖ ｗ ｘ ｙ ｚ ｛ ｜ ｝ ～ ｡ ｢ ｣ ､ ･ ｦ ｧ ｨ ｩ ｪ ｫ ｬ ｭ ｮ ｯ ｰ ｱ ｲ ｳ ｴ ｵ ｶ ｷ ｸ ｹ ｺ ｻ ｼ ｽ ｾ ｿ ﾀ ﾁ ﾂ"
-#define UNICODE_MUSICAL                       "턀 턁 턂 턃 턄 턅 턆 턇 턈 턉 턊 턋 턌 턍 턎 턏 턐 턑 턒 턓 턔 턕 턖 턗 턘 턙 턚 턛 턜 턝 턞 턟 턠 턡 턢 턣 턤 턥 턦 턪 턫 턬 턭 턮 턯 터 턱 턲 턳 턴 턵 턶 턷 털 턹 턺 턻 턼 턽 턾 턿 텀 텁 텂 텃 텄 텅 텆 텇 텈 텉 텊 텋 테 텍 텎 텏 텐 텑 텒 텓 텔 텕 텖 텗 텘 텙 텚 텛 템 텝 텞 텟 텠 텡 텢 텣 텤 텥 텦 텧 텨 텩 텪 텫 텬 텭 텮 텯 텰 텱 텲 텳 텴 텵 텶 텷 텸 텹 텺 텻 텼 텽 텾 텿 톀 톁 톂 "
-#define UNICODE_SPECIALS                      "￹ ￺ ￻ ￼ �"
-#define UNICODE_OLD_ITALIC                    "̀ ́ ̂ ̃ ̄ ̅ ̆ ̇ ̈ ̉ ̊ ̋ ̌ ̍ ̎ ̏ ̐ ̑ ̒ ̓ ̔ ̕ ̖ ̗ ̘ ̙ ̚ ̛ ̜ ̝ ̞ ̠ ̡ ̢ ̣"
-#define UNICODE_GOTHIC                        "̰ ̱ ̲ ̳ ̴ ̵ ̶ ̷ ̸ ̹ ̺ ̻ ̼ ̽ ̾ ̿ ̀ ́ ͂ ̓ ̈́ ͅ ͆ ͇ ͈ ͉ ͊"
-#define UNICODE_DESERET                       "Ѐ Ё Ђ Ѓ Є Ѕ І Ї Ј Љ Њ Ћ Ќ Ѝ Ў Џ А Б В Г Д Е Ж З И Й К Л М Н О П Р С Т У Ф Х Ш Щ Ъ Ы Ь Э Ю Я а б в г д е ж з и й к л м н о п р с т у ф х ц ч ш щ ъ ы ь э"
-#define UNICODE_BRAILLE                       "⠀ ⠁ ⠂ ⠃ ⠄ ⠅ ⠆ ⠇ ⠈ ⠉ ⠊ ⠋ ⠌ ⠍ ⠎ ⠏ ⠐ ⠑ ⠒ ⠓ ⠔ ⠕ ⠖ ⠗ ⠘ ⠙ ⠚ ⠛ ⠜ ⠝ ⠞ ⠟ ⠠ ⠡ ⠢ ⠣ ⠤ ⠥ ⠦ ⠧ ⠨ ⠩ ⠪ ⠫ ⠬ ⠭ ⠮ ⠯ ⠰ ⠱ ⠲ ⠳ ⠴ ⠵ ⠶ ⠷ ⠸ ⠹ ⠺ ⠻ ⠼ ⠽ ⠾ ⠿ ⡀ ⡁ ⡂ ⡃ ⡄ ⡅ ⡆ ⡇ ⡈ ⡉ ⡊ ⡋ ⡌ ⡍ ⡎ ⡏ ⡐ ⡑ ⡒ ⡓ ⡔ ⡕ ⡖ ⡗ ⡘ ⡙ ⡚ ⡛ ⡜ ⡝ ⡞ ⡟ ⡠ ⡡ ⡢ ⡣ ⡤ ⡥ ⡦ ⡧ ⡨ ⡩ ⡪ ⡫ ⡬ ⡭ ⡮ ⡯ ⡰ ⡱ ⡲ ⡳ ⡴ ⡵ ⡶ ⡷ ⡸ ⡹ ⡺ ⡻ ⡼ ⡽ ⡾ ⡿"
+#define TEST_KIGU_UNICODE_LITERAL "a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌"
+	str8  test8  = str8_lit (TEST_KIGU_UNICODE_LITERAL);
+	str16 test16 = str16_lit(TEST_KIGU_UNICODE_LITERAL);
+	str32 test32 = str32_lit(TEST_KIGU_UNICODE_LITERAL);
+	wchar_t testw[] = GLUE(L,TEST_KIGU_UNICODE_LITERAL);
 	
-	setlocale(LC_ALL, ".utf8");
-	printf("-------- Expected --------\n");
-	printf("%ls\n", L"a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣");
-	printf("%s\n", "\xD0\x94");
+	{//literals
+		u32 codepoint = U'🍌'; //U+1F34C
+		AssertAlways(codepoint == 0x1F34C);
+		
+		AssertAlways(test8.count  == 90);
+		AssertAlways(test16.count == 57);
+		AssertAlways(test32.count == 56);
+#if COMPILER_CL
+		AssertAlways(ArrayCount(testw) == 58);
+#elif COMPILER_CLANG || COMPILER_GCC
+		AssertAlways(ArrayCount(testw) == 57);
+#else
+#  error "unhandled compiler"
+#endif
+		
+		print_verbose("[KIGU-TEST] PASSED: unicode/literals\n");
+	}
 	
-	//// UTF-8 ////
-	printf("-------- UTF-8  --------\n");
-	str8 test8 = str8_lit(u8"Ё Ђ Ѓ Є Ѕ І Ї Ј Љ Њ Ћ Ќ Ў Џ А Б В Г Д Е Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я а");
-	printf("%s\n", test8.str);
+	//TODO test invalid decoding
+	{//decoding
+		DecodedCodepoint cp;
+		
+		cp = decoded_codepoint_from_utf8((u8*)u8"a", 4);
+		AssertAlways(cp.codepoint == 0x61);
+		AssertAlways(cp.advance == 1);
+		cp = decoded_codepoint_from_utf8((u8*)u8"Д", 4);
+		AssertAlways(cp.codepoint == 0x414);
+		AssertAlways(cp.advance == 2);
+		cp = decoded_codepoint_from_utf8((u8*)u8"Ω", 4);
+		AssertAlways(cp.codepoint == 0x2126);
+		AssertAlways(cp.advance == 3);
+		cp = decoded_codepoint_from_utf8((u8*)u8"🍌", 4);
+		AssertAlways(cp.codepoint == 0x1F34C);
+		AssertAlways(cp.advance == 4);
+		
+		cp = decoded_codepoint_from_utf16((u16*)u"a", 2);
+		AssertAlways(cp.codepoint == 0x61);
+		AssertAlways(cp.advance == 1);
+		cp = decoded_codepoint_from_utf16((u16*)u"Д", 2);
+		AssertAlways(cp.codepoint == 0x414);
+		AssertAlways(cp.advance == 1);
+		cp = decoded_codepoint_from_utf16((u16*)u"Ω", 2);
+		AssertAlways(cp.codepoint == 0x2126);
+		AssertAlways(cp.advance == 1);
+		cp = decoded_codepoint_from_utf16((u16*)u"🍌", 2);
+		AssertAlways(cp.codepoint == 0x1F34C);
+		AssertAlways(cp.advance == 2);
+		
+		cp = decoded_codepoint_from_wchar(L"a", 2);
+		AssertAlways(cp.codepoint == 0x61);
+		AssertAlways(cp.advance == 1);
+		cp = decoded_codepoint_from_wchar(L"Д", 2);
+		AssertAlways(cp.codepoint == 0x414);
+		AssertAlways(cp.advance == 1);
+		cp = decoded_codepoint_from_wchar(L"Ω", 2);
+		AssertAlways(cp.codepoint == 0x2126);
+		AssertAlways(cp.advance == 1);
+		cp  = decoded_codepoint_from_wchar(L"🍌", 2);
+		AssertAlways(cp.codepoint == 0x1F34C);
+#if COMPILER_CL
+		AssertAlways(cp.advance == 2);
+#elif COMPILER_CLANG || COMPILER_GCC
+		AssertAlways(cp.advance == 1);
+#else
+#  error "unhandled compiler"
+#endif
+		
+		print_verbose("[KIGU-TEST] PASSED: unicode/decoding\n");
+	}
 	
-	//// UTF-16 ////
-	printf("-------- UTF-16 --------\n");
-	str16 test16 = str16_lit(u"Ё Ђ Ѓ Є Ѕ І Ї Ј Љ Њ Ћ Ќ Ў Џ А Б В Г Д Е Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я а");
-	printf("%s\n", str8_from_str16(test16).str);
+	//TODO test invalid encoding
+	{//encoding
+		u32 cp1 = U'a'; //0x61
+		u32 cp2 = U'Д'; //0x0414
+		u32 cp3 = U'Ω'; //0x2126
+		u32 cp4 = U'🍌'; //0x0001F34C
+		u32 advance;
+		
+		u8 u8_buffer[4] = {0};
+		advance = utf8_from_codepoint(u8_buffer, cp1);
+		AssertAlways(advance == 1);
+		AssertAlways(u8_buffer[0] == 0x61);
+		AssertAlways(u8_buffer[1] == 0x00);
+		AssertAlways(u8_buffer[2] == 0x00);
+		AssertAlways(u8_buffer[3] == 0x00);
+		advance = utf8_from_codepoint(u8_buffer, cp2);
+		AssertAlways(advance == 2);
+		AssertAlways(u8_buffer[0] == 0xD0);
+		AssertAlways(u8_buffer[1] == 0x94);
+		AssertAlways(u8_buffer[2] == 0x00);
+		AssertAlways(u8_buffer[3] == 0x00);
+		advance = utf8_from_codepoint(u8_buffer, cp3);
+		AssertAlways(advance == 3);
+		AssertAlways(u8_buffer[0] == 0xE2);
+		AssertAlways(u8_buffer[1] == 0x84);
+		AssertAlways(u8_buffer[2] == 0xA6);
+		AssertAlways(u8_buffer[3] == 0x00);
+		advance = utf8_from_codepoint(u8_buffer, cp4);
+		AssertAlways(advance == 4);
+		AssertAlways(u8_buffer[0] == 0xF0);
+		AssertAlways(u8_buffer[1] == 0x9F);
+		AssertAlways(u8_buffer[2] == 0x8D);
+		AssertAlways(u8_buffer[3] == 0x8C);
+		
+		u16 u16_buffer[2] = {0};
+		advance = utf16_from_codepoint(u16_buffer, cp1);
+		AssertAlways(advance == 1);
+		AssertAlways(u16_buffer[0] == 0x0061);
+		AssertAlways(u16_buffer[1] == 0x0000);
+		advance = utf16_from_codepoint(u16_buffer, cp2);
+		AssertAlways(advance == 1);
+		AssertAlways(u16_buffer[0] == 0x0414);
+		AssertAlways(u16_buffer[1] == 0x0000);
+		advance = utf16_from_codepoint(u16_buffer, cp3);
+		AssertAlways(advance == 1);
+		AssertAlways(u16_buffer[0] == 0x2126);
+		AssertAlways(u16_buffer[1] == 0x0000);
+		advance = utf16_from_codepoint(u16_buffer, cp4);
+		AssertAlways(advance == 2);
+		AssertAlways(u16_buffer[0] == 0xD83C);
+		AssertAlways(u16_buffer[1] == 0xDF4C);
+		
+		wchar_t w_buffer[2] = {0};
+		advance = wchar_from_codepoint(w_buffer, cp1);
+		AssertAlways(advance == 1);
+		AssertAlways(w_buffer[0] == 0x0061);
+		AssertAlways(w_buffer[1] == 0x0000);
+		advance = wchar_from_codepoint(w_buffer, cp2);
+		AssertAlways(advance == 1);
+		AssertAlways(w_buffer[0] == 0x0414);
+		AssertAlways(w_buffer[1] == 0x0000);
+		advance = wchar_from_codepoint(w_buffer, cp3);
+		AssertAlways(advance == 1);
+		AssertAlways(w_buffer[0] == 0x2126);
+		AssertAlways(w_buffer[1] == 0x0000);
+		 advance = wchar_from_codepoint(w_buffer, cp4);
+#if COMPILER_CL
+		AssertAlways(advance == 2);
+		AssertAlways(w_buffer[0] == 0xD83C);
+		AssertAlways(w_buffer[1] == 0xDF4C);
+#elif COMPILER_CLANG || COMPILER_GCC
+		AssertAlways(advance == 1);
+		AssertAlways(w_buffer[0] == 0x0001F34C);
+		AssertAlways(w_buffer[1] == 0x00000000);
+#else
+#  error "unhandled compiler"
+#endif
+		
+		print_verbose("[KIGU-TEST] PASSED: unicode/encoding\n");
+	}
 	
-	//// UTF-32 ////
-	printf("-------- UTF-32 --------\n");
-	str32 test32 = str32_lit(U"Ё Ђ Ѓ Є Ѕ І Ї Ј Љ Њ Ћ Ќ Ў Џ А Б В Г Д Е Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я а");
-	printf("%s\n", str8_from_str32(test32).str);
+	{//conversion
+		str8 z8 = str8_from_str16(test16);
+		forI(z8.count) AssertAlways(z8.str[i] == test8.str[i]);
+		
+		z8 = str8_from_str32(test32);
+		forI(z8.count) AssertAlways(z8.str[i] == test8.str[i]);
+		
+		z8 = str8_from_wchar(testw);
+		forI(z8.count) AssertAlways(z8.str[i] == test8.str[i]);
+		
+		str16 z16 = str16_from_str8(test8);
+		forI(z16.count) AssertAlways(z16.str[i] == test16.str[i]);
+		
+		str32 z32 = str32_from_str8(test8);
+		forI(z32.count) AssertAlways(z32.str[i] == test32.str[i]);
+		
+		s64 count;
+		wchar_t* zw = wchar_from_str8(test8, &count);
+#if COMPILER_CL
+		AssertAlways(count == test16.count);
+		forI(count) AssertAlways(zw[i] == test16.str[i]);
+#elif COMPILER_CLANG || COMPILER_GCC
+		AssertAlways(count == test32.count);
+		forI(count) AssertAlways(zw[i] == test32.str[i]);
+#else
+#  error "unhandled compiler"
+#endif
+		
+		print_verbose("[KIGU-TEST] PASSED: unicode/conversion\n");
+	}
 	
-	printf("[KIGU-TEST] TODO:   unicode\n");
+	{//advancing
+		str8 z1 = test8;
+		DecodedCodepoint cp = str8_advance(&z1);
+		AssertAlways(cp.codepoint == 'a');
+		AssertAlways(cp.advance == 1);
+		AssertAlways(z1.str[0] == ' ');
+		
+		cp = str8_nadvance(&z1, 7);
+		AssertAlways(cp.codepoint == ' ');
+		AssertAlways(cp.advance == 1);
+		AssertAlways(z1.str[0] == 0xD0); //Д
+		AssertAlways(z1.str[1] == 0x94);
+		
+		str8_advance_until(&z1, 0x2563); //╣
+		AssertAlways(z1.str[0] == 0xE2); //╣
+		AssertAlways(z1.str[1] == 0x95);
+		AssertAlways(z1.str[2] == 0xA3);
+		
+		cp = str8_advance(&z1);
+		AssertAlways(cp.codepoint == 0x2563); //╣
+		AssertAlways(cp.advance == 3);
+		AssertAlways(z1.str[0] == ' ');
+		
+		str8_advance_while(&z1, ' ');
+		AssertAlways(z1.str[0] == 0xF0); //🍌
+		AssertAlways(z1.str[1] == 0x9F);
+		AssertAlways(z1.str[2] == 0x8D);
+		AssertAlways(z1.str[3] == 0x8C);
+		
+		print_verbose("[KIGU-TEST] PASSED: unicode/advancing\n");
+	}
+	
+	{//indexing
+		u32 z1 = str8_index(test8, 18);
+		AssertAlways(z1 == 0x419); //Й
+		
+		u32 z2 = str8_length(test8);
+		AssertAlways(z2 == 56);
+		
+		print_verbose("[KIGU-TEST] PASSED: unicode/indexing\n");
+	}
+	
+	{//comparison
+		AssertAlways(str8_compare(test8, test8) == 0);
+		AssertAlways(str8_compare(str8_lit(TEST_KIGU_UNICODE_LITERAL), str8_lit(TEST_KIGU_UNICODE_LITERAL)) == 0);
+		AssertAlways(str8_compare(str8_lit(""), str8_lit("")) == 0);
+		AssertAlways(str8_compare(str8_lit("a"), str8_lit("a")) == 0);
+		AssertAlways(str8_compare(str8_lit("Д"), str8_lit("Д")) == 0);
+		AssertAlways(str8_compare(str8_lit("Ω"), str8_lit("Ω")) == 0);
+		AssertAlways(str8_compare(str8_lit("🍌"), str8_lit("🍌")) == 0);
+		AssertAlways(str8_compare(str8_lit("abc"), str8_lit("abd")) < 0);
+		AssertAlways(str8_compare(str8_lit("abd"), str8_lit("abc")) > 0);
+		AssertAlways(str8_compare(str8_lit("abc"), str8_lit("abcd")) < 0);
+		AssertAlways(str8_compare(str8_lit("abcd"), str8_lit("abc")) > 0);
+		AssertAlways(str8_compare(str8_lit("abcД"), str8_lit("abcΩ")) < 0);
+		AssertAlways(str8_compare(str8_lit("abcΩ"), str8_lit("abcД")) > 0);
+		
+		AssertAlways(str8_ncompare(test8, test8, 1) == 0);
+		AssertAlways(str8_ncompare(test8, test8, 10) == 0);
+		AssertAlways(str8_ncompare(str8_lit("abcq"), str8_lit("abcb"), 3) == 0);
+		AssertAlways(str8_ncompare(str8_lit("abcД"), str8_lit("abcΩ"), 3) == 0);
+		AssertAlways(str8_ncompare(str8_lit("abcД"), str8_lit("abc🍌"), 3) == 0);
+		AssertAlways(str8_ncompare(str8_lit("qabc"), str8_lit("qxyz"), 1) == 0);
+		AssertAlways(str8_ncompare(str8_lit("Дabc"), str8_lit("Дxyz"), 1) == 0);
+		AssertAlways(str8_ncompare(str8_lit("Ωabc"), str8_lit("Ωxyz"), 1) == 0);
+		AssertAlways(str8_ncompare(str8_lit("🍌abc"), str8_lit("🍌xyz"), 1) == 0);
+		AssertAlways(str8_ncompare(str8_lit("abc"), str8_lit("abd"), 3) < 0);
+		AssertAlways(str8_ncompare(str8_lit("abd"), str8_lit("abc"), 3) > 0);
+		AssertAlways(str8_ncompare(str8_lit("abc"), str8_lit("abcd"), 4) < 0);
+		AssertAlways(str8_ncompare(str8_lit("abcd"), str8_lit("abc"), 4) > 0);
+		AssertAlways(str8_ncompare(str8_lit("abcД"), str8_lit("abcΩ"), 4) < 0);
+		AssertAlways(str8_ncompare(str8_lit("abcΩ"), str8_lit("abcД"), 4) > 0);
+		
+		AssertAlways(str8_equal(test8, test8));
+		AssertAlways(str8_equal(str8_lit(TEST_KIGU_UNICODE_LITERAL), str8_lit(TEST_KIGU_UNICODE_LITERAL)));
+		AssertAlways(str8_equal(str8_lit(""), str8_lit("")));
+		AssertAlways(str8_equal(str8_lit("a"), str8_lit("a")));
+		AssertAlways(str8_equal(str8_lit("Д"), str8_lit("Д")));
+		AssertAlways(str8_equal(str8_lit("Ω"), str8_lit("Ω")));
+		AssertAlways(str8_equal(str8_lit("🍌"), str8_lit("🍌")));
+		
+		AssertAlways(str8_nequal(test8, test8, 1));
+		AssertAlways(str8_nequal(test8, test8, 10));
+		AssertAlways(str8_nequal(str8_lit("abcq"), str8_lit("abcb"), 3));
+		AssertAlways(str8_nequal(str8_lit("abcД"), str8_lit("abcΩ"), 3));
+		AssertAlways(str8_nequal(str8_lit("abcД"), str8_lit("abc🍌"), 3));
+		AssertAlways(str8_nequal(str8_lit("qabc"), str8_lit("qxyz"), 1));
+		AssertAlways(str8_nequal(str8_lit("Дabc"), str8_lit("Дxyz"), 1));
+		AssertAlways(str8_nequal(str8_lit("Ωabc"), str8_lit("Ωxyz"), 1));
+		AssertAlways(str8_nequal(str8_lit("🍌abc"), str8_lit("🍌xyz"), 1));
+		
+		print_verbose("[KIGU-TEST] PASSED: unicode/comparison\n");
+	}
+	
+	{//searching
+		AssertAlways(str8_begins_with(str8{}, str8{}));
+		AssertAlways(str8_begins_with(str8_lit("abc123"), str8_lit("abc")));
+		AssertAlways(str8_begins_with(str8_lit("abcД"), str8_lit("abc")));
+		AssertAlways(str8_begins_with(str8_lit("Д123"), str8_lit("Д")));
+		AssertAlways(str8_begins_with(str8_lit("ДД"), str8_lit("Д")));
+		AssertAlways(str8_begins_with(str8_lit("Ω123"), str8_lit("Ω")));
+		AssertAlways(str8_begins_with(str8_lit("ΩД"), str8_lit("Ω")));
+		AssertAlways(str8_begins_with(str8_lit("🍌123"), str8_lit("🍌")));
+		AssertAlways(str8_begins_with(str8_lit("🍌Д"), str8_lit("🍌")));
+		
+		AssertAlways(!str8_begins_with(str8_lit("abc123"), str8_lit("123")));
+		AssertAlways(!str8_begins_with(str8_lit("abcД"), str8_lit("Д")));
+		AssertAlways(!str8_begins_with(str8_lit("Д123"), str8_lit("123")));
+		AssertAlways(!str8_begins_with(str8_lit("ДД"), str8_lit("z")));
+		AssertAlways(!str8_begins_with(str8_lit("Ω123"), str8_lit("123")));
+		AssertAlways(!str8_begins_with(str8_lit("ΩД"), str8_lit("Д")));
+		AssertAlways(!str8_begins_with(str8_lit("🍌123"), str8_lit("123")));
+		AssertAlways(!str8_begins_with(str8_lit("🍌Д"), str8_lit("Д")));
+		
+		AssertAlways(str8_ends_with(str8{}, str8{}));
+		AssertAlways(str8_ends_with(str8_lit("abc123"), str8_lit("123")));
+		AssertAlways(str8_ends_with(str8_lit("abcД"), str8_lit("Д")));
+		AssertAlways(str8_ends_with(str8_lit("Д123"), str8_lit("123")));
+		AssertAlways(str8_ends_with(str8_lit("ДД"), str8_lit("Д")));
+		AssertAlways(str8_ends_with(str8_lit("Ω123"), str8_lit("123")));
+		AssertAlways(str8_ends_with(str8_lit("ΩД"), str8_lit("Д")));
+		AssertAlways(str8_ends_with(str8_lit("🍌123"), str8_lit("123")));
+		AssertAlways(str8_ends_with(str8_lit("🍌Д"), str8_lit("Д")));
+		
+		AssertAlways(!str8_ends_with(str8_lit("abc123"), str8_lit("abc")));
+		AssertAlways(!str8_ends_with(str8_lit("abcД"), str8_lit("abc")));
+		AssertAlways(!str8_ends_with(str8_lit("Д123"), str8_lit("Д")));
+		AssertAlways(!str8_ends_with(str8_lit("ДД"), str8_lit("z")));
+		AssertAlways(!str8_ends_with(str8_lit("Ω123"), str8_lit("Ω")));
+		AssertAlways(!str8_ends_with(str8_lit("ΩД"), str8_lit("Ω")));
+		AssertAlways(!str8_ends_with(str8_lit("🍌123"), str8_lit("🍌")));
+		AssertAlways(!str8_ends_with(str8_lit("🍌Д"), str8_lit("🍌")));
+		
+		AssertAlways(str8_contains(str8{}, str8{}));
+		AssertAlways(str8_contains(test8, str8_lit("a")));
+		AssertAlways(str8_contains(test8, str8_lit(" ")));
+		AssertAlways(str8_contains(test8, str8_lit("b c ")));
+		AssertAlways(str8_contains(test8, str8_lit("Д")));
+		AssertAlways(str8_contains(test8, str8_lit("Д Е")));
+		AssertAlways(str8_contains(test8, str8_lit("З И Й")));
+		AssertAlways(str8_contains(test8, str8_lit("♪ ♫ ╞")));
+		AssertAlways(str8_contains(test8, str8_lit("🍌")));
+		AssertAlways(str8_contains(test8, str8_lit("╣      🍌")));
+		
+		AssertAlways(!str8_contains(test8, str8_lit("!")));
+		AssertAlways(!str8_contains(test8, str8_lit("z")));
+		AssertAlways(!str8_contains(test8, str8_lit("a b d")));
+		AssertAlways(!str8_contains(test8, str8_lit("З И Й_")));
+		AssertAlways(!str8_contains(test8, str8_lit("╣  !   🍌")));
+		AssertAlways(!str8_contains(test8, str8_lit("᠅")));
+		
+		print_verbose("[KIGU-TEST] PASSED: unicode/searching\n");
+	}
+	
+	{//slicing
+		AssertAlways(str8_equal(str8_eat_one(test8), str8_lit(" b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		AssertAlways(str8_equal(str8_eat_one(str8_eat_one(test8)), str8_lit("b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		
+		AssertAlways(str8_equal(str8_eat_count(test8, 0), test8));
+		AssertAlways(str8_equal(str8_eat_count(str8{}, 0), str8{}));
+		AssertAlways(str8_equal(str8_eat_count(str8{}, 23), str8{}));
+		AssertAlways(str8_equal(str8_eat_count(test8, 5), str8_lit(" d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		AssertAlways(str8_equal(str8_eat_count(test8, 16), str8_lit("И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		
+		AssertAlways(str8_equal(str8_eat_until(str8_lit("  777777   abc"), U'a'), str8_lit("abc")));
+		AssertAlways(str8_equal(str8_eat_until(test8, U' '), str8_lit(" b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		AssertAlways(str8_equal(str8_eat_until(test8, U'b'), str8_lit("b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		AssertAlways(str8_equal(str8_eat_until(test8, U'♪'), str8_lit("♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		AssertAlways(str8_eat_until(test8, U'!').count == 0);
+		AssertAlways(str8_eat_until(test8, U'á').count == 0);
+		
+		AssertAlways(str8_equal(str8_eat_while(str8_lit("  777777   abc"), U' '), str8_lit("777777   abc")));
+		AssertAlways(str8_equal(str8_eat_while(str8_lit("♪♪♪♪♪   abc"), U'♪'), str8_lit("   abc")));
+		AssertAlways(str8_equal(str8_eat_while(str8_lit("🍌🍌🍌🍌🍌abc"), U'🍌'), str8_lit("abc")));
+		AssertAlways(!str8_equal(str8_eat_while(str8_lit("🍌🍌🍌🍌🍌abc"), U' '), str8_lit("abc")));
+		
+		print_verbose("[KIGU-TEST] PASSED: unicode/slicing\n");
+	}
+	
+	#if TEST_KIGU_PRINT_VERBOSE
+	{//printing
+		fflush(stdout);
+		_setmode(_fileno(stdout), _O_U16TEXT);
+		setlocale(LC_ALL, "en_US.utf8");
+		
+		wprintf(L"-------- Unicode Printing --------\n");
+		wprintf(L"UTF8 : %ls\n", wchar_from_str8(test8));
+		wprintf(L"UTF16: %ls\n", wchar_from_str8(str8_from_str16(test16)));
+		wprintf(L"UTF32: %ls\n", wchar_from_str8(str8_from_str32(test32)));
+		wprintf(L"Wide : %ls\n", testw);
+		wchar_t test_buffer[1024] = {0};
+		mbstowcs(test_buffer, GLUE(u8,TEST_KIGU_UNICODE_LITERAL), 1024);
+		wprintf(L"U8toW: %ls\n", test_buffer);
+		
+		fflush(stdout);
+		_setmode(_fileno(stdout), _O_TEXT);
+		print_verbose("[KIGU-TEST] PASSED: unicode/printing\n");
+	}
+	#endif
+	
+	printf("[KIGU-TEST] PASSED: unicode\n");
+#undef TEST_KIGU_UNICODE_LITERAL
 }
 
 #include "utils.h"
