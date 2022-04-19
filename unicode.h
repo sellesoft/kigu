@@ -1,7 +1,7 @@
 /* Kigu Unicode Library
 Notes:
 str8 is the expected usage type thruout the projects, and as such, has string functions for it.
-strings are null-terminated (ending in '\0') in order for libc functions to work, but we don't use it internally.
+strings are null-terminated (ending in '\0') in order for libc functions to work, but we don't use it internally and don't assume they are included in the count.
 str16 and str32 use big endian UTF encodings.
 
 Terminology:
@@ -20,6 +20,7 @@ Index:
 @str8_comparison
 @str8_searching
 @str8_slicing
+@str8_building
 
 !ref: https://github.com/Dion-Systems/metadesk/blob/master/source/md.h
 !ref: https://github.com/Dion-Systems/metadesk/blob/master/source/md.c
@@ -43,6 +44,13 @@ struct str8{
 	s64 count;
 	FORCE_INLINE explicit operator bool(){ return str && count; }
 #define str8_lit(s) str8{(u8*)GLUE(u8,s), sizeof(GLUE(u8,s))-1}
+};
+
+struct str8_builder{
+	u8* str;
+	s64 count;
+	s64 space;
+	Allocator* allocator;
 };
 
 struct str16{
@@ -403,9 +411,9 @@ str8_advance_while(str8* a, u32 c){
 //// @str8_indexing
 //returns the `n`th codepoint (starting from 0) in the utf8 string `a`
 //returns the last codepoint of the string if `n` is greater than the length of the string
-global_ inline u32
+global_ inline DecodedCodepoint
 str8_index(str8 a, u64 n){
-	return str8_nadvance(&a, n+1).codepoint;
+	return str8_nadvance(&a, n+1);
 }
 
 //returns the number of codepoints in the unicode string `a`
@@ -479,7 +487,7 @@ str8_contains(str8 a, str8 b){
 	u32 b_len = str8_length(b);
 	while(a){
 		if(b.count > a.count) return false;
-		if(str8_ncompare(a, b, b_len) == 0) return true;
+		if(str8_nequal(a, b, b_len)) return true;
 		str8_advance(&a);
 	}
 	return false;
@@ -488,23 +496,69 @@ str8_contains(str8 a, str8 b){
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_slicing
-//returns a slice of the utf8 string `a` starting after the first character until the end of the string
+//returns a slice of the utf8 string `a` ending at the first codepoint
 global_ inline str8
 str8_eat_one(str8 a){
+	str8 b = a;
+	str8_advance(&b);
+	if(!b) return str8{};
+	return str8{a.str, a.count-b.count};
+}
+
+//returns a slice of the utf8 string `a` ending at the `n`th codepoint
+global_ inline str8
+str8_eat_count(str8 a, u64 n){
+	str8 b = a;
+	str8_nadvance(&b, n);
+	if(!b) return str8{};
+	return str8{a.str, a.count-b.count};
+}
+
+//returns a slice of the utf8 string `a` ending at the first occurance of the codepoint `c`
+global_ str8
+str8_eat_until(str8 a, u32 c){
+	str8 b = a;
+	while(b){
+		DecodedCodepoint decoded = decoded_codepoint_from_utf8(b.str, 4);
+		if(decoded.codepoint == c) break;
+		b.str   += decoded.advance;
+		b.count -= decoded.advance;
+	}
+	if(!b) return str8{};
+	return str8{a.str, a.count-b.count};
+}
+
+//returns a slice of the utf8 string `a` ending at the first occurance of a codepoint that is not the codepoint `c`
+global_ str8
+str8_eat_while(str8 a, u32 c){
+	str8 b = a;
+	while(b){
+		DecodedCodepoint decoded = decoded_codepoint_from_utf8(b.str, 4);
+		if(decoded.codepoint != c) break;
+		b.str   += decoded.advance;
+		b.count -= decoded.advance;
+	}
+	if(!b) return str8{};
+	return str8{a.str, a.count-b.count};
+}
+
+//returns a slice of the utf8 string `a` starting after the first character until the end of the string
+global_ inline str8
+str8_skip_one(str8 a){
 	str8_advance(&a);
 	return a;
 }
 
 //returns a slice of the utf8 string `a` starting after the `n`th character from the beginning until the end of the string
 global_ inline str8
-str8_eat_count(str8 a, u64 n){
+str8_skip_count(str8 a, u64 n){
 	str8_nadvance(&a, n);
 	return a;
 }
 
 //returns a slice of the utf8 string `a` starting at the first occurance of the codepoint `c` until the end of the string
 global_ str8
-str8_eat_until(str8 a, u32 c){
+str8_skip_until(str8 a, u32 c){
 	while(a){
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(a.str, 4);
 		if(decoded.codepoint == c) break;
@@ -516,7 +570,7 @@ str8_eat_until(str8 a, u32 c){
 
 //returns a slice of the utf8 string `a` starting at the first occurance of a codepoint that is not the codepoint `c` until the end of the string
 global_ str8
-str8_eat_while(str8 a, u32 c){
+str8_skip_while(str8 a, u32 c){
 	while(a){
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(a.str, 4);
 		if(decoded.codepoint != c) break;
@@ -526,5 +580,46 @@ str8_eat_while(str8 a, u32 c){
 	return a;
 }
 
+
+//-////////////////////////////////////////////////////////////////////////////////////////////////
+//// @str8_building
+//allocates a new copy of the utf8 string `a` using `allocator`
+global_ str8
+str8_copy(str8 a, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
+	str8 result{(u8*)allocator->reserve((a.count+1)*sizeof(u8)), a.count};
+	CopyMemory(result.str, a.str, a.count*sizeof(u8));
+	return result;
+}
+
+//initializes a str8_builder `builder` with the string `initial` using `allocator`
+global_ void
+str8_builder_init(str8_builder* builder, str8 initial, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
+	builder->count     = initial.count;
+	builder->space     = RoundUpTo(builder->count+1, 8);
+	builder->str       = (u8*)allocator->reserve(builder->space*sizeof(u8)); Assert(builder->str, "Failed to allocate memory");
+	builder->allocator = allocator;
+	if(initial.str) CopyMemory(builder->str, initial.str, initial.count*sizeof(u8));
+}
+
+//fits the allocation of a str8_builder `builder` to its count (+1 for null-terminator)
+global_ void
+str8_builder_fit(str8_builder* builder){
+	builder->space = builder->count+1;
+	builder->str   = (u8*)builder->allocator->resize(builder->str, builder->space*sizeof(u8)); Assert(builder->str, "Failed to allocate memory");
+}
+
+//appends `a` to end the str8_builder `builder`
+global_ void
+str8_builder_append(str8_builder* builder, str8 a){
+	if(!a) return;
+	
+	s64 offset = builder->count;
+	builder->count += a.count;
+	if(builder->space < builder->count+1){
+		builder->space = RoundUpTo(builder->count+1, 8);
+		builder->str   = (u8*)builder->allocator->resize(builder->str, builder->space*sizeof(u8)); Assert(builder->str, "Failed to allocate memory");
+	}
+	CopyMemory(builder->str+offset, a.str, a.count*sizeof(u8));
+}
 
 #endif //KIGU_UNICODE_H

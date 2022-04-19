@@ -1072,7 +1072,7 @@ local void TEST_kigu_unicode(){
 	}
 	
 	{//indexing
-		u32 z1 = str8_index(test8, 18);
+		u32 z1 = str8_index(test8, 18).codepoint;
 		AssertAlways(z1 == 0x419); //Й
 		
 		u32 z2 = str8_length(test8);
@@ -1194,28 +1194,120 @@ local void TEST_kigu_unicode(){
 	}
 	
 	{//slicing
-		AssertAlways(str8_equal(str8_eat_one(test8), str8_lit(" b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
-		AssertAlways(str8_equal(str8_eat_one(str8_eat_one(test8)), str8_lit("b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		AssertAlways(str8_equal(str8_eat_one(test8), str8_lit("a")));
+		AssertAlways(str8_equal(str8_eat_one(str8_eat_one(test8)), str8{}));
 		
-		AssertAlways(str8_equal(str8_eat_count(test8, 0), test8));
+		AssertAlways(str8_equal(str8_eat_count(test8, 0), str8{}));
 		AssertAlways(str8_equal(str8_eat_count(str8{}, 0), str8{}));
 		AssertAlways(str8_equal(str8_eat_count(str8{}, 23), str8{}));
-		AssertAlways(str8_equal(str8_eat_count(test8, 5), str8_lit(" d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
-		AssertAlways(str8_equal(str8_eat_count(test8, 16), str8_lit("И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		AssertAlways(str8_equal(str8_eat_count(test8, 5), str8_lit("a b c")));
+		AssertAlways(str8_equal(str8_eat_count(test8, 16), str8_lit("a b c d Д Е Ж З ")));
 		
-		AssertAlways(str8_equal(str8_eat_until(str8_lit("  777777   abc"), U'a'), str8_lit("abc")));
-		AssertAlways(str8_equal(str8_eat_until(test8, U' '), str8_lit(" b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
-		AssertAlways(str8_equal(str8_eat_until(test8, U'b'), str8_lit("b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
-		AssertAlways(str8_equal(str8_eat_until(test8, U'♪'), str8_lit("♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		AssertAlways(str8_equal(str8_eat_until(str8_lit("  777777   abc"), U'a'), str8_lit("  777777   ")));
+		AssertAlways(str8_equal(str8_eat_until(test8, U' '), str8_lit("a")));
+		AssertAlways(str8_equal(str8_eat_until(test8, U'b'), str8_lit("a ")));
+		AssertAlways(str8_equal(str8_eat_until(test8, U'♪'), str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ")));
 		AssertAlways(str8_eat_until(test8, U'!').count == 0);
 		AssertAlways(str8_eat_until(test8, U'á').count == 0);
 		
-		AssertAlways(str8_equal(str8_eat_while(str8_lit("  777777   abc"), U' '), str8_lit("777777   abc")));
-		AssertAlways(str8_equal(str8_eat_while(str8_lit("♪♪♪♪♪   abc"), U'♪'), str8_lit("   abc")));
-		AssertAlways(str8_equal(str8_eat_while(str8_lit("🍌🍌🍌🍌🍌abc"), U'🍌'), str8_lit("abc")));
-		AssertAlways(!str8_equal(str8_eat_while(str8_lit("🍌🍌🍌🍌🍌abc"), U' '), str8_lit("abc")));
+		AssertAlways(str8_equal(str8_eat_while(str8_lit("  777777   abc"), U' '), str8_lit("  ")));
+		AssertAlways(str8_equal(str8_eat_while(str8_lit("♪♪♪♪♪   abc"), U'♪'), str8_lit("♪♪♪♪♪")));
+		AssertAlways(str8_equal(str8_eat_while(str8_lit("🍌🍌🍌🍌🍌abc"), U'🍌'), str8_lit("🍌🍌🍌🍌🍌")));
+		AssertAlways(!str8_equal(str8_eat_while(str8_lit("🍌🍌🍌🍌🍌abc"), U' '), str8_lit("🍌🍌🍌🍌🍌")));
+		
+		AssertAlways(str8_equal(str8_skip_one(test8), str8_lit(" b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		AssertAlways(str8_equal(str8_skip_one(str8_skip_one(test8)), str8_lit("b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		
+		AssertAlways(str8_equal(str8_skip_count(test8, 0), test8));
+		AssertAlways(str8_equal(str8_skip_count(str8{}, 0), str8{}));
+		AssertAlways(str8_equal(str8_skip_count(str8{}, 23), str8{}));
+		AssertAlways(str8_equal(str8_skip_count(test8, 5), str8_lit(" d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		AssertAlways(str8_equal(str8_skip_count(test8, 16), str8_lit("И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		
+		AssertAlways(str8_equal(str8_skip_until(str8_lit("  777777   abc"), U'a'), str8_lit("abc")));
+		AssertAlways(str8_equal(str8_skip_until(test8, U' '), str8_lit(" b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		AssertAlways(str8_equal(str8_skip_until(test8, U'b'), str8_lit("b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		AssertAlways(str8_equal(str8_skip_until(test8, U'♪'), str8_lit("♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		AssertAlways(str8_skip_until(test8, U'!').count == 0);
+		AssertAlways(str8_skip_until(test8, U'á').count == 0);
+		
+		AssertAlways(str8_equal(str8_skip_while(str8_lit("  777777   abc"), U' '), str8_lit("777777   abc")));
+		AssertAlways(str8_equal(str8_skip_while(str8_lit("♪♪♪♪♪   abc"), U'♪'), str8_lit("   abc")));
+		AssertAlways(str8_equal(str8_skip_while(str8_lit("🍌🍌🍌🍌🍌abc"), U'🍌'), str8_lit("abc")));
+		AssertAlways(!str8_equal(str8_skip_while(str8_lit("🍌🍌🍌🍌🍌abc"), U' '), str8_lit("abc")));
 		
 		print_verbose("[KIGU-TEST] PASSED: unicode/slicing\n");
+	}
+	
+	{//building
+		AssertAlways(str8_equal(test8, str8_copy(test8)));
+		AssertAlways(str8_equal(test8, str8_copy(str8_lit(TEST_KIGU_UNICODE_LITERAL))));
+		AssertAlways(str8_equal(str8_lit("abc"), str8_copy(str8_lit("abc"))));
+		
+		str8_builder builder1;
+		str8_builder_init(&builder1, {});
+		AssertAlways(builder1.count == 0);
+		AssertAlways(builder1.space == 8);
+		AssertAlways(builder1.str != 0);
+		AssertAlways(builder1.allocator == KIGU_UNICODE_ALLOCATOR);
+		str8_builder builder2;
+		str8_builder_init(&builder2, test8);
+		AssertAlways(builder2.count == 90);
+		AssertAlways(builder2.space == 96);
+		AssertAlways(builder2.str != 0);
+		AssertAlways(builder2.str != test8.str);
+		AssertAlways(builder2.allocator == KIGU_UNICODE_ALLOCATOR);
+		
+		str8_builder_fit(&builder2);
+		AssertAlways(builder2.count == 90);
+		AssertAlways(builder2.space == 91);
+		AssertAlways(builder2.str != 0);
+		AssertAlways(builder2.allocator == KIGU_UNICODE_ALLOCATOR);
+		
+		str8_builder_append(&builder2, str8{});
+		AssertAlways(builder2.count == 90);
+		AssertAlways(builder2.space == 91);
+		AssertAlways(builder2.str != 0);
+		AssertAlways(str8_length(str8{builder2.str, builder2.count}) == 56);
+		AssertAlways(str8_equal(str8{builder2.str, builder2.count}, str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		str8_builder_append(&builder2, str8_lit(""));
+		AssertAlways(builder2.count == 90);
+		AssertAlways(builder2.space == 91);
+		AssertAlways(builder2.str != 0);
+		AssertAlways(str8_length(str8{builder2.str, builder2.count}) == 56);
+		AssertAlways(str8_equal(str8{builder2.str, builder2.count}, str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		str8_builder_append(&builder2, str8_lit("a"));
+		AssertAlways(builder2.count == 91);
+		AssertAlways(builder2.space == 96);
+		AssertAlways(builder2.str != 0);
+		AssertAlways(str8_length(str8{builder2.str, builder2.count}) == 57);
+		AssertAlways(str8_equal(str8{builder2.str, builder2.count}, str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌a")));
+		str8_builder_append(&builder2, str8_lit("Д"));
+		AssertAlways(builder2.count == 93);
+		AssertAlways(builder2.space == 96);
+		AssertAlways(builder2.str != 0);
+		AssertAlways(str8_length(str8{builder2.str, builder2.count}) == 58);
+		AssertAlways(str8_equal(str8{builder2.str, builder2.count}, str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌aД")));
+		str8_builder_append(&builder2, str8_lit("Ω"));
+		AssertAlways(builder2.count == 96);
+		AssertAlways(builder2.space == 104);
+		AssertAlways(builder2.str != 0);
+		AssertAlways(str8_length(str8{builder2.str, builder2.count}) == 59);
+		AssertAlways(str8_equal(str8{builder2.str, builder2.count}, str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌aДΩ")));
+		str8_builder_append(&builder2, str8_lit("🍌"));
+		AssertAlways(builder2.count == 100);
+		AssertAlways(builder2.space == 104);
+		AssertAlways(builder2.str != 0);
+		AssertAlways(str8_length(str8{builder2.str, builder2.count}) == 60);
+		AssertAlways(str8_equal(str8{builder2.str, builder2.count}, str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌aДΩ🍌")));
+		str8_builder_append(&builder2, str8_lit("abc"));
+		AssertAlways(builder2.count == 103);
+		AssertAlways(builder2.space == 104);
+		AssertAlways(builder2.str != 0);
+		AssertAlways(str8_length(str8{builder2.str, builder2.count}) == 63);
+		AssertAlways(str8_equal(str8{builder2.str, builder2.count}, str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌aДΩ🍌abc")));
+		
+		print_verbose("[KIGU-TEST] PASSED: unicode/building\n");
 	}
 	
 	#if TEST_KIGU_PRINT_VERBOSE
