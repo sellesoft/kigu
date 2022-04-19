@@ -26,7 +26,8 @@ if you are using deshi and want the program to wait until tracy is connected def
 #define DPZoneScopedC(color)                                ZoneScopedC(color)
 #define DPZoneScopedNC(name, color)                         ZoneScopedNC(name, color)
 
-#define DPZoneText(txt, size)                               ZoneText(txt, size)
+#define DPZoneText(txt)                                     ZoneText(txt, sizeof(txt))
+#define DPZoneDynText(txt)                                  {string deshiprof_dyn_string = txt; ZoneText(deshiprof_dyn_string.str, deshiprof_dyn_string.count);}
 #define DPZoneTextV(varname, txt, size)                     ZoneTextV(varname, txt, size)
 #define DPZoneName(txt, size)                               ZoneName(txt, size)
 #define DPZoneNameV(varname, txt, size)                     ZoneNameV(varname, txt, size)
@@ -56,8 +57,9 @@ if you are using deshi and want the program to wait until tracy is connected def
 #define DPTracyPlot(name, val)                              TracyPlot(name, val)
 #define DPTracyPlotConfig(name, type)                       TracyPlotConfig(name, type)
 
-#define DPTracyAppInfo(txt, size)                           TracyAppInfo(txt, size)
-#define DPTracyMessage(txt, size)                          TracyMessage(txt, size)                           
+#define DPTracyAppInfo(txt, size)                          TracyAppInfo(txt, size)
+#define DPTracyMessage(txt, size)                          TracyMessage(txt, size)   
+#define DPTracyDynMessage(txt)                             {string deshi_prof_txt = txt; TracyMessage(deshi_prof_txt.str, deshi_prof_txt.count);}                           
 #define DPTracyMessageL(txt)                               TracyMessageL(txt)                                
 #define DPTracyMessageC(txt, size, color)                  TracyMessageC(txt, size, color)                   
 #define DPTracyMessageLC(txt, color)                       TracyMessageLC(txt, color)                        
@@ -110,7 +112,7 @@ if you are using deshi and want the program to wait until tracy is connected def
 #define DPZoneScopedN(name)                                 
 #define DPZoneScopedC(color)                                
 #define DPZoneScopedNC(name, color)                         
-#define DPZoneText(txt, size)                               
+#define DPZoneText(txt)                               
 #define DPZoneTextV(varname, txt, size)                     
 #define DPZoneName(txt, size)                               
 #define DPZoneNameV(varname, txt, size)                     
