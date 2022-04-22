@@ -1,8 +1,9 @@
 /* Kigu Unicode Library
 Notes:
-str8 is the expected usage type thruout the projects, and as such, has string functions for it.
-strings are null-terminated (ending in '\0') in order for libc functions to work, but we don't use it internally and don't assume they are included in the count.
-str16 and str32 use big endian UTF encodings.
+- str8 is the expected usage type thruout the projects, and as such, has string functions for it.
+- strings are null-terminated (ending in '\0') in order for libc functions to work, but we don't use it
+internally and don't assume they are included in the count (NOTE this assumes the allocators fill memory to zero).
+- str16 and str32 use big endian UTF encodings.
 
 Terminology:
 codepoint       the value or set of values that represent one unicode character
@@ -21,6 +22,7 @@ Index:
 @str8_searching
 @str8_slicing
 @str8_building
+@str8_hashing
 
 !ref: https://github.com/Dion-Systems/metadesk/blob/master/source/md.h
 !ref: https://github.com/Dion-Systems/metadesk/blob/master/source/md.c
@@ -42,7 +44,7 @@ Index:
 struct str8{
 	u8* str;
 	s64 count;
-	FORCE_INLINE explicit operator bool(){ return str && count; }
+	FORCE_INLINE explicit operator bool(){ return str && count > 0; }
 #define str8_lit(s) str8{(u8*)GLUE(u8,s), sizeof(GLUE(u8,s))-1}
 };
 
@@ -56,14 +58,14 @@ struct str8_builder{
 struct str16{
 	u16* str;
 	s64  count;
-	FORCE_INLINE explicit operator bool(){ return str && count; }
+	FORCE_INLINE explicit operator bool(){ return str && count > 0; }
 #define str16_lit(s) str16{(u16*)GLUE(u,s), (sizeof(GLUE(u,s))/sizeof(u16))-1}
 };
 
 struct str32{
 	u32* str;
 	s64  count;
-	FORCE_INLINE explicit operator bool(){ return str && count; }
+	FORCE_INLINE explicit operator bool(){ return str && count > 0; }
 #define str32_lit(s) str32{(u32*)GLUE(U,s), (sizeof(GLUE(U,s))/sizeof(u32))-1}
 };
 
@@ -620,6 +622,29 @@ str8_builder_append(str8_builder* builder, str8 a){
 		builder->str   = (u8*)builder->allocator->resize(builder->str, builder->space*sizeof(u8)); Assert(builder->str, "Failed to allocate memory");
 	}
 	CopyMemory(builder->str+offset, a.str, a.count*sizeof(u8));
+}
+
+
+//-////////////////////////////////////////////////////////////////////////////////////////////////
+//// @str8_hashing
+struct str8_static_t{const char* str; u64 count; template<u64 N> constexpr str8_static_t(const char(&a)[N]): str(a), count(N-1){}};
+constexpr u64
+str8_static_hash64(str8_static_t s, u64 seed = 14695981039346656037){ //64bit FNV_offset_basis
+	while(s.count-- != 0){
+		seed ^= (u8)*s.str;
+		seed *= 1099511628211; //64bit FNV_prime
+		s.str++;
+	}
+	return seed;
+}
+
+global_ u64
+str8_hash64(str8 s, u64 seed = 14695981039346656037){ //64bit FNV_offset_basis
+	while(s.count-- != 0){
+		seed ^= *s.str++;
+		seed *= 1099511628211; //64bit FNV_prime
+	}
+	return seed;
 }
 
 #endif //KIGU_UNICODE_H
