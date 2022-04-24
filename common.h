@@ -376,11 +376,18 @@ global_const u64 wcharsize = sizeof(wchar);
 #define CastFromConst(type,a) const_cast<type>(a)
 #define StaticCast(type,a) static_cast<type>(a)
 #define DynamicCast(type,a) dynamic_cast<type>(a)
+#define ConversionlessCast(type, var) *(type*)(&var)
 #define HasFlag(var,flag) ((var) & (flag))
 #define HasAllFlags(var,flags) (((var) & (flags)) == (flags))
 #define AddFlag(var,flag) ((var) |= (flag))
 #define RemoveFlag(var,flag) ((var) &= (~(flag)))
 #define ToggleFlag(var,flag) ((var) ^= (flag))
+#define ReadBits64(var, start, numbits) (var>>start) & (((u64)1<<numbits)-1)
+#define ReadBits32(var, start, numbits) (var>>start) & (((u32)1<<numbits)-1)
+#define ReadBits16(var, start, numbits) (var>>start) & (((u16)1<<numbits)-1)
+#define ReadBits8 (var, start, numbits) (var>>start) & (((u8)1<<numbits)-1)
+
+
 
 //////////////////////////
 //// common functions ////
