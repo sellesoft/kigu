@@ -71,6 +71,11 @@
 #    error "unhandled architecture"
 #  endif
 
+//// Unhandled Compiler ////
+#else //__GNUC__ || __GNUG__
+#  error "unhandled compiler"
+#endif
+
 #if !defined(COMPILER_CL)
 #  define COMPILER_CL 0
 #endif
@@ -104,10 +109,6 @@
 #  define ARCH_ARM32 0
 #endif
 
-//// Unhandled Compiler ////
-#else //__GNUC__ || __GNUG__
-#  error "unhandled compiler"
-#endif
 
 ///////////////////////// //NOTE this file is included is almost every other file of the project, so be frugal with includes here
 //// common includes ////
@@ -122,10 +123,11 @@
 ///////////////////////
 #define local    static //inside a .cpp
 #define persist  static //inside a function
-#define global_  static //inside a .h
+#define global_  static //inside a .h //TODO rename to global or similar
 #define local_const static const
 #define global_const static const
 #define external extern "C"
+
 
 /////////////////////////////////////
 //// compiler-dependent builtins ////
@@ -156,6 +158,7 @@
 #else //OS_LINUX || OS_MAC
 #  error "unhandled os"
 #endif
+
 
 //////////////////////
 //// common types ////
@@ -283,6 +286,7 @@ enum Types{
 	Type_AllocInfo,
 };
 
+
 //////////////////////////
 //// common constants ////
 //////////////////////////
@@ -323,6 +327,7 @@ global_const f32 M_HALF_SQRT_THREE = 0.866025403784f;
 
 global_const u32 npos = -1;
 
+
 ///////////////////////// 
 //// common var sizes////
 /////////////////////////
@@ -340,6 +345,7 @@ global_const u64 f32size   = sizeof(f32);
 global_const u64 f64size   = sizeof(f64);
 global_const u64 b32size   = sizeof(b32);
 global_const u64 wcharsize = sizeof(wchar);
+
 
 /////////////////////// //NOTE some are two level so you can use the result of a macro expansion (STRINGIZE, GLUE, etc)
 //// common macros ////
@@ -389,6 +395,7 @@ global_const u64 wcharsize = sizeof(wchar);
 
 
 
+
 //////////////////////////
 //// common functions ////
 //////////////////////////
@@ -422,6 +429,7 @@ template<typename... T, typename A> inline b32 greater_than_any(A tested, T... i
 template<typename T> T& deref_if_ptr(T& x){return x;}
 template<typename T> T& deref_if_ptr(T* x){return *x;}
 
+
 /////////////////////// //NOTE the ... is for a programmer message at the assert; it is unused otherwise
 //// assert macros //// //TODO(delle) refactor Assert() usages so the expression is not used
 /////////////////////// //TODO(delle) assert message popup thru the OS
@@ -447,12 +455,14 @@ template<typename T> T& deref_if_ptr(T* x){return *x;}
 #define DontCompile (0=__dont_compile_this__)
 #define WarnFuncNotImplemented(extra) LogW("FUNC", "Function ", __FUNCTION__, " has not been implemented or is not finished", (extra ? "\n" : ""), extra);
 
+
 /////////////////////////
 //// for-loop macros ////
 /////////////////////////
 #define forX(var_name,iterations) for(int var_name=0; var_name<(iterations); ++var_name)
 #define forI(iterations) for(int i=0; i<(iterations); ++i)
 #define forE(iterable) for(auto it = iterable.begin(), it_begin = iterable.begin(), it_end = iterable.end(); it != it_end; ++it)
+
 
 ///////////////
 //// other ////
@@ -474,135 +484,6 @@ template <class F> deferrer<F> operator*(defer_dummy, F f) { return {f}; }
 #  define defer auto DEFER(__LINE__) = defer_dummy{} *[&]()
 #endif // defer
 
-//// double linked list node ////
-struct Node{
-	Node* next;
-	Node* prev;
-};
-#define NodeInsertNext(x,node) ((node)->next=(x)->next,(node)->prev=(x),(node)->next->prev=(node),(x)->next=(node))
-#define NodeInsertPrev(x,node) ((node)->prev=(x)->prev,(node)->next=(x),(node)->prev->next=(node),(x)->prev=(node))
-#define NodeRemove(node) ((node)->next->prev=(node)->prev,(node)->prev->next=(node)->next)
-
-//// tree node ////
-struct TNode {
-	Type  type;
-	Flags flags;
-	
-	TNode* next = 0;
-	TNode* prev = 0;
-	TNode* parent = 0;
-	TNode* first_child = 0;
-	TNode* last_child = 0;
-	u32    child_count = 0;
-	
-#if BUILD_INTERNAL
-	cstring debug;
-#endif
-};
-
-#define for_node(node) for(auto it = node; it != 0; it = it->next)
-#define for_node_reverse(node) for(auto it = node; it != 0; it = it->prev)
-
-global_ inline void insert_after(TNode* target, TNode* node) {
-	if (target->next) target->next->prev = node;
-	node->next = target->next;
-	node->prev = target;
-	target->next = node;
-}
-
-global_ inline void insert_before(TNode* target, TNode* node) {
-	if (target->prev) target->prev->next = node;
-	node->prev = target->prev;
-	node->next = target;
-	target->prev = node;
-}
-
-global_ inline void remove_horizontally(TNode* node) {
-	if (node->next) node->next->prev = node->prev;
-	if (node->prev) node->prev->next = node->next;
-	node->next = node->prev = 0;
-}
-
-global_ void insert_last(TNode* parent, TNode* child) {
-	if (parent == 0) { child->parent = 0; return; }
-	if(parent==child){DebugBreakpoint;}
-	
-	child->parent = parent;
-	if (parent->first_child) {
-		insert_after(parent->last_child, child);
-		parent->last_child = child;
-	}
-	else {
-		parent->first_child = child;
-		parent->last_child = child;
-	}
-	parent->child_count++;
-}
-
-global_ void insert_first(TNode* parent, TNode* child) {
-	if (parent == 0) { child->parent = 0; return; }
-	
-	child->parent = parent;
-	if (parent->first_child) {
-		insert_before(parent->first_child, child);
-		parent->first_child = child;
-	}
-	else {
-		parent->first_child = child;
-		parent->last_child = child;
-	}
-	parent->child_count++;
-}
-
-global_ void change_parent(TNode* new_parent, TNode* node) {
-	//if old parent, remove self from it 
-	if (node->parent) {
-		if (node->parent->child_count > 1) {
-			if (node == node->parent->first_child) node->parent->first_child = node->next;
-			if (node == node->parent->last_child)  node->parent->last_child = node->prev;
-		}
-		else {
-			Assert(node == node->parent->first_child && node == node->parent->last_child, "if node is the only child node, it should be both the first and last child nodes");
-			node->parent->first_child = 0;
-			node->parent->last_child = 0;
-		}
-		node->parent->child_count--;
-	}
-	
-	//remove self horizontally
-	remove_horizontally(node);
-	
-	//add self to new parent
-	insert_last(new_parent, node);
-}
-
-global_ void remove(TNode* node) {
-	//add children to parent (and remove self from children)
-	for(TNode* it = node->first_child; it != 0; ) {
-		TNode* next = it->next;
-		change_parent(node->parent, it);
-		it = next;
-	}
-	
-	//remove self from parent
-	if (node->parent) {
-		if (node->parent->child_count > 1) {
-			if (node == node->parent->first_child) node->parent->first_child = node->next;
-			if (node == node->parent->last_child)  node->parent->last_child = node->prev;
-		}
-		else {
-			Assert(node == node->parent->first_child && node == node->parent->last_child, "if node is the only child node, it should be both the first and last child nodes");
-			node->parent->first_child = 0;
-			node->parent->last_child = 0;
-		}
-		node->parent->child_count--;
-	}
-	node->parent = 0;
-	
-	//remove self horizontally
-	remove_horizontally(node);
-}
-
 //// C/C++ STL allocator //// //TODO rename this to libc allocator (STL is something different)
 global_ void* STLAllocator_Reserve(upt size){void* a = calloc(1,size); Assert(a); return a;}
 global_ void  STLAllocator_Release(void* ptr){free(ptr);}
@@ -616,13 +497,12 @@ global_ Allocator stl_allocator_{
 };
 global_ Allocator* stl_allocator = &stl_allocator_;
 
-//// for quick reference when i forget again ////
-#define PRINTBASICTYPESIZES PRINTLN("   s8 size: " << s8size); PRINTLN("  s16 size: " << s16size); PRINTLN("  s32 size: " << s32size); PRINTLN("  s64 size: " << s64size); PRINTLN("  spt size: " << sptsize); PRINTLN("   u8 size: " << u8size); PRINTLN("  u16 size: " << u16size); PRINTLN("  u32 size: " << u32size); PRINTLN("  u64 size: " << u64size); PRINTLN("  upt size: " << uptsize); PRINTLN("  f32 size: " << f32size); PRINTLN("  f64 size: " << f64size); PRINTLN("  b32 size: " << b32size); PRINTLN("wchar size: " << wcharsize);
 
 ///////////////////////////// //TODO remove/rework/rename these
 //// to-be-redone macros ////
 /////////////////////////////
 #define cpystr(dst,src,bytes) strncpy((dst), (src), (bytes)); (dst)[(bytes)-1] = '\0' //copy c-string and null-terminate
 #define dyncast(child,base) dynamic_cast<child*>(base) //dynamic cast short-hand
+#define PRINTBASICTYPESIZES PRINTLN("   s8 size: " << s8size); PRINTLN("  s16 size: " << s16size); PRINTLN("  s32 size: " << s32size); PRINTLN("  s64 size: " << s64size); PRINTLN("  spt size: " << sptsize); PRINTLN("   u8 size: " << u8size); PRINTLN("  u16 size: " << u16size); PRINTLN("  u32 size: " << u32size); PRINTLN("  u64 size: " << u64size); PRINTLN("  upt size: " << uptsize); PRINTLN("  f32 size: " << f32size); PRINTLN("  f64 size: " << f64size); PRINTLN("  b32 size: " << b32size); PRINTLN("wchar size: " << wcharsize);
 
 #endif //KIGU_COMMON_H

@@ -7,6 +7,7 @@
 #include "cstring.h"
 #include "color.h"
 #include "common.h"
+#include "unicode.h"
 
 #include <cstdarg>
 #include <string>
@@ -202,6 +203,11 @@ to_string(const color& x, Allocator* a = KIGU_STRING_ALLOCATOR){
 	s.space = s.count+1;
 	snprintf(s.str, s.count+1, "{R:%d, G:%d, B:%d, A:%d}", x.r, x.g, x.b, x.a);
 	return s;
+}
+
+global_ string
+to_string(str8 s, Allocator* a = KIGU_STRING_ALLOCATOR){
+	return string((char*)s.str, s.count, a);
 }
 
 #define toStr(...) (ToString(__VA_ARGS__))
