@@ -139,6 +139,7 @@ if you are using deshi and want the program to wait until tracy is connected def
 #define DPTracyPlotConfig(name, type)                       
 #define DPTracyAppInfo(txt, size)    
 #define DPTracyMessage(txt, size)
+#define DPTracyDynMessage(txt)
 #define DPTracyMessageL(txt)                               
 #define DPTracyMessageC(txt, size, color)
 #define DPTracyMessageLC(txt, color)
