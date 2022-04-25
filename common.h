@@ -31,8 +31,10 @@
 #elif defined(__clang__) //_MSC_VER
 #  define COMPILER_CLANG 1
 
-#  if defined(__APPLE__) && defined(__MACH__)
+#  if   defined(__APPLE__) && defined(__MACH__)
 #    define OS_MAC 1
+#  elif defined(_WIN32)
+#    define OS_WINDOWS 1
 #  else //__APPLE__ || __MACH__
 #    error "unhandled compiler/platform combo"
 #  endif //__APPLE__ || __MACH__
@@ -116,6 +118,7 @@
 #include <cstddef> //size_t, ptrdiff_t
 #include <cstdlib> //malloc, calloc, free
 #include <cstring> //memcpy, memset, strcpy, strlen, etc
+#include <cmath>   //log2
 
 
 ///////////////////////
@@ -140,7 +143,8 @@
 #  define ByteSwap64(x) _byteswap_uint64(x)
 #elif COMPILER_CLANG || COMPILER_GCC //COMPILER_CL
 #  define FORCE_INLINE inline __attribute__((always_inline))
-#  error "unhandled debug breakpoint; look at: https://github.com/scottt/debugbreak"
+//#  error "unhandled debug breakpoint; look at: https://github.com/scottt/debugbreak"
+#  define DebugBreakpoint
 #  define ByteSwap16(x) __builtin_bswap16(x)
 #  define ByteSwap32(x) __builtin_bswap32(x)
 #  define ByteSwap64(x) __builtin_bswap64(x)
@@ -224,10 +228,13 @@ typedef void* (*Allocator_ReserveMemory_Func)(upt size);
 typedef void  (*Allocator_ChangeMemory_Func)(void* ptr, upt size);
 typedef void  (*Allocator_ReleaseMemory_Func)(void* ptr);
 typedef void* (*Allocator_ResizeMemory_Func)(void* ptr, upt size);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wreturn-type"
 global_ void* Allocator_ReserveMemory_Noop(upt size){}
 global_ void  Allocator_ChangeMemory_Noop(void* ptr, upt size){}
 global_ void  Allocator_ReleaseMemory_Noop(void* ptr){}
 global_ void* Allocator_ResizeMemory_Noop(void* ptr, upt size){}
+#pragma clang diagnostic pop
 struct Allocator{
 	Allocator_ReserveMemory_Func reserve;  //reserves address space from OS
 	Allocator_ChangeMemory_Func  commit;   //allocates memory from reserved space

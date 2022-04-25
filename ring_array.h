@@ -238,7 +238,6 @@ inline void ring_array<T>::shrink(u32 new_capacity){
 			u32 left_of_start = (start + count) - capacity;
 			u32 right_of_start = capacity - start;
 			void* temp = allocator->reserve(left_of_start*sizeof(T));
-			allocator->commit(left_of_start*sizeof(T));
 			defer{ allocator->release(temp); };
 			memcpy(temp, data, sizeof(T)*(left_of_start));
 			memcpy(data, data+start, sizeof(T)*(right_of_start));
