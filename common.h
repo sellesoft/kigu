@@ -228,13 +228,19 @@ typedef void* (*Allocator_ReserveMemory_Func)(upt size);
 typedef void  (*Allocator_ChangeMemory_Func)(void* ptr, upt size);
 typedef void  (*Allocator_ReleaseMemory_Func)(void* ptr);
 typedef void* (*Allocator_ResizeMemory_Func)(void* ptr, upt size);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wreturn-type"
+
+#if COMPILER_CLANG
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wreturn-type"
+#endif
 global_ void* Allocator_ReserveMemory_Noop(upt size){}
 global_ void  Allocator_ChangeMemory_Noop(void* ptr, upt size){}
 global_ void  Allocator_ReleaseMemory_Noop(void* ptr){}
 global_ void* Allocator_ResizeMemory_Noop(void* ptr, upt size){}
-#pragma clang diagnostic pop
+#if COMPILER_CLANG
+#  pragma clang diagnostic pop
+#endif
+
 struct Allocator{
 	Allocator_ReserveMemory_Func reserve;  //reserves address space from OS
 	Allocator_ChangeMemory_Func  commit;   //allocates memory from reserved space
