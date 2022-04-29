@@ -1,9 +1,10 @@
 /* Kigu Unicode Library
 Notes:
 - str8 is the expected usage type thruout the projects, and as such, has string functions for it.
-- strings are null-terminated (ending in '\0') in order for libc functions to work, but we don't use it
+- Strings are null-terminated (ending in '\0') in order for libc functions to work, but we don't use it
 internally and don't assume they are included in the count (NOTE this assumes the allocators fill memory to zero).
 - str16 and str32 use big endian UTF encodings.
+- A codepoint can not start with another codepoint, but it can end with another one.
 
 Terminology:
 codepoint       the value or set of values that represent one unicode character
@@ -14,20 +15,80 @@ surrogate pair  in UTF16, codepoints above U+010000 require two 16bit code units
 
 Index:
 @utf_types
+  str8
+  str8_builder
+  str16
+  str32
 @utf_decoding
+  DecodedCodepoint
+  decoded_codepoint_from_utf8(u8* str, u64 max_advance) -> DecodedCodepoint
+  decoded_codepoint_from_utf16(u16* str, u64 max_advance) -> DecodedCodepoint
+  decoded_codepoint_from_wchar(whcar_t* str, u64 max_advance) -> DecodedCodepoint
+  utf8_from_codepoint(u8* out, u32 codepoint) -> u32
+  utf16_from_codepoint(u16* out, u32 codepoint) -> u32
+  wchar_from_codepoint(wchar_t* out, u32 codepoint) -> u32
 @utf_conversion
+  str8_from_str16(str16 in, Allocator* allocator) -> str8
+  str8_from_str32(str32 in, Allocator* allocator) -> str8
+  str8_from_wchar(wchar_t* in, Allocator* allocator) -> str8
+  str16_from_str8(str8 in, Allocator* allocator) -> str16
+  str32_from_str8(str8 in, Allocator* allocator) -> str32
+  wchar_from_str8(str8 in, Allocator* allocator) -> wchar_t*
 @str8_advancing
+  str8_increment(str8* a, u64 bytes) -> void
+  str8_decrement(str8* a, u64 bytes) -> void
+  str8_advance(str8* a) -> DecodedCodepoint
+  str8_nadvance(str8* a, u64 n) -> DecodedCodepoint
+  str8_advance_until(str8* a, u32 c) -> void
+  str8_advance_while(str8* a, u32 c) -> void
 @str8_indexing
+  str8_index(str8 a, u64 n) -> DecodedCodepoint
+  str8_length(str8 a) -> s64
 @str8_comparison
+  str8_compare(str8 a, str8 b) -> s64
+  str8_ncompare(str8 a, str8 b, u64 n) -> s64
+  str8_equal(str8 a, str8 b) -> b32
+  str8_equal_lazy(str8 a, str8 b) -> b32
+  str8_nequal(str8 a, str8 b) -> b32
 @str8_searching
+  str8_begins_with(str8 a, str8 b) -> b32
+  str8_ends_with(str8 a, str8 b) -> b32
+  str8_contains(str8 a, str8 b) -> b32
 @str8_slicing
+  str8_eat_one(str8 a) -> str8
+  str8_eat_count(str8 a, u64 n) -> str8
+  str8_eat_until(str8 a, u32 c) -> str8
+  str8_eat_until_last(str8 a, u32 c) -> str8
+  str8_eat_until_one_of(str8 a, int count, ...) -> str8
+  str8_eat_while(str8 a, u32 c) -> str8
+  str8_skip_one(str8 a) -> str8
+  str8_skip_count(str8 a, u64 n) -> str8
+  str8_skip_until(str8 a, u32 c) -> str8
+  str8_skip_until_last(str8 a, u32 c) -> str8
+  str8_skip_while(str8 a, u32 c) -> str8
 @str8_building
+  str8_copy(str8 a, Allocator* allocator) -> str8
+  str8_concat(str8 a, str8 b, Allocator* allocator) -> str8
+  str8_concat3(str8 a, str8 b, str8 c, Allocator* allocator) -> str8
+  str8_from_cstr(const char* a) -> str8
+  str8_builder_init(str8_builder* builder, str8 initial, Allocator* allocator) -> void
+  str8_builder_fit(str8_builder* builder) -> void
+  str8_builder_append(str8_builder* builder, str8 a) -> void
+  str8_builder_clear(str8_builder* builder) -> void
 @str8_hashing
+  str8_static_hash64(str8_static_t s, u64 seed) constexpr -> u64
+  str8_hash64(str8 s, u64 seed) -> u64
 
-!ref: https://github.com/Dion-Systems/metadesk/blob/master/source/md.h
-!ref: https://github.com/Dion-Systems/metadesk/blob/master/source/md.c
-!ref: https://unicodebook.readthedocs.io/unicode_encodings.html
-!ref: https://unicode-table.com/
+TODOs:
+maybe advance the input in eat funcs?
+is there a point in doing non-lazy comparison?
+scanning functions
+
+References:
+https://github.com/Dion-Systems/metadesk/blob/master/source/md.h
+https://github.com/Dion-Systems/metadesk/blob/master/source/md.c
+https://unicodebook.readthedocs.io/unicode_encodings.html
+https://unicode-table.com/
 */
 
 #pragma once
@@ -88,7 +149,7 @@ struct DecodedCodepoint{
 	u32 advance;
 };
 
-//returns the next codepoint and advance from the UTF-8 string `str`
+//Returns the next codepoint and advance from the UTF-8 string `str`
 global_ DecodedCodepoint
 decoded_codepoint_from_utf8(u8* str, u64 max_advance){
 	persist u8 utf8_class[32] = { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,2,2,2,2,3,3,4,5, };
@@ -140,7 +201,7 @@ decoded_codepoint_from_utf8(u8* str, u64 max_advance){
 	return result;
 }
 
-//returns the next codepoint and advance from the UTF-16 string `str`
+//Returns the next codepoint and advance from the UTF-16 string `str`
 global_ DecodedCodepoint
 decoded_codepoint_from_utf16(u16* str, u64 max_advance){
 	DecodedCodepoint result = {(u32)-1, 1};
@@ -153,7 +214,7 @@ decoded_codepoint_from_utf16(u16* str, u64 max_advance){
 	return result;
 }
 
-//returns the next codepoint and advance from the wchar_t string `str`
+//Returns the next codepoint and advance from the wchar_t string `str`
 global_ DecodedCodepoint
 decoded_codepoint_from_wchar(wchar_t* str, u64 max_advance){
 #if COMPILER_CL
@@ -165,7 +226,7 @@ decoded_codepoint_from_wchar(wchar_t* str, u64 max_advance){
 #endif
 }
 
-//fills the u8 string `out` with the Unicode `codepoint`; returns the advance in number of u8, -1 if invalid codepoint
+//Fills the u8 string `out` with the Unicode `codepoint`; returns the advance in number of u8, -1 if invalid codepoint
 global_ u32
 utf8_from_codepoint(u8* out, u32 codepoint){
 #define unicode_bit8 0x80
@@ -202,7 +263,7 @@ utf8_from_codepoint(u8* out, u32 codepoint){
 #undef unicode_bit8
 }
 
-//fills the u16 string `out` with the Unicode `codepoint`; returns the number of u16 advance, -1 if invalid codepoint
+//Fills the u16 string `out` with the Unicode `codepoint`; returns the number of u16 advance, -1 if invalid codepoint
 global_ u32
 utf16_from_codepoint(u16* out, u32 codepoint){
 	u32 advance = 1;
@@ -223,7 +284,7 @@ utf16_from_codepoint(u16* out, u32 codepoint){
 	return advance;
 }
 
-//fills the wchar_t string `out` with the Unicode `codepoint`; returns the number of wchar_t advance, -1 if invalid codepoint
+//Fills the wchar_t string `out` with the Unicode `codepoint`; returns the number of wchar_t advance, -1 if invalid codepoint
 global_ u32
 wchar_from_codepoint(wchar_t* out, u32 codepoint){
 #if COMPILER_CL
@@ -250,6 +311,7 @@ wchar_from_codepoint(wchar_t* out, u32 codepoint){
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @utf_conversion
+//Converts and returns a utf8 string from the utf16 string `in` using `allocator`
 global_ str8
 str8_from_str16(str16 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 	u64 space = 3*in.count;
@@ -269,6 +331,7 @@ str8_from_str16(str16 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 	return str8{str, size};
 }
 
+//Converts and returns a utf8 string from the utf32 string `in` using `allocator`
 global_ str8
 str8_from_str32(str32 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 	u64 space = 4*in.count;
@@ -286,6 +349,8 @@ str8_from_str32(str32 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 	return str8{str, size};
 }
 
+//Converts and returns a utf8 string from the wchar_t string `in` using `allocator`
+//    this expects `in` to be null-terminated
 global_ str8
 str8_from_wchar(wchar_t* in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 	s64 in_count = 0;
@@ -299,6 +364,7 @@ str8_from_wchar(wchar_t* in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 #endif
 }
 
+//Converts and returns a utf16 string from the utf8 string `in` using `allocator`
 global_ str16
 str16_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 	u64 space = 2*in.count;
@@ -318,6 +384,7 @@ str16_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 	return str16{str, size};
 }
 
+//Converts and returns a utf32 string from the utf8 string `in` using `allocator`
 global_ str32
 str32_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 	u64 space = in.count;
@@ -338,6 +405,7 @@ str32_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 	return str32{str, size};
 }
 
+//Converts and returns a wchar_t string from the utf8 string `in` using `allocator`
 global_ wchar_t*
 wchar_from_str8(str8 in, s64* out_count = 0, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 #if COMPILER_CL
@@ -356,54 +424,64 @@ wchar_from_str8(str8 in, s64* out_count = 0, Allocator* allocator = KIGU_UNICODE
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_advancing
-//advances the utf8 string `a` by one codepoint and returns that codepoint
+//Shorthand for: a->str += bytes; a->count -= bytes;
+FORCE_INLINE void
+str8_increment(str8* a, u64 bytes){
+	a->str += bytes;
+	a->count -= bytes;
+}
+
+//Shorthand for: a->str -= bytes; a->count += bytes;
+FORCE_INLINE void
+str8_decrement(str8* a, u64 bytes){
+	a->str -= bytes;
+	a->count += bytes;
+}
+
+//Advances the utf8 string `a` by one codepoint and returns that codepoint
 global_ DecodedCodepoint
 str8_advance(str8* a){
 	DecodedCodepoint decoded{};
 	if(a && *a){
 		decoded = decoded_codepoint_from_utf8(a->str, 4);
-		a->str   += decoded.advance;
-		a->count -= decoded.advance;
+		str8_increment(a, decoded.advance);
 	}
 	return decoded;
 }
 
-//advances the utf8 string `a` by `n` codepoints and returns the last codepoint (n-1 starting from 0)
+//Advances the utf8 string `a` by `n` codepoints and returns the last codepoint (n-1 starting from 0)
 global_ DecodedCodepoint
 str8_nadvance(str8* a, u64 n){
 	DecodedCodepoint decoded{};
 	if(a && n){
 		while(*a && n--){
 			decoded = decoded_codepoint_from_utf8(a->str, 4);
-			a->str   += decoded.advance;
-			a->count -= decoded.advance;
+			str8_increment(a, decoded.advance);
 		}
 	}
 	return decoded;
 }
 
-//advances the utf8 string `a` until the codepoint `c` is encountered and returns the last codepoint
+//Advances the utf8 string `a` until the codepoint `c` is encountered
 global_ void
 str8_advance_until(str8* a, u32 c){
 	if(a){
 		while(*a){
 			DecodedCodepoint decoded = decoded_codepoint_from_utf8(a->str, 4);
 			if(decoded.codepoint == c) break;
-			a->str   += decoded.advance;
-			a->count -= decoded.advance;
+			str8_increment(a, decoded.advance);
 		}
 	}
 }
 
-//advances the utf8 string `a` while the codepoint `c` is encountered and returns the last codepoint
+//Advances the utf8 string `a` while the codepoint `c` is encountered
 global_ void
 str8_advance_while(str8* a, u32 c){
 	if(a){
 		while(*a){
 			DecodedCodepoint decoded = decoded_codepoint_from_utf8(a->str, 4);
 			if(decoded.codepoint != c) break;
-			a->str   += decoded.advance;
-			a->count -= decoded.advance;
+			str8_increment(a, decoded.advance);
 		}
 	}
 }
@@ -411,14 +489,14 @@ str8_advance_while(str8* a, u32 c){
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_indexing
-//returns the `n`th codepoint (starting from 0) in the utf8 string `a`
-//returns the last codepoint of the string if `n` is greater than the length of the string
+//Returns the `n`th codepoint (starting from 0) in the utf8 string `a`
+//    returns the last codepoint of the string if `n` is greater than the length of the string
 global_ inline DecodedCodepoint
 str8_index(str8 a, u64 n){
 	return str8_nadvance(&a, n+1);
 }
 
-//returns the number of codepoints in the unicode string `a`
+//Returns the number of codepoints in the unicode string `a`
 global_ inline s64
 str8_length(str8 a){
 	s64 result = 0;
@@ -429,10 +507,10 @@ str8_length(str8 a){
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_comparison
-//compares the utf8 strings `a` and `b` a codepoint at a time until the end of one of the strings
-//returns 0 if the strings are equal
-//returns <0 if the first character that doesn't match has a lower value codepoint in `a` than in `b`
-//returns >0 if the first character that doesn't match has a lower value codepoint in `b` than in `a`
+//Compares the utf8 strings `a` and `b` a codepoint at a time until the end of one of the strings
+//    returns 0 if the strings are equal
+//    returns <0 if the first character that doesn't match has a lower value codepoint in `a` than in `b`
+//    returns >0 if the first character that doesn't match has a lower value codepoint in `b` than in `a`
 global_ s64
 str8_compare(str8 a, str8 b){
 	if(a.str == b.str && a.count == b.count) return 0;
@@ -441,10 +519,10 @@ str8_compare(str8 a, str8 b){
 	return diff;
 }
 
-//compares the utf8 strings `a` and `b` a codepoint at a time up to `n` codepoints
-//returns 0 if the strings are equal
-//returns <0 if the first character that doesn't match has a lower value codepoint in `a` than in `b`
-//returns >0 if the first character that doesn't match has a lower value codepoint in `b` than in `a`
+//Compares the utf8 strings `a` and `b` a codepoint at a time up to `n` codepoints
+//    returns 0 if the strings are equal
+//    returns <0 if the first character that doesn't match has a lower value codepoint in `a` than in `b`
+//    returns >0 if the first character that doesn't match has a lower value codepoint in `b` than in `a`
 global_ s64
 str8_ncompare(str8 a, str8 b, u64 n){
 	if(a.str == b.str && a.count == b.count) return 0;
@@ -453,13 +531,19 @@ str8_ncompare(str8 a, str8 b, u64 n){
 	return diff;
 }
 
-//returns true if the utf8 strings `a` and `b` are equal for all codepoints of the strings
+//Returns true if the utf8 strings `a` and `b` are equal for all codepoints of the strings
 global_ inline b32
 str8_equal(str8 a, str8 b){
 	return a.count == b.count && str8_compare(a, b) == 0;
 }
 
-//returns true if the utf8 strings `a` and `b` are equal for `n` codepoints
+//Returns true if the utf8 strings `a` and `b` are equal for all codepoints of the strings by simply comparing memory
+global_ inline b32
+str8_equal_lazy(str8 a, str8 b){
+	return a.count == b.count && memcmp(a.str, b.str, a.count) == 0;
+}
+
+//Returns true if the utf8 strings `a` and `b` are equal for `n` codepoints
 global_ inline b32
 str8_nequal(str8 a, str8 b, u64 n){
 	return str8_ncompare(a, b, n) == 0;
@@ -468,21 +552,21 @@ str8_nequal(str8 a, str8 b, u64 n){
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_searching
-//returns true if utf8 string `a` begins with utf8 string `b`
+//Returns true if utf8 string `a` begins with utf8 string `b`
 global_ inline b32
 str8_begins_with(str8 a, str8 b){
 	if(a.str == b.str && a.count == b.count) return true;
 	return a.count >= b.count && str8_ncompare(a, b, str8_length(b)) == 0;
 }
 
-//returns true if utf8 string `a` ends with utf8 string `b`
+//Returns true if utf8 string `a` ends with utf8 string `b`
 global_ inline b32
 str8_ends_with(str8 a, str8 b){
 	if(a.str == b.str && a.count == b.count) return true;
 	return a.count >= b.count && str8_compare(str8{a.str+a.count-b.count,b.count}, b) == 0;
 }
 
-//returns true if utf8 string `a` contains utf8 string `b`
+//Returns true if utf8 string `a` contains utf8 string `b`
 global_ b32
 str8_contains(str8 a, str8 b){
 	if(a.str == b.str && a.count == b.count) return true;
@@ -498,86 +582,133 @@ str8_contains(str8 a, str8 b){
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_slicing
-//returns a slice of the utf8 string `a` ending at the first codepoint
+//Returns a slice of the utf8 string `a` including one codepoint from the beginning
 global_ inline str8
 str8_eat_one(str8 a){
 	str8 b = a;
 	str8_advance(&b);
-	if(!b) return str8{};
+	if(!b) return a;
 	return str8{a.str, a.count-b.count};
 }
 
-//returns a slice of the utf8 string `a` ending at the `n`th codepoint
+//Returns a slice of the utf8 string `a` including `n` codepoints from the beginning
 global_ inline str8
 str8_eat_count(str8 a, u64 n){
 	str8 b = a;
 	str8_nadvance(&b, n);
-	if(!b) return str8{};
+	if(!b) return a;
 	return str8{a.str, a.count-b.count};
 }
 
-//returns a slice of the utf8 string `a` ending at the first occurance of the codepoint `c`
+//Returns a slice of the utf8 string `a` ending before the first occurance of the codepoint `c`
+//    if codepoint `c` is not encountered, `a` is returned
 global_ str8
 str8_eat_until(str8 a, u32 c){
 	str8 b = a;
 	while(b){
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(b.str, 4);
 		if(decoded.codepoint == c) break;
-		b.str   += decoded.advance;
-		b.count -= decoded.advance;
+		str8_increment(&b, decoded.advance);
 	}
-	if(!b) return str8{};
+	if(!b) return a;
 	return str8{a.str, a.count-b.count};
 }
 
-//returns a slice of the utf8 string `a` ending at the first occurance of a codepoint that is not the codepoint `c`
+//Returns a slice of the utf8 string `a` ending before the last occurance of the codepoint `c`
+//    if codepoint `c` is not encountered, `a` is returned
+global_ str8
+str8_eat_until_last(str8 a, u32 c){
+	str8 b = a;
+	s64 count = 0;
+	while(b){
+		DecodedCodepoint decoded = decoded_codepoint_from_utf8(b.str, 4);
+		if(decoded.codepoint == c) count = b.count;
+		str8_increment(&b, decoded.advance);
+	}
+	if(!b) return a;
+	return str8{a.str, a.count-count};
+}
+
+//Returns a slice of the utf8 string `a` ending before the first occurance of the one of the `count` codepoints passed
+//    `count` should equal the number of arguments you pass to the variadic (...)
+//    if no (...) codepoints are not encountered, `a` is returned
+global_ str8
+str8_eat_until_one_of(str8 a, int count, ...){
+	str8 b = a;
+	while(b){
+		DecodedCodepoint decoded = decoded_codepoint_from_utf8(b.str, 4);
+		va_list args; va_start(args, count);
+		forI(count){
+			if(decoded.codepoint == va_arg(args, u32)){
+				goto found_one;
+			}
+		}
+		va_end(args);
+		str8_increment(&b, decoded.advance);
+	}
+	found_one:;
+	if(!b) return a;
+	return str8{a.str, a.count-b.count};
+}
+
+//Returns a slice of the utf8 string `a` ending before the first occurance of a codepoint that is not the codepoint `c`
+//    if codepoint `c` is not encountered, an empty string is returned
 global_ str8
 str8_eat_while(str8 a, u32 c){
 	str8 b = a;
 	while(b){
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(b.str, 4);
 		if(decoded.codepoint != c) break;
-		b.str   += decoded.advance;
-		b.count -= decoded.advance;
+		str8_increment(&b, decoded.advance);
 	}
 	if(!b) return str8{};
 	return str8{a.str, a.count-b.count};
 }
 
-//returns a slice of the utf8 string `a` starting after the first character until the end of the string
+//Returns a slice of the utf8 string `a` starting after the first character until the end of the string
 global_ inline str8
 str8_skip_one(str8 a){
 	str8_advance(&a);
 	return a;
 }
 
-//returns a slice of the utf8 string `a` starting after the `n`th character from the beginning until the end of the string
+//Returns a slice of the utf8 string `a` starting after the `n`th character from the beginning until the end of the string
 global_ inline str8
 str8_skip_count(str8 a, u64 n){
 	str8_nadvance(&a, n);
 	return a;
 }
 
-//returns a slice of the utf8 string `a` starting at the first occurance of the codepoint `c` until the end of the string
+//Returns a slice of the utf8 string `a` starting at the first occurance of the codepoint `c` until the end of the string
 global_ str8
 str8_skip_until(str8 a, u32 c){
 	while(a){
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(a.str, 4);
 		if(decoded.codepoint == c) break;
-		a.str   += decoded.advance;
-		a.count -= decoded.advance;
+		str8_increment(&a, decoded.advance);
 	}
 	return a;
 }
 
-//returns a slice of the utf8 string `a` starting at the first occurance of a codepoint that is not the codepoint `c` until the end of the string
+//Returns a slice of the utf8 string `a` starting at the last occurance of the codepoint `c` until the end of the string
+global_ str8
+str8_skip_until_last(str8 a, u32 c){
+	str8 b{};
+	while(a){
+		DecodedCodepoint decoded = decoded_codepoint_from_utf8(a.str, 4);
+		if(decoded.codepoint == c) b = a;
+		str8_increment(&a, decoded.advance);
+	}
+	return b;
+}
+
+//Returns a slice of the utf8 string `a` starting at the first occurance of a codepoint that is not the codepoint `c` until the end of the string
 global_ str8
 str8_skip_while(str8 a, u32 c){
 	while(a){
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(a.str, 4);
 		if(decoded.codepoint != c) break;
-		a.str   += decoded.advance;
-		a.count -= decoded.advance;
+		str8_increment(&a, decoded.advance);
 	}
 	return a;
 }
@@ -585,7 +716,7 @@ str8_skip_while(str8 a, u32 c){
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_building
-//allocates a new copy of the utf8 string `a` using `allocator`
+//Allocates and returns a new copy of the utf8 string `a` using `allocator`
 global_ str8
 str8_copy(str8 a, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 	str8 result{(u8*)allocator->reserve((a.count+1)*sizeof(u8)), a.count};
@@ -593,7 +724,32 @@ str8_copy(str8 a, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 	return result;
 }
 
-//initializes a str8_builder `builder` with the string `initial` using `allocator`
+//Allocates and returns a utf8 string of `a` with `b` appended to it using `allocator`
+global_ str8
+str8_concat(str8 a, str8 b, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
+	str8 result{(u8*)allocator->reserve((a.count+b.count+1)*sizeof(u8)), a.count+b.count};
+	CopyMemory(result.str,         a.str, a.count*sizeof(u8));
+	CopyMemory(result.str+a.count, b.str, b.count*sizeof(u8));
+	return result;
+}
+
+//Allocates and returns a utf8 string of `a` with `b` and then `c` appended to it using `allocator`
+global_ str8
+str8_concat3(str8 a, str8 b, str8 c, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
+	str8 result{(u8*)allocator->reserve((a.count+b.count+c.count+1)*sizeof(u8)), a.count+b.count+c.count};
+	CopyMemory(result.str,                 a.str, a.count*sizeof(u8));
+	CopyMemory(result.str+a.count,         b.str, b.count*sizeof(u8));
+	CopyMemory(result.str+a.count+c.count, c.str, c.count*sizeof(u8));
+	return result;
+}
+
+//Allocates and returns a utf8 string of the null-terminated c string `a` using `allocator`
+FORCE_INLINE str8
+str8_from_cstr(const char* a){
+	return str8{(u8*)a, (s64)strlen(a)};
+}
+
+//Initializes `builder` with the string `initial` using `allocator`
 global_ void
 str8_builder_init(str8_builder* builder, str8 initial, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 	builder->count     = initial.count;
@@ -603,14 +759,14 @@ str8_builder_init(str8_builder* builder, str8 initial, Allocator* allocator = KI
 	if(initial.str) CopyMemory(builder->str, initial.str, initial.count*sizeof(u8));
 }
 
-//fits the allocation of a str8_builder `builder` to its count (+1 for null-terminator)
+//Fits the allocation of `builder` to its `count` (+1 for null-terminator)
 global_ void
 str8_builder_fit(str8_builder* builder){
 	builder->space = builder->count+1;
 	builder->str   = (u8*)builder->allocator->resize(builder->str, builder->space*sizeof(u8)); Assert(builder->str, "Failed to allocate memory");
 }
 
-//appends `a` to end the str8_builder `builder`
+//Appends `a` to the end of `builder`
 global_ void
 str8_builder_append(str8_builder* builder, str8 a){
 	if(!a) return;
@@ -624,12 +780,19 @@ str8_builder_append(str8_builder* builder, str8 a){
 	CopyMemory(builder->str+offset, a.str, a.count*sizeof(u8));
 }
 
+//Zeros the allocation of `builder` and sets `count` to `0`, but does not affect `space`
+global_ void
+str8_builder_clear(str8_builder* builder){ //nocheckin !TestMe
+	ZeroMemory(builder->str, builder->count);
+	builder->count = 0;
+}
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_hashing
 struct str8_static_t{const char* str; u64 count; template<u64 N> constexpr str8_static_t(const char(&a)[N]): str(a), count(N-1){}};
+//Returns a 64bit FNV-1a hash of the string `s` seeded with `seed` at compile-time
 constexpr u64
-str8_static_hash64(str8_static_t s, u64 seed = 14695981039346656037){ //64bit FNV_offset_basis
+str8_static_hash64(str8_static_t s, u64 seed = 14695981039346656037){ //64bit FNV_offset_basis //!TestMe
 	while(s.count-- != 0){
 		seed ^= (u8)*s.str;
 		seed *= 1099511628211; //64bit FNV_prime
@@ -638,8 +801,9 @@ str8_static_hash64(str8_static_t s, u64 seed = 14695981039346656037){ //64bit FN
 	return seed;
 }
 
+//Returns a 64bit FNV-1a hash of the string `s` seeded with `seed`
 global_ u64
-str8_hash64(str8 s, u64 seed = 14695981039346656037){ //64bit FNV_offset_basis
+str8_hash64(str8 s, u64 seed = 14695981039346656037){ //64bit FNV_offset_basis //!TestMe
 	while(s.count-- != 0){
 		seed ^= *s.str++;
 		seed *= 1099511628211; //64bit FNV_prime
