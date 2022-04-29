@@ -388,7 +388,7 @@ global_const u64 wcharsize = sizeof(wchar);
 #define PointerDifference(a,b) ((u8*)(a) - (u8*)(b))
 #define PointerAsInt(a) PointerDifference(a,0)
 #define OffsetOfMember(structName,memberName) PointerAsInt(&(((structName*)0)->memberName))
-#define CastFromMember(structName,memberName,ptr) (structName*)((u8*)(ptr) - OffsetOfMember(structName,memberName))
+#define CastFromMember(structName,memberName,ptr) ((structName*)((u8*)(ptr) - OffsetOfMember(structName,memberName)))
 #define StartNamespace(a) namespace a{ 
 #define EndNamespace(a) }
 #define CastToConst(type,a) const_cast<const type>(a)
