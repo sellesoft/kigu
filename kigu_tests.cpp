@@ -1120,6 +1120,14 @@ local void TEST_kigu_unicode(){
 		AssertAlways(str8_equal(str8_lit("Ω"), str8_lit("Ω")));
 		AssertAlways(str8_equal(str8_lit("🍌"), str8_lit("🍌")));
 		
+		AssertAlways(str8_equal_lazy(test8, test8));
+		AssertAlways(str8_equal_lazy(str8_lit(TEST_KIGU_UNICODE_LITERAL), str8_lit(TEST_KIGU_UNICODE_LITERAL)));
+		AssertAlways(str8_equal_lazy(str8_lit(""), str8_lit("")));
+		AssertAlways(str8_equal_lazy(str8_lit("a"), str8_lit("a")));
+		AssertAlways(str8_equal_lazy(str8_lit("Д"), str8_lit("Д")));
+		AssertAlways(str8_equal_lazy(str8_lit("Ω"), str8_lit("Ω")));
+		AssertAlways(str8_equal_lazy(str8_lit("🍌"), str8_lit("🍌")));
+		
 		AssertAlways(str8_nequal(test8, test8, 1));
 		AssertAlways(str8_nequal(test8, test8, 10));
 		AssertAlways(str8_nequal(str8_lit("abcq"), str8_lit("abcb"), 3));
@@ -1207,13 +1215,32 @@ local void TEST_kigu_unicode(){
 		AssertAlways(str8_equal(str8_eat_until(test8, U' '), str8_lit("a")));
 		AssertAlways(str8_equal(str8_eat_until(test8, U'b'), str8_lit("a ")));
 		AssertAlways(str8_equal(str8_eat_until(test8, U'♪'), str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ")));
-		AssertAlways(str8_eat_until(test8, U'!').count == 0);
-		AssertAlways(str8_eat_until(test8, U'á').count == 0);
+		AssertAlways(str8_equal(str8_eat_until(test8, U'!'), test8));
+		AssertAlways(str8_equal(str8_eat_until(test8, U'á'), test8));
+		
+		AssertAlways(str8_equal(str8_eat_until_last(str8_lit("aaabbb"), U'a'), str8_lit("aa")));
+		AssertAlways(str8_equal(str8_eat_until_last(str8_lit("  777777   abc"), U' '), str8_lit("  777777   ")));
+		AssertAlways(str8_equal(str8_eat_until_last(test8, U' '), str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣     ")));
+		AssertAlways(str8_equal(str8_eat_until_last(test8, U'b'), str8_lit("a ")));
+		AssertAlways(str8_equal(str8_eat_until_last(test8, U'♪'), str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ")));
+		AssertAlways(str8_equal(str8_eat_until_last(test8, U'!'), test8));
+		AssertAlways(str8_equal(str8_eat_until_last(test8, U'á'), test8));
+		
+		AssertAlways(str8_equal(str8_eat_until_one_of(str8_lit("aaabbb"), 1, U'a'), str8_lit("aa")));
+		AssertAlways(str8_equal(str8_eat_until_one_of(str8_lit("  777777   abc"), 1, U' '), str8_lit("  777777   ")));
+		AssertAlways(str8_equal(str8_eat_until_one_of(test8, 1, U'!'), test8));
+		AssertAlways(str8_equal(str8_eat_until_one_of(test8, 1, U'á'), test8));
+		AssertAlways(str8_equal(str8_eat_until_one_of(str8_lit("aaabbbccc"), 2, U'a', U'b'), str8{}));
+		AssertAlways(str8_equal(str8_eat_until_one_of(str8_lit("aaabbbccc"), 2, U'b', U'c'), str8_lit("aaa")));
+		AssertAlways(str8_equal(str8_eat_until_one_of(str8_lit("aaabbbccc"), 2, U'c', U'd'), str8_lit("aaabbb")));
+		AssertAlways(str8_equal(str8_eat_until_one_of(str8_lit("aaabbbccc"), 2, U'd', U'e'), str8_lit("aaabbbccc")));
 		
 		AssertAlways(str8_equal(str8_eat_while(str8_lit("  777777   abc"), U' '), str8_lit("  ")));
 		AssertAlways(str8_equal(str8_eat_while(str8_lit("♪♪♪♪♪   abc"), U'♪'), str8_lit("♪♪♪♪♪")));
 		AssertAlways(str8_equal(str8_eat_while(str8_lit("🍌🍌🍌🍌🍌abc"), U'🍌'), str8_lit("🍌🍌🍌🍌🍌")));
 		AssertAlways(!str8_equal(str8_eat_while(str8_lit("🍌🍌🍌🍌🍌abc"), U' '), str8_lit("🍌🍌🍌🍌🍌")));
+		AssertAlways(str8_eat_while(test8, U'!').count == 0);
+		AssertAlways(str8_eat_while(test8, U'á').count == 0);
 		
 		AssertAlways(str8_equal(str8_skip_one(test8), str8_lit(" b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
 		AssertAlways(str8_equal(str8_skip_one(str8_skip_one(test8)), str8_lit("b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
@@ -1231,6 +1258,16 @@ local void TEST_kigu_unicode(){
 		AssertAlways(str8_skip_until(test8, U'!').count == 0);
 		AssertAlways(str8_skip_until(test8, U'á').count == 0);
 		
+		AssertAlways(str8_equal(str8_skip_until_last(str8_lit("aaabbb"), U'a'), str8_lit("abbb")));
+		AssertAlways(str8_equal(str8_skip_until_last(str8_lit("aaabbb"), U'b'), str8_lit("b")));
+		AssertAlways(str8_equal(str8_skip_until_last(str8_lit("aaabbbccc"), U'c'), str8_lit("ccc")));
+		AssertAlways(str8_equal(str8_skip_until_last(str8_lit("  777777   abc"), U' '), str8_lit(" abc")));
+		AssertAlways(str8_equal(str8_skip_until_last(test8, U' '), str8_lit(" 🍌")));
+		AssertAlways(str8_equal(str8_skip_until_last(test8, U'b'), str8_lit("b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		AssertAlways(str8_equal(str8_skip_until_last(test8, U'♪'), str8_lit("♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
+		AssertAlways(str8_skip_until_last(test8, U'!').count == 0);
+		AssertAlways(str8_skip_until_last(test8, U'á').count == 0);
+		
 		AssertAlways(str8_equal(str8_skip_while(str8_lit("  777777   abc"), U' '), str8_lit("777777   abc")));
 		AssertAlways(str8_equal(str8_skip_while(str8_lit("♪♪♪♪♪   abc"), U'♪'), str8_lit("   abc")));
 		AssertAlways(str8_equal(str8_skip_while(str8_lit("🍌🍌🍌🍌🍌abc"), U'🍌'), str8_lit("abc")));
@@ -1243,6 +1280,21 @@ local void TEST_kigu_unicode(){
 		AssertAlways(str8_equal(test8, str8_copy(test8)));
 		AssertAlways(str8_equal(test8, str8_copy(str8_lit(TEST_KIGU_UNICODE_LITERAL))));
 		AssertAlways(str8_equal(str8_lit("abc"), str8_copy(str8_lit("abc"))));
+		AssertAlways(str8_equal(str8{}, str8_copy(str8{})));
+		
+		AssertAlways(str8_equal(str8_lit("aaabbb"), str8_concat(str8_lit("aaa"), str8_lit("bbb"))));
+		AssertAlways(str8_equal(str8_lit("abc♪♪"), str8_concat(str8_lit("abc"), str8_lit("♪♪"))));
+		AssertAlways(str8_equal(str8_lit("♪♪"), str8_concat(str8_lit("♪♪"), str8{})));
+		AssertAlways(str8_equal(str8_lit("♪♪"), str8_concat(str8{}, str8_lit("♪♪"))));
+		
+		AssertAlways(str8_equal(str8_lit("aaa♪♪ccc"), str8_concat3(str8_lit("aaa"), str8_lit("♪♪"), str8_lit("ccc"))));
+		AssertAlways(str8_equal(str8_lit("abc♪♪ghi"), str8_concat3(str8_lit("abc"), str8_lit("♪♪"), str8_lit("ghi"))));
+		AssertAlways(str8_equal(str8_lit("abcghi"), str8_concat3(str8_lit("abc"), str8{}, str8_lit("ghi"))));
+		AssertAlways(str8_equal(str8_lit("abcdef"), str8_concat3(str8_lit("abc"), str8_lit("def"), str8{})));
+		AssertAlways(str8_equal(str8_lit("ghi"), str8_concat3(str8{}, str8{}, str8_lit("ghi"))));
+		
+		AssertAlways(str8_equal(str8_lit(""), str8_from_cstr("")));
+		AssertAlways(str8_equal(str8_lit("abc"), str8_from_cstr("abc")));
 		
 		str8_builder builder1;
 		str8_builder_init(&builder1, {});

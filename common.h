@@ -119,6 +119,7 @@
 #include <cstdlib> //malloc, calloc, free
 #include <cstring> //memcpy, memset, strcpy, strlen, etc
 #include <cmath>   //log2
+#include <cstdarg> //va_start, va_list, va_arg, va_end
 
 
 ///////////////////////
@@ -232,13 +233,27 @@ typedef void* (*Allocator_ResizeMemory_Func)(void* ptr, upt size);
 #if COMPILER_CLANG
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wreturn-type"
+#elif COMPILER_CL
+#  pragma warning(push)
+#  pragma warning(default:4716)
+#  pragma warning(disable:4716)
 #endif
+#if BUILD_INTERNAL
+global_ void* Allocator_ReserveMemory_Noop(upt size){return 0;}
+#else
 global_ void* Allocator_ReserveMemory_Noop(upt size){}
+#endif
 global_ void  Allocator_ChangeMemory_Noop(void* ptr, upt size){}
 global_ void  Allocator_ReleaseMemory_Noop(void* ptr){}
+#if BUILD_INTERNAL
+global_ void* Allocator_ResizeMemory_Noop(void* ptr, upt size){return 0;}
+#else
 global_ void* Allocator_ResizeMemory_Noop(void* ptr, upt size){}
+#endif
 #if COMPILER_CLANG
 #  pragma clang diagnostic pop
+#elif COMPILER_CL
+#  pragma warning(pop)
 #endif
 
 struct Allocator{
