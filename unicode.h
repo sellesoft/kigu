@@ -625,7 +625,6 @@ str8_eat_until_last(str8 a, u32 c){
 		if(decoded.codepoint == c) count = b.count;
 		str8_increment(&b, decoded.advance);
 	}
-	if(!b) return a;
 	return str8{a.str, a.count-count};
 }
 
