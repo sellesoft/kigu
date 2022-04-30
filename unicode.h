@@ -781,7 +781,7 @@ str8_builder_append(str8_builder* builder, str8 a){
 
 //Zeros the allocation of `builder` and sets `count` to `0`, but does not affect `space`
 global_ void
-str8_builder_clear(str8_builder* builder){ //nocheckin !TestMe
+str8_builder_clear(str8_builder* builder){
 	ZeroMemory(builder->str, builder->count);
 	builder->count = 0;
 }

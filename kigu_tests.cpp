@@ -1359,6 +1359,10 @@ local void TEST_kigu_unicode(){
 		AssertAlways(str8_length(str8{builder2.str, builder2.count}) == 63);
 		AssertAlways(str8_equal(str8{builder2.str, builder2.count}, str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌aДΩ🍌abc")));
 		
+		str8_builder_clear(&builder2);
+		AssertAlways(builder2.count == 0);
+		forI(builder2.space) AssertAlways(builder2.str[i] == 0);
+		
 		print_verbose("[KIGU-TEST] PASSED: unicode/building\n");
 	}
 	
