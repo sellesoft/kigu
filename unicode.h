@@ -107,6 +107,7 @@ struct str8{
 	s64 count;
 	FORCE_INLINE explicit operator bool(){ return str && count > 0; }
 #define str8_lit(s) str8{(u8*)GLUE(u8,s), sizeof(GLUE(u8,s))-1}
+#define str8l(s) str8{(u8*)GLUE(u8,s), sizeof(GLUE(u8,s))-1}
 };
 
 struct str8_builder{
@@ -114,7 +115,7 @@ struct str8_builder{
 	s64 count;
 	s64 space;
 	Allocator* allocator;
-};
+}; typedef str8_builder str8b;
 
 struct str16{
 	u16* str;
