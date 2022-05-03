@@ -459,8 +459,8 @@ template<typename T> T& deref_if_ptr(T* x){return *x;}
 
 
 /////////////////////// //NOTE the ... is for a programmer message at the assert; it is unused otherwise
-//// assert macros //// //TODO(delle) refactor Assert() usages so the expression is not used
-/////////////////////// //TODO(delle) assert message popup thru the OS
+//// assert macros //// //TODO(delle) assert message popup thru the OS
+/////////////////////// 
 #define AssertAlways(expression, ...) STMNT( if(!(expression)){*(volatile int*)0 = 0;} ) //works regardless of SLOW or INTERNAL
 #define AssertBreakpoint(expression, ...) STMNT( if(!(expression)){ DebugBreakpoint; } )
 #define StaticAssertAlways(expression, ...) char GLUE(__ignore__, GLUE(__LINE__,__default__))[(expression)?1:-1]
@@ -472,7 +472,7 @@ template<typename T> T& deref_if_ptr(T* x){return *x;}
 #  define Assert(expression, ...) AssertAlways(expression)
 #  define StaticAssert(expression, ...) StaticAssertAlways(expression)
 #else
-#  define Assert(expression, ...) expression
+#  define Assert(expression, ...)
 #  define StaticAssert(expression, ...) 
 #endif
 

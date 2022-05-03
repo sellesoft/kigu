@@ -738,7 +738,7 @@ str8_concat3(str8 a, str8 b, str8 c, Allocator* allocator = KIGU_UNICODE_ALLOCAT
 	str8 result{(u8*)allocator->reserve((a.count+b.count+c.count+1)*sizeof(u8)), a.count+b.count+c.count};
 	CopyMemory(result.str,                 a.str, a.count*sizeof(u8));
 	CopyMemory(result.str+a.count,         b.str, b.count*sizeof(u8));
-	CopyMemory(result.str+a.count+c.count, c.str, c.count*sizeof(u8));
+	CopyMemory(result.str+a.count+b.count, c.str, c.count*sizeof(u8));
 	return result;
 }
 
