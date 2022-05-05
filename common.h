@@ -384,7 +384,7 @@ global_const u64 wcharsize = sizeof(wchar);
 #define STRINGIZE(a) STRINGIZE_(a)
 #define GLUE_(a,b) a##b
 #define GLUE(a,b) GLUE_(a,b)
-#define PRINTLN(x) std::cout << x << std::endl;
+#define PRINTLN(x) std::wcout << x << std::endl;
 #define __FILENAME__ (std::strrchr(__FILE__, '\\') ? std::strrchr(__FILE__, '\\') + 1 : __FILE__)
 #define ToggleBool(variable) variable = !variable
 #define Kilobytes(a) (((u64)(a)) << 10)

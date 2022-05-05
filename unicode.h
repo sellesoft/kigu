@@ -75,9 +75,13 @@ Index:
   str8_builder_fit(str8_builder* builder) -> void
   str8_builder_append(str8_builder* builder, str8 a) -> void
   str8_builder_clear(str8_builder* builder) -> void
+  str8_builder_peek(str8_builder* builder) -> str8
 @str8_hashing
-  str8_static_hash64(str8_static_t s, u64 seed) constexpr -> u64
-  str8_hash64(str8 s, u64 seed) -> u64
+  str8_static_t
+  str8_static_hash64(str8_static_t a, u64 seed) constexpr -> u64
+  str8_hash64(str8 a, u64 seed) -> u64
+@str8_other
+  str8_valid(str8 a) -> b32
 
 TODOs:
 maybe advance the input in eat funcs?
@@ -787,28 +791,43 @@ str8_builder_clear(str8_builder* builder){
 	builder->count = 0;
 }
 
+//Returns a str8 of the internal string of `builder`
+FORCE_INLINE str8
+str8_builder_peek(str8_builder* builder){
+	return str8{builder->str, builder->count};
+}
+
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_hashing
 struct str8_static_t{const char* str; u64 count; template<u64 N> constexpr str8_static_t(const char(&a)[N]): str(a), count(N-1){}};
-//Returns a 64bit FNV-1a hash of the string `s` seeded with `seed` at compile-time
+//Returns a 64bit FNV-1a hash of the string `a` seeded with `seed` at compile-time
 constexpr u64
-str8_static_hash64(str8_static_t s, u64 seed = 14695981039346656037){ //64bit FNV_offset_basis //!TestMe
-	while(s.count-- != 0){
-		seed ^= (u8)*s.str;
+str8_static_hash64(str8_static_t a, u64 seed = 14695981039346656037){ //64bit FNV_offset_basis
+	while(a.count-- != 0){
+		seed ^= (u8)*a.str;
 		seed *= 1099511628211; //64bit FNV_prime
-		s.str++;
+		a.str++;
 	}
 	return seed;
 }
 
-//Returns a 64bit FNV-1a hash of the string `s` seeded with `seed`
+//Returns a 64bit FNV-1a hash of the string `a` seeded with `seed`
 global_ u64
-str8_hash64(str8 s, u64 seed = 14695981039346656037){ //64bit FNV_offset_basis //!TestMe
-	while(s.count-- != 0){
-		seed ^= *s.str++;
+str8_hash64(str8 a, u64 seed = 14695981039346656037){ //64bit FNV_offset_basis
+	while(a.count-- != 0){
+		seed ^= *a.str++;
 		seed *= 1099511628211; //64bit FNV_prime
 	}
 	return seed;
+}
+
+//-////////////////////////////////////////////////////////////////////////////////////////////////
+//// @str8_other
+//Returns true if the string `a` has a non-null pointer `str8.str` and a positive `str8.count`
+//    equivalent to operator bool() call, but intended for C code
+global_ b32
+str8_valid(str8 a){
+	return (a.str) && (a.count > 0) && (*a.str != '\0');
 }
 
 #endif //KIGU_UNICODE_H
