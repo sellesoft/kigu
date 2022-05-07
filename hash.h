@@ -2,9 +2,10 @@
 #ifndef KIGU_HASH_H
 #define KIGU_HASH_H
 
-#include "common.h"
 #include "array.h"
+#include "common.h"
 #include "string.h"
+#include "unicode.h"
 
 template<int N>
 static constexpr const u32 compile_time_string_hash(const char(&a)[N]){
@@ -59,6 +60,13 @@ struct hash<string> {
 			seed *= 16777619;
 		}
 		return seed;
+	}
+};
+
+template<> 
+struct hash<str8> {
+	inline u32 operator()(str8 s) {
+		return str8_hash64(s);
 	}
 };
 
