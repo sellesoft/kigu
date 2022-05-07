@@ -27,6 +27,7 @@ Index:
   utf8_from_codepoint(u8* out, u32 codepoint) -> u32
   utf16_from_codepoint(u16* out, u32 codepoint) -> u32
   wchar_from_codepoint(wchar_t* out, u32 codepoint) -> u32
+  utf8_continuation_byte(u8 byte) -> b32
 @utf_conversion
   str8_from_str16(str16 in, Allocator* allocator) -> str8
   str8_from_str32(str32 in, Allocator* allocator) -> str8
@@ -60,6 +61,7 @@ Index:
   str8_eat_until(str8 a, u32 c) -> str8
   str8_eat_until_last(str8 a, u32 c) -> str8
   str8_eat_until_one_of(str8 a, int count, ...) -> str8
+  str8_eat_until_str(str8 a, str8 c) -> str8
   str8_eat_while(str8 a, u32 c) -> str8
   str8_skip_one(str8 a) -> str8
   str8_skip_count(str8 a, u64 n) -> str8
@@ -312,6 +314,12 @@ wchar_from_codepoint(wchar_t* out, u32 codepoint){
 #undef unicode_bitmask8
 #undef unicode_bitmask9
 #undef unicode_bitmask10
+
+//Returns true if the byte represents a continuation byte from UTF8
+global_ b32
+utf8_continuation_byte(u8 byte){
+	return ((byte & 0xC0) == 0x80);
+}
 
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
@@ -651,6 +659,19 @@ str8_eat_until_one_of(str8 a, int count, ...){
 		str8_increment(&b, decoded.advance);
 	}
 	found_one:;
+	if(!b) return a;
+	return str8{a.str, a.count-b.count};
+}
+
+//Returns a slice of the utf8 string `a` ending before the first occurance of the string `c`
+//    if string `c` is not encountered, `a` is returned
+global_ str8
+str8_eat_until_str(str8 a, str8 c){
+	str8 b = a;
+	while(b){
+		if(str8_begins_with(b, c)) break;
+		str8_advance(&b);
+	}
 	if(!b) return a;
 	return str8{a.str, a.count-b.count};
 }
