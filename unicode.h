@@ -5,6 +5,7 @@ Notes:
 internally and don't assume they are included in the count (NOTE this assumes the allocators fill memory to zero).
 - str16 and str32 use big endian UTF encodings.
 - A codepoint can not start with another codepoint, but it can end with another one.
+- All functions with allocators expect the memory to be zero filled on allocation.
 
 Terminology:
 codepoint       the value or set of values that represent one unicode character
@@ -78,6 +79,9 @@ Index:
   str8_builder_append(str8_builder* builder, str8 a) -> void
   str8_builder_clear(str8_builder* builder) -> void
   str8_builder_peek(str8_builder* builder) -> str8
+  str8_builder_grow(str8_builder* builder, u64 bytes) -> void
+  str8_builder_insert_byteoffset(str8_builder* builder, u64 byte_offset, str8 a) -> void
+  str8_builder_remove_codepoint_at_byteoffset(str8_builder* builder, u64 byte_offset) -> void
 @str8_hashing
   str8_static_t
   str8_static_hash64(str8_static_t a, u64 seed) constexpr -> u64
@@ -741,6 +745,10 @@ str8_skip_while(str8 a, u32 c){
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_building
+#ifndef KIGU_STR8BUILDER_BYTE_ALIGNMENT
+#  define KIGU_STR8BUILDER_BYTE_ALIGNMENT 8
+#endif
+
 //Allocates and returns a new copy of the utf8 string `a` using `allocator`
 global_ str8
 str8_copy(str8 a, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
@@ -778,7 +786,7 @@ str8_from_cstr(const char* a){
 global_ void
 str8_builder_init(str8_builder* builder, str8 initial, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){
 	builder->count     = initial.count;
-	builder->space     = RoundUpTo(builder->count+1, 8);
+	builder->space     = RoundUpTo(builder->count+1, KIGU_STR8BUILDER_BYTE_ALIGNMENT);
 	builder->str       = (u8*)allocator->reserve(builder->space*sizeof(u8)); Assert(builder->str, "Failed to allocate memory");
 	builder->allocator = allocator;
 	if(initial.str) CopyMemory(builder->str, initial.str, initial.count*sizeof(u8));
@@ -795,11 +803,10 @@ str8_builder_fit(str8_builder* builder){
 global_ void
 str8_builder_append(str8_builder* builder, str8 a){
 	if(!a) return;
-	
 	s64 offset = builder->count;
 	builder->count += a.count;
 	if(builder->space < builder->count+1){
-		builder->space = RoundUpTo(builder->count+1, 8);
+		builder->space = RoundUpTo(builder->count+1, KIGU_STR8BUILDER_BYTE_ALIGNMENT);
 		builder->str   = (u8*)builder->allocator->resize(builder->str, builder->space*sizeof(u8)); Assert(builder->str, "Failed to allocate memory");
 	}
 	CopyMemory(builder->str+offset, a.str, a.count*sizeof(u8));
@@ -817,6 +824,40 @@ FORCE_INLINE str8
 str8_builder_peek(str8_builder* builder){
 	return str8{builder->str, builder->count};
 }
+
+//Grows the buffer of `builder` by at least `bytes` (`space` will be aligned to `KIGU_STR8BUILDER_BYTE_ALIGNMENT`)
+global_ void
+str8_builder_grow(str8_builder* builder, u64 bytes){
+	if(bytes){
+		builder->space = RoundUpTo(builder->space+bytes, KIGU_STR8BUILDER_BYTE_ALIGNMENT);
+		builder->str   = (u8*)builder->allocator->resize(builder->str, builder->space*sizeof(u8)); Assert(builder->str, "Failed to allocate memory");
+	}
+}
+
+//Inserts the utf8 string `a` at `byte_offset` into the buffer of `builder`
+//    does no error checking to see if `byte_offset` is in the middle of a multi-byte codepoint
+global_ void
+str8_builder_insert_byteoffset(str8_builder* builder, u64 byte_offset, str8 a){
+	if(a && byte_offset <= builder->count){
+		s64 required_space = builder->count + a.count + 1;
+		if(required_space > builder->space) str8_builder_grow(builder, required_space - builder->space);
+		MoveMemory(builder->str + byte_offset + a.count, builder->str + byte_offset, ((builder->count - byte_offset) + 1)*sizeof(u8));
+		CopyMemory(builder->str + byte_offset,           a.str,                      a.count*sizeof(u8));
+		builder->count += a.count;
+	}
+}
+
+//Removes one codepoint starting at `byte_offset` into the buffer of `builder`
+//    does nothing if `byte_offset` is greater than `str8_builder.count` or `byte_offset` is a UTF8 continuation byte
+global_ void
+str8_builder_remove_codepoint_at_byteoffset(str8_builder* builder, u64 byte_offset){
+	if((byte_offset < builder->count) && !utf8_continuation_byte(*(builder->str+byte_offset))){
+		DecodedCodepoint decoded = decoded_codepoint_from_utf8(builder->str + byte_offset, 4);
+		CopyMemory(builder->str + byte_offset, builder->str + byte_offset + decoded.advance, builder->count - byte_offset);
+		builder->count -= decoded.advance;
+	}
+}
+
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_hashing
