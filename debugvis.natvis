@@ -67,4 +67,10 @@
 		<DisplayString>{str,[count]}</DisplayString>
 	</Type>
   
+  <Type Name="str8">
+		<Intrinsic Name="count" Expression="count" />
+		<Intrinsic Name="data" Expression="str" />
+		<DisplayString>{str,[count]}</DisplayString>
+	</Type>
+  
 </AutoVisualizer>
