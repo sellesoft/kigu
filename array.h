@@ -380,7 +380,6 @@ template<typename T> inline void array<T>::
 remove_unordered(u32 i){DPZoneScoped;
 	Assert(count > 0, "can't remove element from empty vector");
 	Assert(i < count, "index is out of bounds");
-	data[i] = data[count-1];
 	memset(last, 0, sizeof(T));
 	last--;
 	count--;
@@ -388,6 +387,8 @@ remove_unordered(u32 i){DPZoneScoped;
 		first = 0;
 		last  = 0;
 		iter  = 0;
+	}else{
+		data[i] = data[count-1];
 	}
 }
 
