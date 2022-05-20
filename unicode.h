@@ -1,8 +1,8 @@
 /* Kigu Unicode Library
 Notes:
-- str8 is the expected usage type thruout the projects, and as such, has string functions for it.
-- Strings are null-terminated (ending in '\0') in order for libc functions to work, but we don't use it
-internally and don't assume they are included in the count (NOTE this assumes the allocators fill memory to zero).
+- str8 is the expected usage type throughout sellesoft projects, and as such, has string functions for it.
+- strings are null-terminated (ending in '\0') in order for libc functions to work, but we don't use it
+  internally and don't assume they are included in the count (NOTE this assumes the allocators fill memory to zero).
 - str16 and str32 use big endian UTF encodings.
 - A codepoint can not start with another codepoint, but it can end with another one.
 - All functions with allocators expect the memory to be zero filled on allocation.
