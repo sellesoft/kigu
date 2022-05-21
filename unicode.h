@@ -118,6 +118,7 @@ struct str8{
 	FORCE_INLINE explicit operator bool(){ return str && count > 0; }
 #define str8_lit(s) str8{(u8*)GLUE(u8,s), sizeof(GLUE(u8,s))-1}
 #define str8l(s) str8{(u8*)GLUE(u8,s), sizeof(GLUE(u8,s))-1}
+#define STR8(s) str8{(u8*)GLUE(u8,s), sizeof(GLUE(u8,s))-1}
 };
 
 struct str8_builder{

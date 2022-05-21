@@ -66,6 +66,18 @@
 		<Intrinsic Name="data" Expression="str" />
 		<DisplayString>{str,[count]}</DisplayString>
 	</Type>
+
+  <Type Name="carray&lt;*&gt;">
+    <Intrinsic Name="size"
+            Expression="count" />
+    <DisplayString>{{ size={size()} }}</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>count</Size>
+        <ValuePointer>data</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
   
   <Type Name="str8">
 		<Intrinsic Name="count" Expression="count" />
