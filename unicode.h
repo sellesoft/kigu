@@ -90,7 +90,7 @@ Index:
   str8_valid(str8 a) -> b32
 
 TODOs:
-maybe advance the input in eat funcs?
+rename str8_advance to str8_eat and str8_eat to str8_slice. make the new str8_eat return like it currently does but edits the input string
 is there a point in doing non-lazy comparison?
 scanning functions
 
