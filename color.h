@@ -3,6 +3,7 @@
 #define KIGU_COLOR_H
 
 #include "common.h"
+#include "math/vector.h"
 
 #define COLORU32_RMASK 0x000000FF
 #define COLORU32_GMASK 0x0000FF00
@@ -92,6 +93,10 @@ inline color::color(u8 _r, u8 _g, u8 _b, u8 _a){DPZoneScoped;
 
 inline color::color(u32 _rgba){DPZoneScoped;
 	rgba = ByteSwap32(_rgba);
+}
+
+inline color::color(vec4 v){DPZoneScoped;
+	r=v.r;g=v.g;b=v.b;a=v.a;
 }
 
 ////////////////////
