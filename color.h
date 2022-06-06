@@ -26,6 +26,7 @@ struct color{
 	color();
 	color(u8 r, u8 g, u8 b, u8 a = 255);
 	color(u32 rgba);
+	color(vec4 v);
 	
 	void  operator*=(float rhs);
 	bool  operator==(color rhs) const;
