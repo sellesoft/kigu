@@ -410,7 +410,7 @@ global_const u64 wcharsize = sizeof(wchar);
 #define CastFromConst(type,a) const_cast<type>(a)
 #define StaticCast(type,a) static_cast<type>(a)
 #define DynamicCast(type,a) dynamic_cast<type>(a)
-#define ConversionlessCast(type, var) *(type*)(&var)
+#define Reinterpret(to_type, from_type, x) union{from_type a; to_type b;}{(x)}.b 
 #define HasFlag(var,flag) ((var) & (flag))
 #define HasAllFlags(var,flags) (((var) & (flags)) == (flags))
 #define AddFlag(var,flag) ((var) |= (flag))
