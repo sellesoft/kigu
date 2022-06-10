@@ -6,6 +6,7 @@
 #include "common.h"
 #include "string.h"
 #include "unicode.h"
+#include "profiling.h"
 
 template<int N>
 static constexpr const u32 compile_time_string_hash(const char(&a)[N]){
@@ -25,7 +26,7 @@ struct hash {
 	
 	hash() {};
 	
-	inline u32 operator()(const T& v)const {
+	inline u32 operator()(const T& v)const {DPZoneScoped;
 		u32 seed = 2166136261;
 		size_t data_size = sizeof(T);
 		const u8* data = (const u8*)&v;
@@ -37,7 +38,7 @@ struct hash {
 		
 	}
 	
-	inline u32 operator()(T* v)const {
+	inline u32 operator()(T* v)const {DPZoneScoped;
 		u32 seed = 2166136261;
 		size_t data_size = sizeof(T);
 		const u8* data = (const u8*)v;
@@ -52,7 +53,7 @@ struct hash {
 
 template<> 
 struct hash<string> {
-	inline u32 operator()(const string& s) {
+	inline u32 operator()(const string& s) {DPZoneScoped;
 		u32 seed = 2166136261;
 		u32 size = s.count+1;
 		while (size-- != 0) {
@@ -65,14 +66,14 @@ struct hash<string> {
 
 template<> 
 struct hash<str8> {
-	inline u32 operator()(str8 s) {
+	inline u32 operator()(str8 s) {DPZoneScoped;
 		return str8_hash64(s);
 	}
 };
 
 template<> 
 struct hash<cstring> {
-	inline u32 operator()(cstring s) {
+	inline u32 operator()(cstring s) {DPZoneScoped;
 		u32 seed = 2166136261;
 		u32 size = s.count;
 		while (size-- != 0) {
@@ -85,7 +86,7 @@ struct hash<cstring> {
 
 template<> 
 struct hash<const char*> {
-	inline u32 operator()(const char* s) {
+	inline u32 operator()(const char* s) {DPZoneScoped;
 		u32 seed = 2166136261;
 		u32 size = strlen(s)+1;
 		while (size-- != 0) {
@@ -98,7 +99,7 @@ struct hash<const char*> {
 
 template<class T> 
 struct hash<array<T>> {
-	inline u32 operator()(array<T>* s) {
+	inline u32 operator()(array<T>* s) {DPZoneScoped;
 		u32 seed = 2166136261;
 		u32 size = s->size;
 		while (size-- != 0) {
