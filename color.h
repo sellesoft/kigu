@@ -26,7 +26,6 @@ struct color{
 	color();
 	color(u8 r, u8 g, u8 b, u8 a = 255);
 	color(u32 rgba);
-	color(vec4 v);
 	
 	void  operator*=(float rhs);
 	bool  operator==(color rhs) const;
@@ -94,10 +93,6 @@ inline color::color(u8 _r, u8 _g, u8 _b, u8 _a){DPZoneScoped;
 
 inline color::color(u32 _rgba){DPZoneScoped;
 	rgba = ByteSwap32(_rgba);
-}
-
-inline color::color(vec4 v){DPZoneScoped;
-	r=v.r;g=v.g;b=v.b;a=v.a;
 }
 
 ////////////////////
