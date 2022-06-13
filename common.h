@@ -6,8 +6,9 @@
 //// compiler, platform, architecture //// platforms: OS_WINDOWS. OS_LINUX, OS_MAC
 ////////////////////////////////////////// architectures: ARCH_X64, ARCH_X86, ARCH_ARM64, ARCH_ARM32
 //// CL Compiler //// (used for windows)
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && !defined(__clang__) && !(defined(__GNUC__) || defined(__GNUG__))
 #  define COMPILER_CL 1
+//#  pragma message("Compiler: cl")
 
 #  if defined(_WIN32)
 #    define OS_WINDOWS 1
@@ -30,6 +31,7 @@
 //// CLANG Compiler //// (used for mac)
 #elif defined(__clang__) //_MSC_VER
 #  define COMPILER_CLANG 1
+//#  pragma message("Compiler: clang")
 
 #  if   defined(__APPLE__) && defined(__MACH__)
 #    define OS_MAC 1
@@ -54,6 +56,7 @@
 //// GCC Compiler //// (used for linux)
 #elif defined(__GNUC__) || defined(__GNUG__) //__clang__
 #  define COMPILER_GCC 1
+//#  pragma message("Compiler: gcc")
 
 #  if defined(__gnu_linux__)
 #    define OS_LINUX 1
@@ -230,7 +233,7 @@ typedef void  (*Allocator_ChangeMemory_Func)(void* ptr, upt size);
 typedef void  (*Allocator_ReleaseMemory_Func)(void* ptr);
 typedef void* (*Allocator_ResizeMemory_Func)(void* ptr, upt size);
 
-#if COMPILER_CLANG
+#if COMPILER_CLANG || COMPILER_GCC
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wreturn-type"
 #elif COMPILER_CL
@@ -250,7 +253,7 @@ global_ void* Allocator_ResizeMemory_Noop(void* ptr, upt size){return 0;}
 #else
 global_ void* Allocator_ResizeMemory_Noop(void* ptr, upt size){}
 #endif
-#if COMPILER_CLANG
+#if COMPILER_CLANG || COMPILER_GCC
 #  pragma clang diagnostic pop
 #elif COMPILER_CL
 #  pragma warning(pop)
