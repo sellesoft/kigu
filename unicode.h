@@ -109,6 +109,11 @@ https://unicode-table.com/
 #include "common.h"
 #include "profiling.h"
 
+
+#ifdef TRACY_ENABLE
+#include "Tracy.hpp"
+#endif
+
 #ifndef KIGU_UNICODE_ALLOCATOR
 #  define KIGU_UNICODE_ALLOCATOR stl_allocator
 #endif
@@ -905,7 +910,7 @@ str8_builder_remove_codepoint_at_byteoffset(str8_builder* builder, u64 byte_offs
 struct str8_static_t{const char* str; u64 count; template<u64 N> constexpr str8_static_t(const char(&a)[N]): str(a), count(N-1){}};
 //Returns a 64bit FNV-1a hash of the string `a` seeded with `seed` at compile-time
 constexpr u64
-str8_static_hash64(str8_static_t a, u64 seed = 14695981039346656037){DPZoneScoped; //64bit FNV_offset_basis
+str8_static_hash64(str8_static_t a, u64 seed = 14695981039346656037){ //64bit FNV_offset_basis
 	while(a.count-- != 0){
 		seed ^= (u8)*a.str;
 		seed *= 1099511628211; //64bit FNV_prime
