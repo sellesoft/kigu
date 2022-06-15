@@ -6,7 +6,7 @@
 //// compiler, platform, architecture //// platforms: OS_WINDOWS. OS_LINUX, OS_MAC
 ////////////////////////////////////////// architectures: ARCH_X64, ARCH_X86, ARCH_ARM64, ARCH_ARM32
 //// CL Compiler //// (used for windows)
-#if defined(_MSC_VER) && !defined(__clang__) && !(defined(__GNUC__) || defined(__GNUG__))
+#if defined(_MSC_VER)
 #  define COMPILER_CL 1
 //#  pragma message("Compiler: cl")
 
