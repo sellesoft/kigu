@@ -220,6 +220,149 @@ ToString(T... args){
 	return str;
 }
 
+/////////////////////
+//// @to_string8 ////
+/////////////////////
+
+
+global_ str8b
+to_str8(const char* str, Allocator* a = KIGU_STRING_ALLOCATOR){ 
+	str8b out; str8_builder_init(&out, {(u8*)str, (s32)strlen(str)}, a);
+	return out;
+}
+
+
+global_ str8b
+to_str8(const std::string& str, Allocator* a = KIGU_STRING_ALLOCATOR){ 
+	str8b out; str8_builder_init(&out, {(u8*)str.c_str(), (s32)str.size()}, a);
+	return out;
+}
+
+global_ str8b 
+to_str8(char x, Allocator* a = KIGU_STRING_ALLOCATOR){
+	str8b out; str8_builder_init(&out, {(u8*)&x, 1}, a);
+	return out;
+}
+
+global_ str8b 
+to_str8(s32 x, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
+	s.count = snprintf(nullptr, 0, "%d", x);
+	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
+	s.allocator->commit(s.str, s.count+1);
+	s.space = s.count+1;
+	snprintf(s.str, s.count+1, "%d", x);
+	return s;
+}
+
+global_ str8b 
+to_str8(s64 x, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
+	s.count = snprintf(nullptr, 0, "%lld", x);
+	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
+	s.allocator->commit(s.str, s.count+1);
+	s.space = s.count+1;
+	snprintf(s.str, s.count+1, "%lld", x);
+	return s;
+}
+
+global_ str8b 
+to_str8(u32 x, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
+	s.count = snprintf(nullptr, 0, "%u", x);
+	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
+	s.allocator->commit(s.str, s.count+1);
+	s.space = s.count+1;
+	snprintf(s.str, s.count+1, "%u", x);
+	return s;
+}
+
+global_ str8b 
+to_str8(f32 x, bool trunc = true, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
+	if(trunc){
+		s.count = snprintf(nullptr, 0, "%g", x);
+		s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
+		s.allocator->commit(s.str, s.count+1);
+		s.space = s.count+1;
+		snprintf(s.str, s.count+1, "%g", x);
+	}else{
+		s.count = snprintf(nullptr, 0, "%f", x);
+		s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
+		s.allocator->commit(s.str, s.count+1);
+		s.space = s.count+1;
+		snprintf(s.str, s.count+1, "%f", x);
+	}
+	return s;
+}
+
+global_ str8b 
+to_str8(f64 x, bool trunc = true, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
+	if(trunc){
+		s.count = snprintf(nullptr, 0, "%g", x);
+		s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
+		s.allocator->commit(s.str, s.count+1);
+		s.space = s.count+1;
+		snprintf(s.str, s.count+1, "%g", x);
+	}else{
+		s.count = snprintf(nullptr, 0, "%f", x);
+		s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
+		s.allocator->commit(s.str, s.count+1);
+		s.space = s.count+1;
+		snprintf(s.str, s.count+1, "%f", x);
+	}
+	return s;
+}
+
+global_ str8b 
+to_str8(upt x, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
+	s.count = snprintf(nullptr, 0, "%zu", x);
+	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
+	s.allocator->commit(s.str, s.count+1);
+	s.space = s.count+1;
+	snprintf(s.str, s.count+1, "%zu", x);
+	return s;
+}
+
+global_ str8b
+to_str8(void* ptr, Allocator* a = KIGU_STRING_ALLOCATOR) {
+	string s(a);
+	s.count = snprintf(nullptr, 0, "%p", ptr);
+	s.str = (char*)s.allocator->reserve(s.count + 1); Assert(s.str, "Failed to allocate memory");
+	s.allocator->commit(s.str, s.count + 1);
+	s.space = s.count + 1;
+	snprintf(s.str, s.count + 1, "%p", ptr);
+	return s;
+}
+
+global_ str8b 
+to_str8(const color& x, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
+	s.count = snprintf(nullptr, 0, "{R:%d, G:%d, B:%d, A:%d}", x.r, x.g, x.b, x.a);
+	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
+	s.allocator->commit(s.str, s.count+1);
+	s.space = s.count+1;
+	snprintf(s.str, s.count+1, "{R:%d, G:%d, B:%d, A:%d}", x.r, x.g, x.b, x.a);
+	return s;
+}
+
+global_ str8b
+to_str8(str8 s, Allocator* a = KIGU_STRING_ALLOCATOR){
+	return string((char*)s.str, s.count, a);
+}
+
+#define toStr(...) (ToString(__VA_ARGS__))
+template<class... T> global_ str8 
+ToString(T... args){
+	string str;
+	constexpr auto arg_count{sizeof...(T)};
+	string arr[arg_count] = {to_string8(args)...};
+	forI(arg_count) str += arr[i];
+	return str;
+}
+
 ///////////////
 //// @find ////
 ///////////////
