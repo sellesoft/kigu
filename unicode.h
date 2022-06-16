@@ -131,8 +131,10 @@ struct str8{
 };
 
 struct str8_builder{
-	u8* str;
-	s64 count;
+	union{
+		struct{u8* str; s64 count;};
+		str8 fin;
+	};
 	s64 space;
 	Allocator* allocator;
 }; typedef str8_builder str8b;
