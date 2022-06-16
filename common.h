@@ -130,7 +130,7 @@
 ///////////////////////
 #define local    static //inside a .cpp
 #define persist  static //inside a function
-#define global_  static //inside a .h //TODO rename to global or similar
+#define global   static //inside a .h
 #define local_const static const
 #define global_const static const
 #define external extern "C"
@@ -242,16 +242,16 @@ typedef void* (*Allocator_ResizeMemory_Func)(void* ptr, upt size);
 #  pragma warning(disable:4716)
 #endif
 #if BUILD_INTERNAL
-global_ void* Allocator_ReserveMemory_Noop(upt size){return 0;}
+global void* Allocator_ReserveMemory_Noop(upt size){return 0;}
 #else
-global_ void* Allocator_ReserveMemory_Noop(upt size){}
+global void* Allocator_ReserveMemory_Noop(upt size){}
 #endif
-global_ void  Allocator_ChangeMemory_Noop(void* ptr, upt size){}
-global_ void  Allocator_ReleaseMemory_Noop(void* ptr){}
+global void  Allocator_ChangeMemory_Noop(void* ptr, upt size){}
+global void  Allocator_ReleaseMemory_Noop(void* ptr){}
 #if BUILD_INTERNAL
-global_ void* Allocator_ResizeMemory_Noop(void* ptr, upt size){return 0;}
+global void* Allocator_ResizeMemory_Noop(void* ptr, upt size){return 0;}
 #else
-global_ void* Allocator_ResizeMemory_Noop(void* ptr, upt size){}
+global void* Allocator_ResizeMemory_Noop(void* ptr, upt size){}
 #endif
 #if COMPILER_CLANG || COMPILER_GCC
 #  pragma clang diagnostic pop
@@ -517,17 +517,17 @@ template <class F> deferrer<F> operator*(defer_dummy, F f) { return {f}; }
 #endif // defer
 
 //// C/C++ STL allocator //// //TODO rename this to libc allocator (STL is something different)
-global_ void* STLAllocator_Reserve(upt size){void* a = calloc(1,size); Assert(a); return a;}
-global_ void  STLAllocator_Release(void* ptr){free(ptr);}
-global_ void* STLAllocator_Resize(void* ptr, upt size){void* a = realloc(ptr,size); Assert(a); return a;}
-global_ Allocator stl_allocator_{
+global void* STLAllocator_Reserve(upt size){void* a = calloc(1,size); Assert(a); return a;}
+global void  STLAllocator_Release(void* ptr){free(ptr);}
+global void* STLAllocator_Resize(void* ptr, upt size){void* a = realloc(ptr,size); Assert(a); return a;}
+global Allocator stl_allocator_{
 	STLAllocator_Reserve,
 	Allocator_ChangeMemory_Noop,
 	Allocator_ChangeMemory_Noop,
 	STLAllocator_Release,
 	STLAllocator_Resize
 };
-global_ Allocator* stl_allocator = &stl_allocator_;
+global Allocator* stl_allocator = &stl_allocator_;
 
 
 ///////////////////////////// //TODO remove/rework/rename these

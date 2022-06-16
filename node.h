@@ -32,27 +32,27 @@ struct TNode {
 #define for_node(node) for(auto it = node; it != 0; it = it->next)
 #define for_node_reverse(node) for(auto it = node; it != 0; it = it->prev)
 
-global_ inline void insert_after(TNode* target, TNode* node) {
+global inline void insert_after(TNode* target, TNode* node) {
 	if (target->next) target->next->prev = node;
 	node->next = target->next;
 	node->prev = target;
 	target->next = node;
 }
 
-global_ inline void insert_before(TNode* target, TNode* node) {
+global inline void insert_before(TNode* target, TNode* node) {
 	if (target->prev) target->prev->next = node;
 	node->prev = target->prev;
 	node->next = target;
 	target->prev = node;
 }
 
-global_ inline void remove_horizontally(TNode* node) {
+global inline void remove_horizontally(TNode* node) {
 	if (node->next) node->next->prev = node->prev;
 	if (node->prev) node->prev->next = node->next;
 	node->next = node->prev = 0;
 }
 
-global_ void insert_last(TNode* parent, TNode* child) {
+global void insert_last(TNode* parent, TNode* child) {
 	if (parent == 0) { child->parent = 0; return; }
 	if(parent==child){DebugBreakpoint;}
 	
@@ -68,7 +68,7 @@ global_ void insert_last(TNode* parent, TNode* child) {
 	parent->child_count++;
 }
 
-global_ void insert_first(TNode* parent, TNode* child) {
+global void insert_first(TNode* parent, TNode* child) {
 	if (parent == 0) { child->parent = 0; return; }
 	
 	child->parent = parent;
@@ -83,7 +83,7 @@ global_ void insert_first(TNode* parent, TNode* child) {
 	parent->child_count++;
 }
 
-global_ void change_parent(TNode* new_parent, TNode* node) {
+global void change_parent(TNode* new_parent, TNode* node) {
 	//if old parent, remove self from it 
 	if (node->parent) {
 		if (node->parent->child_count > 1) {
@@ -105,7 +105,7 @@ global_ void change_parent(TNode* new_parent, TNode* node) {
 	insert_last(new_parent, node);
 }
 
-global_ void remove(TNode* node) {
+global void remove(TNode* node) {
 	//add children to parent (and remove self from children)
 	for(TNode* it = node->first_child; it != 0; ) {
 		TNode* next = it->next;
