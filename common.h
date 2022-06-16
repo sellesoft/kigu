@@ -480,7 +480,7 @@ template<typename T> T& deref_if_ptr(T* x){return *x;}
 #  define StaticAssert(expression, ...) 
 #endif
 
-#define NotImplemented Assert(false, "not implemented yet")
+#define NotImplemented AssertAlways(false, "not implemented yet")
 #define InvalidPath Assert(false, "invalid path")
 #define TestMe AssertBreakpoint(false, "this needs to be tested")
 #define FixMe AssertBreakpoint(false, "this is broken in some way")
