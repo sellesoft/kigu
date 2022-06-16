@@ -171,7 +171,7 @@ struct DecodedCodepoint{
 };
 
 //Returns the next codepoint and advance from the UTF-8 string `str`
-global_ DecodedCodepoint
+global DecodedCodepoint
 decoded_codepoint_from_utf8(u8* str, u64 max_advance){DPZoneScoped;
 	persist u8 utf8_class[32] = { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,2,2,2,2,3,3,4,5, };
 	
@@ -223,7 +223,7 @@ decoded_codepoint_from_utf8(u8* str, u64 max_advance){DPZoneScoped;
 }
 
 //Returns the next codepoint and advance from the UTF-16 string `str`
-global_ DecodedCodepoint
+global DecodedCodepoint
 decoded_codepoint_from_utf16(u16* str, u64 max_advance){DPZoneScoped;
 	DecodedCodepoint result = {(u32)-1, 1};
 	result.codepoint = str[0];
@@ -236,7 +236,7 @@ decoded_codepoint_from_utf16(u16* str, u64 max_advance){DPZoneScoped;
 }
 
 //Returns the next codepoint and advance from the wchar_t string `str`
-global_ DecodedCodepoint
+global DecodedCodepoint
 decoded_codepoint_from_wchar(wchar_t* str, u64 max_advance){DPZoneScoped;
 #if COMPILER_CL
 	return decoded_codepoint_from_utf16((u16*)str, max_advance);
@@ -248,7 +248,7 @@ decoded_codepoint_from_wchar(wchar_t* str, u64 max_advance){DPZoneScoped;
 }
 
 //Fills the u8 string `out` with the Unicode `codepoint`; returns the advance in number of u8, -1 if invalid codepoint
-global_ u32
+global u32
 utf8_from_codepoint(u8* out, u32 codepoint){DPZoneScoped;
 #define unicode_bit8 0x80
 	u32 advance = 1;
@@ -285,7 +285,7 @@ utf8_from_codepoint(u8* out, u32 codepoint){DPZoneScoped;
 }
 
 //Fills the u16 string `out` with the Unicode `codepoint`; returns the number of u16 advance, -1 if invalid codepoint
-global_ u32
+global u32
 utf16_from_codepoint(u16* out, u32 codepoint){DPZoneScoped;
 	u32 advance = 1;
 	if(codepoint < 0x10000){
@@ -306,7 +306,7 @@ utf16_from_codepoint(u16* out, u32 codepoint){DPZoneScoped;
 }
 
 //Fills the wchar_t string `out` with the Unicode `codepoint`; returns the number of wchar_t advance, -1 if invalid codepoint
-global_ u32
+global u32
 wchar_from_codepoint(wchar_t* out, u32 codepoint){DPZoneScoped;
 #if COMPILER_CL
 	return utf16_from_codepoint((u16*)out, codepoint);
@@ -330,7 +330,7 @@ wchar_from_codepoint(wchar_t* out, u32 codepoint){DPZoneScoped;
 #undef unicode_bitmask10
 
 //Returns true if the byte represents a continuation byte from UTF8
-global_ b32
+global b32
 utf8_continuation_byte(u8 byte){DPZoneScoped;
 	return ((byte & 0xC0) == 0x80);
 }
@@ -339,7 +339,7 @@ utf8_continuation_byte(u8 byte){DPZoneScoped;
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @utf_conversion
 //Converts and returns a utf8 string from the utf16 string `in` using `allocator`
-global_ str8
+global str8
 str8_from_str16(str16 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	u64 space = 3*in.count;
 	u8* str = (u8*)allocator->reserve((space+1)*sizeof(u8)); Assert(str, "failed to allocator memory");
@@ -359,7 +359,7 @@ str8_from_str16(str16 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneS
 }
 
 //Converts and returns a utf8 string from the utf32 string `in` using `allocator`
-global_ str8
+global str8
 str8_from_str32(str32 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	u64 space = 4*in.count;
 	u8* str = (u8*)allocator->reserve((space+1)*sizeof(u8)); Assert(str, "failed to allocator memory");
@@ -378,7 +378,7 @@ str8_from_str32(str32 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneS
 
 //Converts and returns a utf8 string from the wchar_t string `in` using `allocator`
 //    this expects `in` to be null-terminated
-global_ str8
+global str8
 str8_from_wchar(wchar_t* in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	s64 in_count = 0;
 	for(wchar_t* a = in; *a != L'\0'; ++a) ++in_count;
@@ -392,7 +392,7 @@ str8_from_wchar(wchar_t* in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZo
 }
 
 //Converts and returns a utf16 string from the utf8 string `in` using `allocator`
-global_ str16
+global str16
 str16_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	u64 space = 2*in.count;
 	u16* str = (u16*)allocator->reserve((space+1)*sizeof(u16)); Assert(str, "failed to allocator memory");
@@ -412,7 +412,7 @@ str16_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneSc
 }
 
 //Converts and returns a utf32 string from the utf8 string `in` using `allocator`
-global_ str32
+global str32
 str32_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	u64 space = in.count;
 	u32* str = (u32*)allocator->reserve((space+1)*sizeof(u32)); Assert(str, "failed to allocator memory");
@@ -433,7 +433,7 @@ str32_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneSc
 }
 
 //Converts and returns a wchar_t string from the utf8 string `in` using `allocator`
-global_ wchar_t*
+global wchar_t*
 wchar_from_str8(str8 in, s64* out_count = 0, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 #if COMPILER_CL
 	str16 out = str16_from_str8(in, allocator);
@@ -466,7 +466,7 @@ str8_decrement(str8* a, u64 bytes){DPZoneScoped;
 }
 
 //Advances the utf8 string `a` by one codepoint and returns that codepoint
-global_ DecodedCodepoint
+global DecodedCodepoint
 str8_advance(str8* a){DPZoneScoped;
 	DecodedCodepoint decoded{};
 	if(a && *a){
@@ -477,7 +477,7 @@ str8_advance(str8* a){DPZoneScoped;
 }
 
 //Advances the utf8 string `a` by `n` codepoints and returns the last codepoint (n-1 starting from 0)
-global_ DecodedCodepoint
+global DecodedCodepoint
 str8_nadvance(str8* a, u64 n){DPZoneScoped;
 	DecodedCodepoint decoded{};
 	if(a && n){
@@ -490,7 +490,7 @@ str8_nadvance(str8* a, u64 n){DPZoneScoped;
 }
 
 //Advances the utf8 string `a` until the codepoint `c` is encountered
-global_ void
+global void
 str8_advance_until(str8* a, u32 c){DPZoneScoped;
 	if(a){
 		while(*a){
@@ -502,7 +502,7 @@ str8_advance_until(str8* a, u32 c){DPZoneScoped;
 }
 
 //Advances the utf8 string `a` while the codepoint `c` is encountered
-global_ void
+global void
 str8_advance_while(str8* a, u32 c){DPZoneScoped;
 	if(a){
 		while(*a){
@@ -518,13 +518,13 @@ str8_advance_while(str8* a, u32 c){DPZoneScoped;
 //// @str8_indexing
 //Returns the `n`th codepoint (starting from 0) in the utf8 string `a`
 //    returns the last codepoint of the string if `n` is greater than the length of the string
-global_ inline DecodedCodepoint
+global inline DecodedCodepoint
 str8_index(str8 a, u64 n){DPZoneScoped;
 	return str8_nadvance(&a, n+1);
 }
 
 //Returns the number of codepoints in the unicode string `a`
-global_ inline s64
+global inline s64
 str8_length(str8 a){DPZoneScoped;
 	s64 result = 0;
 	while(str8_advance(&a).codepoint) result++;
@@ -538,7 +538,7 @@ str8_length(str8 a){DPZoneScoped;
 //    returns 0 if the strings are equal
 //    returns <0 if the first character that doesn't match has a lower value codepoint in `a` than in `b`
 //    returns >0 if the first character that doesn't match has a lower value codepoint in `b` than in `a`
-global_ s64
+global s64
 str8_compare(str8 a, str8 b){DPZoneScoped;
 	if(a.str == b.str && a.count == b.count) return 0;
 	s64 diff = 0;
@@ -550,7 +550,7 @@ str8_compare(str8 a, str8 b){DPZoneScoped;
 //    returns 0 if the strings are equal
 //    returns <0 if the first character that doesn't match has a lower value codepoint in `a` than in `b`
 //    returns >0 if the first character that doesn't match has a lower value codepoint in `b` than in `a`
-global_ s64
+global s64
 str8_ncompare(str8 a, str8 b, u64 n){DPZoneScoped;
 	if(a.str == b.str && a.count == b.count) return 0;
 	s64 diff = 0;
@@ -559,19 +559,19 @@ str8_ncompare(str8 a, str8 b, u64 n){DPZoneScoped;
 }
 
 //Returns true if the utf8 strings `a` and `b` are equal for all codepoints of the strings
-global_ inline b32
+global inline b32
 str8_equal(str8 a, str8 b){DPZoneScoped;
 	return a.count == b.count && str8_compare(a, b) == 0;
 }
 
 //Returns true if the utf8 strings `a` and `b` are equal for all codepoints of the strings by simply comparing memory
-global_ inline b32
+global inline b32
 str8_equal_lazy(str8 a, str8 b){DPZoneScoped;
 	return a.count == b.count && memcmp(a.str, b.str, a.count) == 0;
 }
 
 //Returns true if the utf8 strings `a` and `b` are equal for `n` codepoints
-global_ inline b32
+global inline b32
 str8_nequal(str8 a, str8 b, u64 n){DPZoneScoped;
 	return str8_ncompare(a, b, n) == 0;
 }
@@ -580,21 +580,21 @@ str8_nequal(str8 a, str8 b, u64 n){DPZoneScoped;
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_searching
 //Returns true if utf8 string `a` begins with utf8 string `b`
-global_ inline b32
+global inline b32
 str8_begins_with(str8 a, str8 b){DPZoneScoped;
 	if(a.str == b.str && a.count == b.count) return true;
 	return a.count >= b.count && str8_ncompare(a, b, str8_length(b)) == 0;
 }
 
 //Returns true if utf8 string `a` ends with utf8 string `b`
-global_ inline b32
+global inline b32
 str8_ends_with(str8 a, str8 b){DPZoneScoped;
 	if(a.str == b.str && a.count == b.count) return true;
 	return a.count >= b.count && str8_compare(str8{a.str+a.count-b.count,b.count}, b) == 0;
 }
 
 //Returns true if utf8 string `a` contains utf8 string `b`
-global_ b32
+global b32
 str8_contains(str8 a, str8 b){DPZoneScoped;
 	if(a.str == b.str && a.count == b.count) return true;
 	u32 b_len = str8_length(b);
@@ -608,7 +608,7 @@ str8_contains(str8 a, str8 b){DPZoneScoped;
 
 //returns the first occurance of 'codepoint' in a string 'a' as a byte offset
 //returns npos if it is not found
-global_ u32
+global u32
 str8_find_first(str8 a, u32 codepoint){DPZoneScoped;
 	u32 iter = 0;
 	while(a.count){
@@ -620,7 +620,7 @@ str8_find_first(str8 a, u32 codepoint){DPZoneScoped;
 }
 
 //TODO(sushi) rename and put somewhere better later
-global_ u64 
+global u64 
 utf8_move_back(u8* start){DPZoneScoped;
 	u64 count = 0;
 	while(utf8_continuation_byte(*(start-1))){
@@ -631,7 +631,7 @@ utf8_move_back(u8* start){DPZoneScoped;
 
 //returns the last occurance of 'codepoint' in a string 'a' as a byte offset
 //returns npos if it is not found
-global_ u32
+global u32
 str8_find_last(str8 a, u32 codepoint) {DPZoneScoped;
 	u32 iter = 0;
 	while(iter < a.count){
@@ -646,7 +646,7 @@ str8_find_last(str8 a, u32 codepoint) {DPZoneScoped;
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_slicing
 //Returns a slice of the utf8 string `a` including one codepoint from the beginning
-global_ inline str8
+global inline str8
 str8_eat_one(str8 a){DPZoneScoped;
 	str8 b = a;
 	str8_advance(&b);
@@ -655,7 +655,7 @@ str8_eat_one(str8 a){DPZoneScoped;
 }
 
 //Returns a slice of the utf8 string `a` including `n` codepoints from the beginning
-global_ inline str8
+global inline str8
 str8_eat_count(str8 a, u64 n){DPZoneScoped;
 	str8 b = a;
 	str8_nadvance(&b, n);
@@ -665,7 +665,7 @@ str8_eat_count(str8 a, u64 n){DPZoneScoped;
 
 //Returns a slice of the utf8 string `a` ending before the first occurance of the codepoint `c`
 //    if codepoint `c` is not encountered, `a` is returned
-global_ str8
+global str8
 str8_eat_until(str8 a, u32 c){DPZoneScoped;
 	str8 b = a;
 	while(b){
@@ -679,7 +679,7 @@ str8_eat_until(str8 a, u32 c){DPZoneScoped;
 
 //Returns a slice of the utf8 string `a` ending before the last occurance of the codepoint `c`
 //    if codepoint `c` is not encountered, `a` is returned
-global_ str8
+global str8
 str8_eat_until_last(str8 a, u32 c){DPZoneScoped;
 	str8 b = a;
 	s64 count = 0;
@@ -694,7 +694,7 @@ str8_eat_until_last(str8 a, u32 c){DPZoneScoped;
 //Returns a slice of the utf8 string `a` ending before the first occurance of the one of the `count` codepoints passed
 //    `count` should equal the number of arguments you pass to the variadic (...)
 //    if no (...) codepoints are not encountered, `a` is returned
-global_ str8
+global str8
 str8_eat_until_one_of(str8 a, int count, ...){DPZoneScoped;
 	str8 b = a;
 	while(b){
@@ -715,7 +715,7 @@ str8_eat_until_one_of(str8 a, int count, ...){DPZoneScoped;
 
 //Returns a slice of the utf8 string `a` ending before the first occurance of the string `c`
 //    if string `c` is not encountered, `a` is returned
-global_ str8
+global str8
 str8_eat_until_str(str8 a, str8 c){DPZoneScoped;
 	str8 b = a;
 	while(b){
@@ -728,7 +728,7 @@ str8_eat_until_str(str8 a, str8 c){DPZoneScoped;
 
 //Returns a slice of the utf8 string `a` ending before the first occurance of a codepoint that is not the codepoint `c`
 //    if codepoint `c` is not encountered, an empty string is returned
-global_ str8
+global str8
 str8_eat_while(str8 a, u32 c){DPZoneScoped;
 	str8 b = a;
 	while(b){
@@ -741,21 +741,21 @@ str8_eat_while(str8 a, u32 c){DPZoneScoped;
 }
 
 //Returns a slice of the utf8 string `a` starting after the first character until the end of the string
-global_ inline str8
+global inline str8
 str8_skip_one(str8 a){DPZoneScoped;
 	str8_advance(&a);
 	return a;
 }
 
 //Returns a slice of the utf8 string `a` starting after the `n`th character from the beginning until the end of the string
-global_ inline str8
+global inline str8
 str8_skip_count(str8 a, u64 n){DPZoneScoped;
 	str8_nadvance(&a, n);
 	return a;
 }
 
 //Returns a slice of the utf8 string `a` starting at the first occurance of the codepoint `c` until the end of the string
-global_ str8
+global str8
 str8_skip_until(str8 a, u32 c){DPZoneScoped;
 	while(a){
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(a.str, 4);
@@ -766,7 +766,7 @@ str8_skip_until(str8 a, u32 c){DPZoneScoped;
 }
 
 //Returns a slice of the utf8 string `a` starting at the last occurance of the codepoint `c` until the end of the string
-global_ str8
+global str8
 str8_skip_until_last(str8 a, u32 c){DPZoneScoped;
 	str8 b{};
 	while(a){
@@ -778,7 +778,7 @@ str8_skip_until_last(str8 a, u32 c){DPZoneScoped;
 }
 
 //Returns a slice of the utf8 string `a` starting at the first occurance of a codepoint that is not the codepoint `c` until the end of the string
-global_ str8
+global str8
 str8_skip_while(str8 a, u32 c){DPZoneScoped;
 	while(a){
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(a.str, 4);
@@ -796,7 +796,7 @@ str8_skip_while(str8 a, u32 c){DPZoneScoped;
 #endif
 
 //Allocates and returns a new copy of the utf8 string `a` using `allocator`
-global_ str8
+global str8
 str8_copy(str8 a, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	str8 result{(u8*)allocator->reserve((a.count+1)*sizeof(u8)), a.count};
 	Assert(result.str, "failed to allocator memory");
@@ -805,7 +805,7 @@ str8_copy(str8 a, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 }
 
 //Allocates and returns a utf8 string of `a` with `b` appended to it using `allocator`
-global_ str8
+global str8
 str8_concat(str8 a, str8 b, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	str8 result{(u8*)allocator->reserve((a.count+b.count+1)*sizeof(u8)), a.count+b.count};
 	Assert(result.str, "failed to allocator memory");
@@ -815,7 +815,7 @@ str8_concat(str8 a, str8 b, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZon
 }
 
 //Allocates and returns a utf8 string of `a` with `b` and then `c` appended to it using `allocator`
-global_ str8
+global str8
 str8_concat3(str8 a, str8 b, str8 c, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	str8 result{(u8*)allocator->reserve((a.count+b.count+c.count+1)*sizeof(u8)), a.count+b.count+c.count};
 	Assert(result.str, "failed to allocator memory");
@@ -832,7 +832,7 @@ str8_from_cstr(const char* a){DPZoneScoped;
 }
 
 //Initializes `builder` with the string `initial` using `allocator`
-global_ void
+global void
 str8_builder_init(str8_builder* builder, str8 initial, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	builder->count     = initial.count;
 	builder->space     = RoundUpTo(builder->count+1, KIGU_STR8BUILDER_BYTE_ALIGNMENT);
@@ -842,14 +842,14 @@ str8_builder_init(str8_builder* builder, str8 initial, Allocator* allocator = KI
 }
 
 //Fits the allocation of `builder` to its `count` (+1 for null-terminator)
-global_ void
+global void
 str8_builder_fit(str8_builder* builder){DPZoneScoped;
 	builder->space = builder->count+1;
 	builder->str   = (u8*)builder->allocator->resize(builder->str, builder->space*sizeof(u8)); Assert(builder->str, "Failed to allocate memory");
 }
 
 //Appends `a` to the end of `builder`
-global_ void
+global void
 str8_builder_append(str8_builder* builder, str8 a){DPZoneScoped;
 	if(!a) return;
 	s64 offset = builder->count;
@@ -862,7 +862,7 @@ str8_builder_append(str8_builder* builder, str8 a){DPZoneScoped;
 }
 
 //Zeros the allocation of `builder` and sets `count` to `0`, but does not affect `space`
-global_ void
+global void
 str8_builder_clear(str8_builder* builder){DPZoneScoped;
 	ZeroMemory(builder->str, builder->count);
 	builder->count = 0;
@@ -875,7 +875,7 @@ str8_builder_peek(str8_builder* builder){DPZoneScoped;
 }
 
 //Grows the buffer of `builder` by at least `bytes` (`space` will be aligned to `KIGU_STR8BUILDER_BYTE_ALIGNMENT`)
-global_ void
+global void
 str8_builder_grow(str8_builder* builder, u64 bytes){DPZoneScoped;
 	if(bytes){
 		builder->space = RoundUpTo(builder->space+bytes, KIGU_STR8BUILDER_BYTE_ALIGNMENT);
@@ -885,7 +885,7 @@ str8_builder_grow(str8_builder* builder, u64 bytes){DPZoneScoped;
 
 //Inserts the utf8 string `a` at `byte_offset` into the buffer of `builder`
 //    does no error checking to see if `byte_offset` is in the middle of a multi-byte codepoint
-global_ void
+global void
 str8_builder_insert_byteoffset(str8_builder* builder, u64 byte_offset, str8 a){DPZoneScoped;
 	if(a && byte_offset <= builder->count){
 		s64 required_space = builder->count + a.count + 1;
@@ -898,7 +898,7 @@ str8_builder_insert_byteoffset(str8_builder* builder, u64 byte_offset, str8 a){D
 
 //Removes one codepoint starting at `byte_offset` into the buffer of `builder`
 //    does nothing if `byte_offset` is greater than `str8_builder.count` or `byte_offset` is a UTF8 continuation byte
-global_ void
+global void
 str8_builder_remove_codepoint_at_byteoffset(str8_builder* builder, u64 byte_offset){DPZoneScoped;
 	if((byte_offset < builder->count) && !utf8_continuation_byte(*(builder->str+byte_offset))){
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(builder->str + byte_offset, 4);
@@ -923,7 +923,7 @@ str8_static_hash64(str8_static_t a, u64 seed = 14695981039346656037){ //64bit FN
 }
 
 //Returns a 64bit FNV-1a hash of the string `a` seeded with `seed`
-global_ u64
+global u64
 str8_hash64(str8 a, u64 seed = 14695981039346656037){DPZoneScoped; //64bit FNV_offset_basis
 	while(a.count-- != 0){
 		seed ^= *a.str++;
@@ -936,7 +936,7 @@ str8_hash64(str8 a, u64 seed = 14695981039346656037){DPZoneScoped; //64bit FNV_o
 //// @str8_other
 //Returns true if the string `a` has a non-null pointer `str8.str` and a positive `str8.count`
 //    equivalent to operator bool() call, but intended for C code
-global_ b32
+global b32
 str8_valid(str8 a){DPZoneScoped;
 	return (a.str) && (a.count > 0) && (*a.str != '\0');
 }

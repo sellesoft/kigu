@@ -8,7 +8,6 @@
 #include "common.h"
 #include "profiling.h" 
 #include <cstdio>
-#include <iostream> //std::ostream operator<<
 
 #ifndef KIGU_STRING_ALLOCATOR
 #  define KIGU_STRING_ALLOCATOR stl_allocator
@@ -267,10 +266,6 @@ inline bool string::operator!=(const CHAR* s) const {DPZoneScoped;
 ////////////////////////////
 //// @special operators ////
 ////////////////////////////
-inline std::ostream& operator<<(std::ostream& os, const string& m){DPZoneScoped;
-	return os << (m.str ? m.str : "");
-}
-
 inline string operator+ (const string::CHAR* c, const string& s){DPZoneScoped;
 	return string(c) + s;
 }
