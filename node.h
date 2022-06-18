@@ -105,6 +105,32 @@ global void change_parent(TNode* new_parent, TNode* node) {
 	insert_last(new_parent, node);
 }
 
+global void move_to_parent_first(TNode* node){
+	if(!node->parent) return;
+	
+	TNode* parent = node->parent;
+	if(parent->first_child == node) return;
+	if(parent->last_child == node) parent->last_child = node->prev;
+
+	remove_horizontally(node);
+	node->next = parent->first_child;
+	parent->first_child->prev = node;
+	parent->first_child = node;
+}
+
+global void move_to_parent_last(TNode* node){
+	if(!node->parent) return;
+	
+	TNode* parent = node->parent;
+	if(parent->last_child == node) return;
+	if(parent->first_child == node) parent->first_child = node->next;
+
+	remove_horizontally(node);
+	node->prev = parent->last_child;
+	parent->last_child->next = node;
+	parent->last_child = node;
+}
+
 global void remove(TNode* node) {
 	//add children to parent (and remove self from children)
 	for(TNode* it = node->first_child; it != 0; ) {
