@@ -425,8 +425,6 @@ global_const u64 wcharsize = sizeof(wchar);
 #define ReadBits8 (var, start, numbits) (var>>start) & (((u8)1<<numbits)-1)
 
 
-
-
 //////////////////////////
 //// common functions ////
 //////////////////////////
@@ -452,7 +450,9 @@ template<typename T,typename U> FORCE_INLINE T ClampMin(T value, U min){return (
 template<typename T,typename U> FORCE_INLINE T ClampMax(T value, U max){return (value > max) ? max : value;};
 template<typename T> FORCE_INLINE T Nudge(T val, T target, T delta) {return (val != target) ? (val < target) ? ((val + delta < target) ? val + delta : target) : ((val - delta > target) ? val - delta : target) : target;}
 template<typename T> FORCE_INLINE b32 EpsilonEqual(T a, T b){ return abs(a - b) < M_EPSILON; }
-template<typename T> FORCE_INLINE T Remap(T val, T nu_min, T nu_max, T old_min, T old_max) { return (val - old_min) / (old_max - old_min) * (nu_max - nu_min); }
+template<typename T> FORCE_INLINE T Remap(T val, T nu_min, T nu_max, T old_min, T old_max) {
+	return (val - old_min) / (old_max - old_min) * (nu_max - nu_min) + nu_min; 
+}
 template<typename... T, typename A> inline b32 match_any(A tested, T... in) { return((tested == in) || ...); }
 template<typename... T, typename A> inline b32 less_than_any(A tested, T... in) { return((tested < in) || ...); }
 template<typename... T, typename A> inline b32 greater_than_any(A tested, T... in) { return((tested > in) || ...); }
