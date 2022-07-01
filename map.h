@@ -8,7 +8,6 @@
 #include "pair.h"
 #include "profiling.h"
 
-//TODO rename this to unordered_map
 template<typename Key, typename Value, typename HashStruct = hash<Key>>
 struct map{
 	array<u32>   hashes;

@@ -60,6 +60,8 @@ stolli(char* s){
 }
 FORCE_INLINE s64 stolli(cstring s){ return stolli(s.str); }
 FORCE_INLINE s64 stolli(const string& s){ return stolli(s.str); }
+FORCE_INLINE s64 stolli(str8 s) { return stolli((char*)s.str); }
+
 
 global f64
 stod(char* s) {
@@ -67,6 +69,7 @@ stod(char* s) {
 }
 FORCE_INLINE f64 stod(cstring s){ return stod(s.str); }
 FORCE_INLINE f64 stod(const string& s){ return stod(s.str); }
+FORCE_INLINE f64 stod(str8 s){ return stod((char*)s.str); }
 
 ////////////////////
 //// @to_string ////
