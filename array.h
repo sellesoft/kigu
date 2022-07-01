@@ -360,7 +360,7 @@ pop(u32 _count){DPZoneScoped;
 
 template<typename T> inline void array<T>::
 remove(u32 i){DPZoneScoped;
-	Assert(count > 0, "can't remove element from empty vector");
+	Assert(count > 0, "can't remove element from empty array");
 	Assert(i < count, "index is out of bounds");
 	data[i].~T();
 	for(u32 o = i; o < count-1; o++){
@@ -378,8 +378,9 @@ remove(u32 i){DPZoneScoped;
 
 template<typename T> inline void array<T>::
 remove_unordered(u32 i){DPZoneScoped;
-	Assert(count > 0, "can't remove element from empty vector");
+	Assert(count > 0, "can't remove element from empty array");
 	Assert(i < count, "index is out of bounds");
+	T endval = data[count-1];
 	memset(last, 0, sizeof(T));
 	last--;
 	count--;
@@ -388,7 +389,7 @@ remove_unordered(u32 i){DPZoneScoped;
 		last  = 0;
 		iter  = 0;
 	}else{
-		data[i] = data[count-1];
+		data[i] = endval;
 	}
 }
 
