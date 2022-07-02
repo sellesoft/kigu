@@ -54,8 +54,8 @@ struct array{
 	void emplace(const T& t);
 	//inserts before the specified idx
 	void insert(const T& t, u32 idx);
-	//removes _count elements from the end
-	void pop(u32 _count = 1);
+	//removes _count elements from the end and returns the last item popped
+	T pop(u32 _count = 1);
 	//removes element at i and shifts all following elements down one
 	void remove(u32 i);
 	//sets element at i to the last element and zeros last element
@@ -342,10 +342,12 @@ insert(const T& t, u32 idx){DPZoneScoped;
 	}
 }
 
-template<typename T> inline void array<T>::
+template<typename T> inline T array<T>::
 pop(u32 _count){DPZoneScoped;
 	Assert(count >= _count, "attempted to pop more than array size");
+	T ret;
 	forI(_count){
+		if(i==_count) memcpy(&ret, last, sizeof(T));
 		last->~T();
 		last--;
 		count--;
@@ -356,6 +358,7 @@ pop(u32 _count){DPZoneScoped;
 		last  = 0;
 		iter  = 0;
 	}
+	return ret;
 }	
 
 template<typename T> inline void array<T>::
