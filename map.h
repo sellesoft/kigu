@@ -112,6 +112,7 @@ remove(const Key& key){DPZoneScoped;
 		if(hashed == hashes[i]){
 			data.remove(i);
 			hashes.remove(i);
+			count--;
 			return;
 		}
 	}
