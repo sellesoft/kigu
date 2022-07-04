@@ -127,12 +127,12 @@ if you are using deshi and want the program to wait until tracy is connected def
 #define DPFrameMarkStart(name)                              
 #define DPFrameMarkEnd(name)                                
 #define DPFrameImage(image, width, height, offset, flip)    
-#define DPTracyLockable(type, varname)                      
-#define DPTracyLockableN(type, varname, desc)               
-#define DPTracySharedLockable(type, varname)                
+#define DPTracyLockable(type, varname) type varname          
+#define DPTracyLockableN(type, varname, desc) type varname         
+#define DPTracySharedLockable(type, varname) type varname  
 #define DPTracySharedLockableN(type, varname, desc)         
-#define DPLockableBase(type)                                
-#define DPSharedLockableBase(type)                          
+#define DPLockableBase(type) type   
+#define DPSharedLockableBase(type) type                          
 #define DPLockMark(varname)                                 
 #define DPLockableName(varname, txt, size)                  
 #define DPTracyPlot(name, val)                              
