@@ -23,6 +23,7 @@
 #include <cstring>
 #include <initializer_list>
 
+
 template<typename T>
 struct array{
 	u32 count;

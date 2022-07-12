@@ -228,26 +228,26 @@ ToString(T... args){
 /////////////////////
 
 
-global str8b
+global str8
 to_str8(const char* str, Allocator* a = KIGU_STRING_ALLOCATOR){ DPZoneScoped;
 	str8b out; str8_builder_init(&out, {(u8*)str, (s32)strlen(str)}, a);
-	return out;
+	return out.fin;
 }
 
 
-global str8b
+global str8
 to_str8(const std::string& str, Allocator* a = KIGU_STRING_ALLOCATOR){ DPZoneScoped;
 	str8b out; str8_builder_init(&out, {(u8*)str.c_str(), (s32)str.size()}, a);
-	return out;
+	return out.fin;
 }
 
-global str8b 
+global str8
 to_str8(char x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	str8b out; str8_builder_init(&out, {(u8*)&x, 1}, a);
-	return out;
+	return out.fin;
 }
 
-global str8b 
+global str8
 to_str8(s32 x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	str8b s; s.allocator = a;
 	s.count = snprintf(nullptr, 0, "%d", x);
@@ -255,10 +255,10 @@ to_str8(s32 x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	a->commit(s.str, s.count+1);
 	s.space = s.count+1;
 	snprintf((char*)s.str, s.count+1, "%d", x);
-	return s;
+	return s.fin;
 }
 
-global str8b 
+global str8
 to_str8(s64 x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	str8b s; s.allocator = a;
 	s.count = snprintf(nullptr, 0, "%lld", x);
@@ -266,10 +266,10 @@ to_str8(s64 x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	s.allocator->commit(s.str, s.count+1);
 	s.space = s.count+1;
 	snprintf((char*)s.str, s.count+1, "%lld", x);
-	return s;
+	return s.fin;
 }
 
-global str8b 
+global str8
 to_str8(u32 x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	str8b s; s.allocator = a;
 	s.count = snprintf(nullptr, 0, "%u", x);
@@ -277,10 +277,10 @@ to_str8(u32 x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	s.allocator->commit(s.str, s.count+1);
 	s.space = s.count+1;
 	snprintf((char*)s.str, s.count+1, "%u", x);
-	return s;
+	return s.fin;
 }
 
-global str8b 
+global str8
 to_str8(f32 x, bool trunc = true, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	str8b s; s.allocator = a;
 	if(trunc){
@@ -296,15 +296,15 @@ to_str8(f32 x, bool trunc = true, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneSc
 		s.space = s.count+1;
 		snprintf((char*)s.str, s.count+1, "%f", x);
 	}
-	return s;
+	return s.fin;
 }
 
-global str8b
+global str8
 to_str8(f32 x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	return to_str8(x, 1, a);
 }
 
-global str8b 
+global str8
 to_str8(f64 x, bool trunc = true, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	str8b s; s.allocator = a;
 	if(trunc){
@@ -320,15 +320,15 @@ to_str8(f64 x, bool trunc = true, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneSc
 		s.space = s.count+1;
 		snprintf((char*)s.str, s.count+1, "%f", x);
 	}
-	return s;
+	return s.fin;
 }
 
-global str8b
+global str8
 to_str8(f64 x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	return to_str8(x, 1, a);
 }
 
-global str8b 
+global str8
 to_str8(upt x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	str8b s; s.allocator = a;
 	s.count = snprintf(nullptr, 0, "%zu", x);
@@ -336,10 +336,10 @@ to_str8(upt x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	s.allocator->commit(s.str, s.count+1);
 	s.space = s.count+1;
 	snprintf((char*)s.str, s.count+1, "%zu", x);
-	return s;
+	return s.fin;
 }
 
-global str8b
+global str8
 to_str8(void* ptr, Allocator* a = KIGU_STRING_ALLOCATOR) {DPZoneScoped;
 	str8b s; s.allocator = a;
 	s.count = snprintf(nullptr, 0, "%p", ptr);
@@ -347,10 +347,10 @@ to_str8(void* ptr, Allocator* a = KIGU_STRING_ALLOCATOR) {DPZoneScoped;
 	s.allocator->commit(s.str, s.count + 1);
 	s.space = s.count + 1;
 	snprintf((char*)s.str, s.count + 1, "%p", ptr);
-	return s;
+	return s.fin;
 }
 
-global str8b 
+global str8
 to_str8(const color& x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	str8b s; s.allocator = a;
 	s.count = snprintf(nullptr, 0, "{R:%d, G:%d, B:%d, A:%d}", x.r, x.g, x.b, x.a);
@@ -358,23 +358,23 @@ to_str8(const color& x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	s.allocator->commit(s.str, s.count+1);
 	s.space = s.count+1;
 	snprintf((char*)s.str, s.count+1, "{R:%d, G:%d, B:%d, A:%d}", x.r, x.g, x.b, x.a);
-	return s;
+	return s.fin;
 }
 
-global str8b 
+global str8
 to_str8(const str8& x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	str8b s; str8_builder_init(&s, x, a);
-	return s;
+	return s.fin;
 }
 
 #define toStr8(...) (ToString8(KIGU_STRING_ALLOCATOR, __VA_ARGS__))
-template<class... T> global str8b
+template<class... T> global str8
 ToString8(Allocator* allocator, T... args){DPZoneScoped;
 	str8b str; str8_builder_init(&str, {0}, allocator);
 	constexpr auto arg_count{sizeof...(T)};
-	str8b arr[arg_count] = {to_str8(args, allocator)...};
-	forI(arg_count) str8_builder_append(&str, arr[i].fin);
-	return str;
+	str8 arr[arg_count] = {to_str8(args, allocator)...};
+	forI(arg_count) str8_builder_append(&str, arr[i]);
+	return str.fin;
 }
 
 ///////////////

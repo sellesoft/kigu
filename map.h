@@ -151,4 +151,5 @@ findkey(const Key& key)const{
 	return -1;
 }
 
+
 #endif //KIGU_MAP_H
