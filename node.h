@@ -2,6 +2,7 @@
 #ifndef KIGU_NODE_H
 #define KIGU_NODE_H
 #include "common.h"
+#include "unicode.h"
 
 //// double linked list node ////
 struct Node{
@@ -25,7 +26,7 @@ struct TNode {
 	u32    child_count = 0;
 	
 #if BUILD_INTERNAL
-	cstring debug;
+	str8 debug;
 #endif
 };
 

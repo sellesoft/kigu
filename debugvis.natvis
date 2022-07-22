@@ -29,6 +29,16 @@
       </Expand>
     </Type>
 
+  <Type Name="suArena&lt;*&gt;">
+    <DisplayString>{{ size={count} }}</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>count</Size>
+        <ValuePointer>data</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
 	<Type Name="TreeNode">
 		<DisplayString>{debug_str.str,[debug_str.count]}</DisplayString>
 	</Type>
