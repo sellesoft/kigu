@@ -27,7 +27,9 @@ struct map{
 	void   swap(u32 idx1, u32 idx2);
 	bool   has(const Key& key) const;
 	Value* at(const Key& key);
+	Value  atPtrVal(const Key& key); //use when value is already a pointer
 	Value* atIdx(u32 index);
+	Value  atIdxPtrVal(u32 index); //use when value is already a pointer
 	u32    findkey(const Key& key) const; //returns index of key if it exists
 	
 	Value* begin(){DPZoneScoped; return data.begin(); }
@@ -138,9 +140,21 @@ at(const Key& key){DPZoneScoped;
 	return 0;
 }
 
+template<typename Key, typename Value, typename HashStruct> inline Value map<Key,Value,HashStruct>::
+atPtrVal(const Key& key){DPZoneScoped;
+	u32 hashed = HashStruct{}(key);
+	forI(hashes.count){ if(hashed == hashes[i]){ return data[i]; } }
+	return 0;
+}
+
 template<typename Key, typename Value, typename HashStruct> inline Value* map<Key,Value,HashStruct>::
 atIdx(u32 index){DPZoneScoped;
 	return &data[index];
+}
+
+template<typename Key, typename Value, typename HashStruct> inline Value map<Key,Value,HashStruct>::
+atIdxPtrVal(u32 index){DPZoneScoped;
+	return data[index];
 }
 
 
