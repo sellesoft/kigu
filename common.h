@@ -147,8 +147,7 @@
 #  define ByteSwap64(x) _byteswap_uint64(x)
 #elif COMPILER_CLANG || COMPILER_GCC //COMPILER_CL
 #  define FORCE_INLINE inline __attribute__((always_inline))
-//#  error "unhandled debug breakpoint; look at: https://github.com/scottt/debugbreak"
-#  define DebugBreakpoint
+#  define DebugBreakpoint __builtin_trap()
 #  define ByteSwap16(x) __builtin_bswap16(x)
 #  define ByteSwap32(x) __builtin_bswap32(x)
 #  define ByteSwap64(x) __builtin_bswap64(x)
