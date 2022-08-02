@@ -31,6 +31,7 @@ struct TNode {
 };
 
 #define for_node(node) for(auto it = node; it != 0; it = it->next)
+#define for_nodeX(id, node) for(auto id = node; id != 0; id = id->next)
 #define for_node_reverse(node) for(auto it = node; it != 0; it = it->prev)
 
 global inline void insert_after(TNode* target, TNode* node) {
