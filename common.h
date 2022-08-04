@@ -501,7 +501,9 @@ template<typename T> T& deref_if_ptr(T* x){return *x;}
 //// for-loop macros ////
 /////////////////////////
 #define forX(var_name,iterations) for(int var_name=0; var_name<(iterations); ++var_name)
+#define forX_reverse(var_name,iterations) for(int var_name=iterations-1; var_name>=0; --var_name)
 #define forI(iterations) for(int i=0; i<(iterations); ++i)
+#define forI_reverse(iterations) for(int i=iterations-1; i>=0; --i)
 #define forE(iterable) for(auto it = iterable.begin(), it_begin = iterable.begin(), it_end = iterable.end(); it != it_end; ++it)
 
 
