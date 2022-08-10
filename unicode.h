@@ -900,13 +900,15 @@ str8_builder_insert_byteoffset(str8_builder* builder, u64 byte_offset, str8 a){D
 
 //Removes one codepoint starting at `byte_offset` into the buffer of `builder`
 //    does nothing if `byte_offset` is greater than `str8_builder.count` or `byte_offset` is a UTF8 continuation byte
-global void
+global u64
 str8_builder_remove_codepoint_at_byteoffset(str8_builder* builder, u64 byte_offset){DPZoneScoped;
 	if((byte_offset < builder->count) && !utf8_continuation_byte(*(builder->str+byte_offset))){
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(builder->str + byte_offset, 4);
 		CopyMemory(builder->str + byte_offset, builder->str + byte_offset + decoded.advance, builder->count - byte_offset);
 		builder->count -= decoded.advance;
+		return decoded.advance;
 	}
+	return 0;
 }
 
 
