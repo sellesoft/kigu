@@ -2,7 +2,6 @@
 #ifndef KIGU_NODE_H
 #define KIGU_NODE_H
 #include "common.h"
-#include "unicode.h"
 
 //// double linked list node ////
 struct Node{
@@ -113,7 +112,7 @@ global void move_to_parent_first(TNode* node){
 	TNode* parent = node->parent;
 	if(parent->first_child == node) return;
 	if(parent->last_child == node) parent->last_child = node->prev;
-
+	
 	remove_horizontally(node);
 	node->next = parent->first_child;
 	parent->first_child->prev = node;
@@ -126,7 +125,7 @@ global void move_to_parent_last(TNode* node){
 	TNode* parent = node->parent;
 	if(parent->last_child == node) return;
 	if(parent->first_child == node) parent->first_child = node->next;
-
+	
 	remove_horizontally(node);
 	node->prev = parent->last_child;
 	parent->last_child->next = node;

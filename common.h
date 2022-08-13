@@ -266,6 +266,39 @@ struct Allocator{
 	Allocator_ResizeMemory_Func  resize;   //resizes reserved memory and moves memory if a new location is required
 };
 
+struct str8{
+	u8* str;
+	s64 count;
+	FORCE_INLINE explicit operator bool(){ return str && count > 0; }
+#define str8_lit(s) str8{(u8*)GLUE(u8,s), sizeof(GLUE(u8,s))-1}
+#define str8l(s) str8{(u8*)GLUE(u8,s), sizeof(GLUE(u8,s))-1}
+#define STR8(s) str8{(u8*)GLUE(u8,s), sizeof(GLUE(u8,s))-1}
+#define str8null str8{0,0}
+};
+
+struct str8_builder{
+	union{
+		struct{u8* str; s64 count;};
+		str8 fin;
+	};
+	s64 space;
+	Allocator* allocator;
+}; typedef str8_builder str8b;
+
+struct str16{
+	u16* str;
+	s64  count;
+	FORCE_INLINE explicit operator bool(){ return str && count > 0; }
+#define str16_lit(s) str16{(u16*)GLUE(u,s), (sizeof(GLUE(u,s))/sizeof(u16))-1}
+};
+
+struct str32{
+	u32* str;
+	s64  count;
+	FORCE_INLINE explicit operator bool(){ return str && count > 0; }
+#define str32_lit(s) str32{(u32*)GLUE(U,s), (sizeof(GLUE(U,s))/sizeof(u32))-1}
+};
+
 enum Types{
 	//defines
 	Type_void,
