@@ -702,6 +702,72 @@ str8_eat_while(str8 a, u32 c){DPZoneScoped;
 	return str8{a.str, a.count-b.count};
 }
 
+//TODO(sushi) move this somewhere more appropriate
+global b32 
+is_whitespace(u32 codepoint){
+	switch(codepoint){
+		case '\t': case '\n': case '\v': case '\f':  case '\r':
+		case ' ': case 133: case 160: case 5760: case 8192:
+		case 8193: case 8194: case 8195: case 8196: case 8197:
+		case 8198: case 8199: case 8200: case 8201: case 8202:
+		case 8232: case 8239: case 8287: case 12288: return true;
+		default: return false;
+	}
+}
+
+global b32 
+isalnum(u32 codepoint){
+	if(codepoint >= 'A' && codepoint <= 'Z' ||
+	   codepoint >= 'a' && codepoint <= 'z' ||
+	   codepoint >= '0' && codepoint <= '9') return true;
+	return false;
+}
+
+global b32 
+isdigit(u32 codepoint){
+	if(codepoint >= '0' && codepoint <= '9') return true;
+	return false;
+}
+
+//Returns a slice of `a` ending before the first occurance of a non-whitespace character.
+//this includes all characters marked by unicode as whitespace (see is_whitespace())
+global str8
+str8_eat_whitespace(str8 a){DPZoneScoped;
+	str8 out = {a.str,0};
+	while(a){
+		DecodedCodepoint dc = str8_advance(&a); 
+		if(!is_whitespace(dc.codepoint)) break;
+		out.count += dc.advance;
+	}
+	return out;
+}
+
+//Returns a slice of `a` ending before the first occurance of a non-word character
+//words consist of all alphanumeric ascii characters
+global str8
+str8_eat_word(str8 a, b32 include_underscore = 0){
+	str8 out = {a.str,0};
+	while(a){
+		DecodedCodepoint dc = str8_advance(&a);
+		if(!isalnum(dc.codepoint)) break;
+		if(dc.codepoint == '_' && !include_underscore) break;
+		out.count += dc.advance;
+	}
+	return out;
+}
+
+//Returns a slice of `a` ending before the first occurance of a non-integer character
+global str8
+str8_eat_int(str8 a){
+	str8 out = {a.str,0};
+	while(a){
+		DecodedCodepoint dc = str8_advance(&a);
+		if(!isdigit(dc.codepoint)) break;
+		out.count += dc.advance;
+	}
+	return out;
+}
+
 //Returns a slice of the utf8 string `a` starting after the first character until the end of the string
 global inline str8
 str8_skip_one(str8 a){DPZoneScoped;
@@ -746,6 +812,42 @@ str8_skip_while(str8 a, u32 c){DPZoneScoped;
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(a.str, 4);
 		if(decoded.codepoint != c) break;
 		str8_increment(&a, decoded.advance);
+	}
+	return a;
+}
+
+//Returns a slice of `a` starting at the first occurance of a non-whitespace character.
+//this includes all characters marked by unicode as whitespace (see is_whitespace())
+global str8
+str8_skip_whitespace(str8 a){DPZoneScoped;
+	while(a){
+		DecodedCodepoint dc = decoded_codepoint_from_utf8(a.str,4); 
+		if(!is_whitespace(dc.codepoint)) break;
+		str8_increment(&a,dc.advance);
+	}
+	return a;
+}
+
+//Returns a slice of `a` starting at the first occurance of a non-word character
+//words consist of all alphanumeric ascii characters
+global str8
+str8_skip_word(str8 a, b32 include_underscore = 0){
+	while(a){
+		DecodedCodepoint dc = decoded_codepoint_from_utf8(a.str,4);
+		if(!isalnum(dc.codepoint)) break;
+		if(dc.codepoint == '_' && !include_underscore) break;
+		str8_increment(&a,dc.advance);
+	}
+	return a;
+}
+
+//Returns a slice of `a` starting at the first occurance of a non-integer character
+global str8
+str8_skip_int(str8 a){
+	while(a){
+		DecodedCodepoint dc = decoded_codepoint_from_utf8(a.str,4);
+		if(!isdigit(dc.codepoint)) break;
+		str8_increment(&a,dc.advance);
 	}
 	return a;
 }

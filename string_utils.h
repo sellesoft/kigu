@@ -51,6 +51,7 @@ stoi(char* s){
 }
 FORCE_INLINE s32 stoi(cstring s){ return stoi(s.str); }
 FORCE_INLINE s32 stoi(const string& s){ return stoi(s.str); }
+FORCE_INLINE s32 stoi(str8 s){return stoi((char*)s.str);}
 
 global s64
 stolli(char* s){
