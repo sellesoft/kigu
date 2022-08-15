@@ -14,9 +14,6 @@ struct Node{
 
 //// tree node ////
 struct TNode {
-	Type  type;
-	Flags flags;
-	
 	TNode* next = 0;
 	TNode* prev = 0;
 	TNode* parent = 0;
