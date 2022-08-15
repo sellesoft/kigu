@@ -201,11 +201,11 @@ to_string(void* ptr, Allocator* a = KIGU_STRING_ALLOCATOR) {
 global string 
 to_string(const color& x, Allocator* a = KIGU_STRING_ALLOCATOR){
 	string s(a);
-	s.count = snprintf(nullptr, 0, "{R:%d, G:%d, B:%d, A:%d}", x.r, x.g, x.b, x.a);
+	s.count = snprintf(nullptr, 0, "{R:%u, G:%u, B:%u, A:%u}", x.r, x.g, x.b, x.a);
 	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
 	s.allocator->commit(s.str, s.count+1);
 	s.space = s.count+1;
-	snprintf(s.str, s.count+1, "{R:%d, G:%d, B:%d, A:%d}", x.r, x.g, x.b, x.a);
+	snprintf(s.str, s.count+1, "{R:%u, G:%u, B:%u, A:%u}", x.r, x.g, x.b, x.a);
 	return s;
 }
 
@@ -354,11 +354,11 @@ to_str8(void* ptr, Allocator* a = KIGU_STRING_ALLOCATOR) {DPZoneScoped;
 global str8
 to_str8(const color& x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	str8b s; s.allocator = a;
-	s.count = snprintf(nullptr, 0, "{R:%d, G:%d, B:%d, A:%d}", x.r, x.g, x.b, x.a);
+	s.count = snprintf(nullptr, 0, "{R:%u, G:%u, B:%u, A:%u}", x.r, x.g, x.b, x.a);
 	s.str   = (u8*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
 	s.allocator->commit(s.str, s.count+1);
 	s.space = s.count+1;
-	snprintf((char*)s.str, s.count+1, "{R:%d, G:%d, B:%d, A:%d}", x.r, x.g, x.b, x.a);
+	snprintf((char*)s.str, s.count+1, "{R:%u, G:%u, B:%u, A:%u}", x.r, x.g, x.b, x.a);
 	return s.fin;
 }
 
