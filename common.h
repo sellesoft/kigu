@@ -114,6 +114,19 @@
 #  define ARCH_ARM32 0
 #endif
 
+//// Supported Compiler Features ////
+#if COMPILER_CLANG || COMPILER_GCC
+#  define COMPILER_FEATURE_TYPEOF 1
+#else
+#  define COMPILER_FEATURE_TYPEOF 0
+#endif
+
+#if __cplusplus
+#  define COMPILER_FEATURE_CPP 1
+#else
+#  define COMPILER_FEATURE_CPP 0
+#endif
+
 
 ///////////////////////// //NOTE this file is included is almost every other file of the project, so be frugal with includes here
 //// common includes ////
@@ -538,6 +551,15 @@ template<typename T> T& deref_if_ptr(T* x){return *x;}
 #define forI(iterations) for(int i=0; i<(iterations); ++i)
 #define forI_reverse(iterations) for(int i=iterations-1; i>=0; --i)
 #define forE(iterable) for(auto it = iterable.begin(), it_begin = iterable.begin(), it_end = iterable.end(); it != it_end; ++it)
+
+//// stb array ////
+#if   COMPILER_FEATURE_TYPEOF
+#  define for_array(a) for(typeof(*(a))* it = a; it < a+arrlen(a); ++it)
+#  define forX_array(x,a) for(typeof(*(a))* x = a; x < a+arrlen(a); ++x)
+#elif COMPILER_FEATURE_CPP
+#  define for_array(a) for(auto it = a; it < a+arrlen(a); ++it)
+#  define forX_array(x,a) for(auto x = a; x < a+arrlen(a); ++x)
+#endif
 
 
 ///////////////
