@@ -462,8 +462,6 @@ global_const u64 wcharsize = sizeof(wchar);
 #define CastFromMember(structName,memberName,ptr) ((structName*)((u8*)(ptr) - OffsetOfMember(structName,memberName)))
 #define StartNamespace(a) namespace a{
 #define EndNamespace(a) }
-#define StartLinkageC() extern "C"{
-#define EndLinkageC() }
 #define CastToConst(type,a) const_cast<const type>(a)
 #define CastFromConst(type,a) const_cast<type>(a)
 #define StaticCast(type,a) static_cast<type>(a)
@@ -478,6 +476,14 @@ global_const u64 wcharsize = sizeof(wchar);
 #define ReadBits32(var, start, numbits) (var>>start) & (((u32)1<<numbits)-1)
 #define ReadBits16(var, start, numbits) (var>>start) & (((u16)1<<numbits)-1)
 #define ReadBits8 (var, start, numbits) (var>>start) & (((u8)1<<numbits)-1)
+
+#if COMPILER_FEATURE_CPP
+#  define StartLinkageC() extern "C"{
+#  define EndLinkageC() }
+#else
+#  define StartLinkageC()
+#  define EndLinkageC()
+#endif //COMPILER_FEATURE_CPP
 
 
 //////////////////////////
