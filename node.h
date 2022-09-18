@@ -8,8 +8,9 @@ struct Node{
 	Node* next;
 	Node* prev;
 };
-#define NodeInsertNext(x,node) ((node)->next=(x)->next,(node)->prev=(x),(node)->next->prev=(node),(x)->next=(node))
-#define NodeInsertPrev(x,node) ((node)->prev=(x)->prev,(node)->next=(x),(node)->prev->next=(node),(x)->prev=(node))
+
+#define NodeInsertNext(x,new_node) ((new_node)->next=(x)->next,(new_node)->prev=(x),(new_node)->next->prev=(new_node),(x)->next=(new_node))
+#define NodeInsertPrev(x,new_node) ((new_node)->prev=(x)->prev,(new_node)->next=(x),(new_node)->prev->next=(new_node),(x)->prev=(new_node))
 #define NodeRemove(node) ((node)->next->prev=(node)->prev,(node)->prev->next=(node)->next)
 
 //// tree node ////
