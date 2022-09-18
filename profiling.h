@@ -247,7 +247,7 @@ if you are using deshi and want the program to wait until tracy is connected def
 //#define KiguProfiler g_profiler
 //#define KiguDefineProfiler local Profiler __kigu_profiler__; Profiler* g_profiler = &__kigu_profiler__;
 
-void profiler_init(){
+static void profiler_init(){
 #if defined(TRACY_ENABLE) && defined(DESHI_WAIT_FOR_TRACY_CONNECTION)
 	printf("TRACY_ENABLE and DESHI_WAIT_FOR_TRACY_CONNECTION both enabled. Waiting for connection...");
 	while(!TracyIsConnected){}
