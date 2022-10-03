@@ -119,23 +119,23 @@
 #  define COMPILER_FEATURE_TYPEOF 1
 #else
 #  define COMPILER_FEATURE_TYPEOF 0
-#endif
+#endif //#if COMPILER_CLANG || COMPILER_GCC
 
 #if __cplusplus
 #  define COMPILER_FEATURE_CPP 1
 #else
 #  define COMPILER_FEATURE_CPP 0
-#endif
+#endif //#if __cplusplus
 
 
 ///////////////////////// //NOTE this file is included is almost every other file of the project, so be frugal with includes here
 //// common includes ////
 /////////////////////////
-#include <cstddef> //size_t, ptrdiff_t
-#include <cstdlib> //malloc, calloc, free
-#include <cstring> //memcpy, memset, strcpy, strlen, etc
-#include <cmath>   //log2
-#include <cstdarg> //va_start, va_list, va_arg, va_end
+#include <stddef.h> //size_t, ptrdiff_t
+#include <stdlib.h> //malloc, calloc, free
+#include <stdarg.h> //va_start, va_list, va_arg, va_end
+#include <string.h> //memcpy, memset, strcpy, strlen, etc
+#include <math.h>   //log2
 
 
 ///////////////////////
@@ -144,9 +144,9 @@
 #define local    static //inside a .cpp
 #define persist  static //inside a function
 #define global   static //inside a .h
-#define local_const static const
-#define global_const static const
-#define external extern "C"
+#define local_const   local const
+#define persist_const persist const
+#define global_const  global const
 
 
 /////////////////////////////////////
@@ -158,7 +158,7 @@
 #  define ByteSwap16(x) _byteswap_ushort(x)
 #  define ByteSwap32(x) _byteswap_ulong(x)
 #  define ByteSwap64(x) _byteswap_uint64(x)
-#elif COMPILER_CLANG || COMPILER_GCC //COMPILER_CL
+#elif COMPILER_CLANG || COMPILER_GCC
 #  define FORCE_INLINE inline __attribute__((always_inline))
 #  define DebugBreakpoint __builtin_trap()
 #  define ByteSwap16(x) __builtin_bswap16(x)
@@ -166,18 +166,18 @@
 #  define ByteSwap64(x) __builtin_bswap64(x)
 #else
 #  error "unhandled compiler"
-#endif
+#endif //#if COMPILER_CL
 
 //// stack allocation ////
 #if OS_WINDOWS
 #  include <malloc.h>
 #  define StackAlloc(bytes) _alloca(bytes)
-#elif OS_LINUX || OS_MAC //OS_WINDOWS
+#elif OS_LINUX || OS_MAC
 #  include <alloca.h>
 #  define StackAlloc(bytes) alloca(bytes)
-#else //OS_LINUX || OS_MAC
+#else
 #  error "unhandled os"
-#endif
+#endif //#if OS_WINDOWS
 
 
 //////////////////////
@@ -252,24 +252,21 @@ typedef void* (*Allocator_ResizeMemory_Func)(void* ptr, upt size);
 #  pragma warning(push)
 #  pragma warning(default:4716)
 #  pragma warning(disable:4716)
-#endif
+#endif //#if COMPILER_CLANG || COMPILER_GCC
 #if BUILD_INTERNAL
 global void* Allocator_ReserveMemory_Noop(upt size){return 0;}
-#else
-global void* Allocator_ReserveMemory_Noop(upt size){}
-#endif
-global void  Allocator_ChangeMemory_Noop(void* ptr, upt size){}
-global void  Allocator_ReleaseMemory_Noop(void* ptr){}
-#if BUILD_INTERNAL
 global void* Allocator_ResizeMemory_Noop(void* ptr, upt size){return 0;}
 #else
+global void* Allocator_ReserveMemory_Noop(upt size){}
 global void* Allocator_ResizeMemory_Noop(void* ptr, upt size){}
-#endif
+#endif //#if BUILD_INTERNAL
+global void  Allocator_ChangeMemory_Noop(void* ptr, upt size){}
+global void  Allocator_ReleaseMemory_Noop(void* ptr){}
 #if COMPILER_CLANG || COMPILER_GCC
 #  pragma clang diagnostic pop
 #elif COMPILER_CL
 #  pragma warning(pop)
-#endif
+#endif //#if COMPILER_CLANG || COMPILER_GCC
 
 struct Allocator{
 	Allocator_ReserveMemory_Func reserve;  //reserves address space from OS
@@ -310,56 +307,6 @@ struct str32{
 	s64  count;
 	FORCE_INLINE explicit operator bool(){ return str && count > 0; }
 #define str32_lit(s) str32{(u32*)GLUE(U,s), (sizeof(GLUE(U,s))/sizeof(u32))-1}
-};
-
-enum Types{
-	//defines
-	Type_void,
-	Type_s8,
-	Type_s16,
-	Type_s32,
-	Type_s64,
-	Type_spt,
-	Type_u8,
-	Type_u16,
-	Type_u32,
-	Type_u64,
-	Type_upt,
-	Type_f32,
-	Type_f64,
-	Type_b32,
-	Type_uchar,
-	Type_cstring,
-	Type_carray,
-	Type_CodeLocation,
-	Type_Allocator,
-	Type_Node,
-	
-	//TODO define deshi types elsewhere
-	//math
-	Type_vec2,
-	Type_vec3,
-	Type_vec4,
-	Type_mat3,
-	Type_mat4,
-	Type_matN,
-	Type_quat,
-	
-	//utils
-	Type_array,
-	Type_string,
-	Type_ring_array,
-	Type_pair,
-	Type_tuple,
-	Type_color,
-	Type_optional,
-	Type_hash,
-	
-	//memory
-	Type_Arena,
-	Type_MemChunk,
-	Type_Heap,
-	Type_AllocInfo,
 };
 
 
@@ -432,18 +379,19 @@ global_const u64 wcharsize = sizeof(wchar);
 #define STRINGIZE(a) STRINGIZE_(a)
 #define GLUE_(a,b) a##b
 #define GLUE(a,b) GLUE_(a,b)
+
 #define PRINTLN(x) std::wcout << x << std::endl;
 #define __FILENAME__ (std::strrchr(__FILE__, '\\') ? std::strrchr(__FILE__, '\\') + 1 : __FILE__)
-#define ToggleBool(variable) variable = !variable
+
 #define Kilobytes(a) (((u64)(a)) << 10)
 #define Megabytes(a) (((u64)(a)) << 20)
 #define Gigabytes(a) (((u64)(a)) << 30)
 #define Terabytes(a) (((u64)(a)) << 40)
+
 #define Thousand(a) (((u64)(a)) * 1000)
-#define Million(a) (((u64)(a)) * 1000000)
-#define Billion(a) (((u64)(a)) * 1000000000)
-#define Radians(a) ((a) * (M_PI / 180.f))
-#define Degrees(a) ((a) * (180.f / M_PI))
+#define Million(a)  (((u64)(a)) * 1000000)
+#define Billion(a)  (((u64)(a)) * 1000000000)
+
 #define Seconds(ms) (ms          / 1000)
 #define Minutes(ms) (Seconds(ms) / 60)
 #define Hours(ms)   (Minutes(ms) / 60)
@@ -452,38 +400,57 @@ global_const u64 wcharsize = sizeof(wchar);
 #define MinutesToMS(n) (n * SecondsToMS(60))
 #define HoursToMS(n)   (n * MinutesToMS(60))
 #define DaysToMS(n)    (n * HoursToMS(24))
+
+#define Radians(a) ((a) * (M_PI / 180.f))
+#define Degrees(a) ((a) * (180.f / M_PI))
+
+#define ToggleBool(variable) variable = !variable
 #define ArrayCount(arr) (sizeof((arr)) / sizeof(((arr))[0])) //length of a static-size c-array
 #define RoundUpTo(value,multiple) (((upt)((value) + (((upt)(multiple))-1)) / (upt)(multiple)) * (upt)(multiple))
 #define AlignToPow2(value,power) (((value) + ((power)-1)) & ~((power)-1))
 #define PackU32(x,y,z,w) (((u32)(x) << 24) | ((u32)(y) << 16) | ((u32)(z) << 8) | ((u32)(w) << 0))
+
 #define PointerDifference(a,b) ((u8*)(a) - (u8*)(b))
 #define PointerAsInt(a) PointerDifference(a,0)
 #define OffsetOfMember(structName,memberName) PointerAsInt(&(((structName*)0)->memberName))
 #define CastFromMember(structName,memberName,ptr) ((structName*)((u8*)(ptr) - OffsetOfMember(structName,memberName)))
+
 #define StartNamespace(a) namespace a{
 #define EndNamespace(a) }
+
 #define CastToConst(type,a) const_cast<const type>(a)
 #define CastFromConst(type,a) const_cast<type>(a)
 #define StaticCast(type,a) static_cast<type>(a)
 #define DynamicCast(type,a) dynamic_cast<type>(a)
-#define Reinterpret(to_type, from_type, x) union{from_type a; to_type b;}{(x)}.b 
+#define Reinterpret(to_type,from_type,x) union{from_type a; to_type b;}{(x)}.b 
+
 #define HasFlag(var,flag) ((var) & (flag))
 #define HasAllFlags(var,flags) (((var) & (flags)) == (flags))
 #define AddFlag(var,flag) ((var) |= (flag))
 #define RemoveFlag(var,flag) ((var) &= (~(flag)))
 #define ToggleFlag(var,flag) ((var) ^= (flag))
-#define ReadBits64(var, start, numbits) (var>>start) & (((u64)1<<numbits)-1)
-#define ReadBits32(var, start, numbits) (var>>start) & (((u32)1<<numbits)-1)
-#define ReadBits16(var, start, numbits) (var>>start) & (((u16)1<<numbits)-1)
-#define ReadBits8 (var, start, numbits) (var>>start) & (((u8)1<<numbits)-1)
 
+#define ReadBits64(var,start,numbits) ((var) >> (start)) & (((u64)1 << (numbits)) - 1)
+#define ReadBits32(var,start,numbits) ((var) >> (start)) & (((u32)1 << (numbits)) - 1)
+#define ReadBits16(var,start,numbits) ((var) >> (start)) & (((u16)1 << (numbits)) - 1)
+#define ReadBits8 (var,start,numbits) ((var) >> (start)) & (((u8) 1 << (numbits)) - 1)
+
+#define ENUM_LIST_ENUM(raw_enum) raw_enum
+#define ENUM_LIST_STRING(raw_enum) STRINGIZE(raw_enum)
+#define ENUM_LIST(list_name, list_macro)          \
+  enum list_name{ list_macro( ENUM_LIST_ENUM ) }; \
+  string list_name##strings{ lsit_macro( ENUM_LIST_STRING ) }
+
+
+//// linkage macros ////
 #if COMPILER_FEATURE_CPP
+#  define external extern "C"
 #  define StartLinkageC() extern "C"{
 #  define EndLinkageC() }
 #else
 #  define StartLinkageC()
 #  define EndLinkageC()
-#endif //COMPILER_FEATURE_CPP
+#endif //#if COMPILER_FEATURE_CPP
 
 
 //////////////////////////
@@ -492,15 +459,20 @@ global_const u64 wcharsize = sizeof(wchar);
 FORCE_INLINE void ZeroMemory(void* ptr, upt bytes){memset(ptr, 0, bytes);}
 FORCE_INLINE void CopyMemory(void* dst, void* src, upt bytes){memcpy(dst,src,bytes);}
 FORCE_INLINE void MoveMemory(void* dst, void* src, upt bytes){memmove(dst,src,bytes);}
-FORCE_INLINE b32  IsPow2(u64 value)       {return (value != 0) && ((value & (value-1)) == 0);}
-FORCE_INLINE upt  roundUpToPow2(upt x)    { return (upt)1 << (upt)((upt)log2(f64(--x)) + 1); }
-FORCE_INLINE char bytesUnit(upt bytes)    { return (bytes > Kilobytes(1) ? bytes > Megabytes(1) ? bytes > Gigabytes(1) ? bytes > Terabytes(1) ? 'T' : 'G' : 'M' : 'K' : 'B'); }
-FORCE_INLINE f32  bytesDivisor(upt bytes) { return (bytes > Kilobytes(1) ? bytes > Megabytes(1) ? bytes > Gigabytes(1) ? bytes > Terabytes(1) ? Terabytes(1) : Gigabytes(1) : Megabytes(1) : Kilobytes(1) : 1); }
+
+FORCE_INLINE b32 IsPow2(u64 value){return (value != 0) && ((value & (value-1)) == 0);}
+FORCE_INLINE upt roundUpToPow2(upt x){return (upt)1 << (upt)((upt)log2(f64(--x)) + 1); }
+
+FORCE_INLINE char bytesUnit(upt bytes){return (bytes > Kilobytes(1) ? bytes > Megabytes(1) ? bytes > Gigabytes(1) ? bytes > Terabytes(1) ? 'T' : 'G' : 'M' : 'K' : 'B'); }
+FORCE_INLINE f32 bytesDivisor(upt bytes){return (bytes > Kilobytes(1) ? bytes > Megabytes(1) ? bytes > Gigabytes(1) ? bytes > Terabytes(1) ? Terabytes(1) : Gigabytes(1) : Megabytes(1) : Kilobytes(1) : 1); }
+
 template<typename T> FORCE_INLINE void Swap(T& a, T& b){T temp = a; a = b; b = temp;}
+
 template<typename T> FORCE_INLINE T Min(T a, T b){return (a < b) ? a : b;}
 template<typename T> FORCE_INLINE T Max(T a, T b){return (a > b) ? a : b;}
 template<typename T,typename U> FORCE_INLINE T Min(T a, U b){return (a < b) ? a : b;}
 template<typename T,typename U> FORCE_INLINE T Max(T a, U b){return (a > b) ? a : b;}
+
 template<typename T> FORCE_INLINE T Clamp(T value, T min, T max){return (value < min) ? min : ((value > max) ? max : value);};
 template<typename T,typename U> FORCE_INLINE T Clamp(T value, U min, T max){return (value < min) ? min : ((value > max) ? max : value);}
 template<typename T,typename U> FORCE_INLINE T Clamp(T value, T min, U max){return (value < min) ? min : ((value > max) ? max : value);}
@@ -509,18 +481,17 @@ template<typename T> FORCE_INLINE T ClampMin(T value, T min){return (value < min
 template<typename T> FORCE_INLINE T ClampMax(T value, T max){return (value > max) ? max : value;};
 template<typename T,typename U> FORCE_INLINE T ClampMin(T value, U min){return (value < min) ? min : value;};
 template<typename T,typename U> FORCE_INLINE T ClampMax(T value, U max){return (value > max) ? max : value;};
-template<typename T> FORCE_INLINE T Nudge(T val, T target, T delta) {return (val != target) ? (val < target) ? ((val + delta < target) ? val + delta : target) : ((val - delta > target) ? val - delta : target) : target;}
-template<typename T> FORCE_INLINE b32 EpsilonEqual(T a, T b){ return abs(a - b) < M_EPSILON; }
-template<typename T> FORCE_INLINE T Remap(T val, T nu_min, T nu_max, T old_min, T old_max) {
-	return (val - old_min) / (old_max - old_min) * (nu_max - nu_min) + nu_min; 
-}
-template<typename... T, typename A> inline b32 match_any(A tested, T... in) { return((tested == in) || ...); }
-template<typename... T, typename A> inline b32 less_than_any(A tested, T... in) { return((tested < in) || ...); }
-template<typename... T, typename A> inline b32 greater_than_any(A tested, T... in) { return((tested > in) || ...); }
 
+template<typename T> FORCE_INLINE T Nudge(T val, T target, T delta){ return (val != target) ? (val < target) ? ((val + delta < target) ? val + delta : target) : ((val - delta > target) ? val - delta : target) : target;}
+template<typename T> FORCE_INLINE b32 EpsilonEqual(T a, T b){ return abs(a - b) < M_EPSILON;}
+template<typename T> FORCE_INLINE T Remap(T val, T nu_min, T nu_max, T old_min, T old_max){return (val - old_min) / (old_max - old_min) * (nu_max - nu_min) + nu_min;}
 
-template<typename T> T& deref_if_ptr(T& x){return x;}
-template<typename T> T& deref_if_ptr(T* x){return *x;}
+template<typename... T, typename A> FORCE_INLINE b32 match_any(A tested, T... in){return((tested == in) || ...);}
+template<typename... T, typename A> FORCE_INLINE b32 less_than_any(A tested, T... in){return((tested < in) || ...);}
+template<typename... T, typename A> FORCE_INLINE b32 greater_than_any(A tested, T... in){return((tested > in) || ...);}
+
+template<typename T> FORCE_INLINE T& deref_if_ptr(T& x){return x;}
+template<typename T> FORCE_INLINE T& deref_if_ptr(T* x){return *x;}
 
 
 /////////////////////// //NOTE the ... is for a programmer message at the assert; it is unused otherwise
@@ -530,7 +501,7 @@ template<typename T> T& deref_if_ptr(T* x){return *x;}
 #define AssertBreakpoint(expression, ...) STMNT( if(!(expression)){ DebugBreakpoint; } )
 #define StaticAssertAlways(expression, ...) char GLUE(__ignore__, GLUE(__LINE__,__default__))[(expression)?1:-1]
 
-#if   BUILD_INTERNAL
+#if BUILD_INTERNAL
 #  define Assert(expression, ...) AssertBreakpoint(expression)
 #  define StaticAssert(expression, ...) StaticAssertAlways(expression)
 #elif BUILD_SLOW
@@ -539,7 +510,7 @@ template<typename T> T& deref_if_ptr(T* x){return *x;}
 #else
 #  define Assert(expression, ...)
 #  define StaticAssert(expression, ...) 
-#endif
+#endif //#if BUILD_INTERNAL
 
 #define NotImplemented AssertAlways(false, "not implemented yet")
 #define InvalidPath Assert(false, "invalid path")
@@ -559,13 +530,13 @@ template<typename T> T& deref_if_ptr(T* x){return *x;}
 #define forE(iterable) for(auto it = iterable.begin(), it_begin = iterable.begin(), it_end = iterable.end(); it != it_end; ++it)
 
 //// stb array ////
-#if   COMPILER_FEATURE_TYPEOF
+#if COMPILER_FEATURE_TYPEOF
 #  define for_array(a) for(typeof(*(a))* it = a; it < a+arrlen(a); ++it)
 #  define forX_array(x,a) for(typeof(*(a))* x = a; x < a+arrlen(a); ++x)
 #elif COMPILER_FEATURE_CPP
 #  define for_array(a) for(auto it = a; it < a+arrlen(a); ++it)
 #  define forX_array(x,a) for(auto x = a; x < a+arrlen(a); ++x)
-#endif
+#endif //#if COMPILER_FEATURE_TYPEOF
 
 
 ///////////////
@@ -578,7 +549,7 @@ template<typename T> T& deref_if_ptr(T* x){return *x;}
 //// defer statement ////
 //ref: https://stackoverflow.com/a/42060129 by pmttavara
 //defers execution inside the block to the end of the current scope; this works by placing
-//that code in a lambda specific to that linethat a dummy object will call in its destructor
+//that code in a lambda specific to that line that a dummy object will call in its destructor
 #ifndef defer
 struct defer_dummy {};
 template <class F> struct deferrer { F f; ~deferrer() { f(); } };
@@ -586,7 +557,7 @@ template <class F> deferrer<F> operator*(defer_dummy, F f) { return {f}; }
 #  define DEFER_(LINE) zz_defer##LINE
 #  define DEFER(LINE) DEFER_(LINE)
 #  define defer auto DEFER(__LINE__) = defer_dummy{} *[&]()
-#endif // defer
+#endif //#ifndef defer
 
 //// C/C++ STL allocator //// //TODO rename this to libc allocator (STL is something different)
 global void* STLAllocator_Reserve(upt size){void* a = calloc(1,size); Assert(a); return a;}
