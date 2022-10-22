@@ -304,7 +304,7 @@ utf8_continuation_byte(u8 byte){DPZoneScoped;
 global str8
 str8_from_str16(str16 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	u64 space = 3*in.count;
-	u8* str = (u8*)allocator->reserve((space+1)*sizeof(u8)); Assert(str, "failed to allocator memory");
+	u8* str = (u8*)allocator->reserve((space+1)*sizeof(u8)); Assert(str, "failed to allocate memory");
 	allocator->commit(str, (space+1)*sizeof(u8));
 	u16* ptr = in.str;
 	u16* opl = ptr + in.count; //one past last
@@ -316,7 +316,7 @@ str8_from_str16(str16 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneS
 		size += utf8_from_codepoint(str + size, consume.codepoint);
 	}
 	str[size] = '\0';
-	str = (u8*)allocator->resize(str, (size+1)*sizeof(u8)); Assert(str, "failed to allocator memory");
+	str = (u8*)allocator->resize(str, (size+1)*sizeof(u8)); Assert(str, "failed to allocate memory");
 	return str8{str, size};
 }
 
@@ -324,7 +324,7 @@ str8_from_str16(str16 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneS
 global str8
 str8_from_str32(str32 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	u64 space = 4*in.count;
-	u8* str = (u8*)allocator->reserve((space+1)*sizeof(u8)); Assert(str, "failed to allocator memory");
+	u8* str = (u8*)allocator->reserve((space+1)*sizeof(u8)); Assert(str, "failed to allocate memory");
 	allocator->commit(str, (space+1)*sizeof(u8));
 	u32* ptr = in.str;
 	u32* opl = ptr + in.count; //one past last
@@ -334,7 +334,7 @@ str8_from_str32(str32 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneS
 		size += utf8_from_codepoint(str + size, *ptr);
 	}
 	str[size] = '\0';
-	str = (u8*)allocator->resize(str, (size+1)*sizeof(u8)); Assert(str, "failed to allocator memory");
+	str = (u8*)allocator->resize(str, (size+1)*sizeof(u8)); Assert(str, "failed to allocate memory");
 	return str8{str, size};
 }
 
@@ -357,7 +357,7 @@ str8_from_wchar(wchar_t* in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZo
 global str16
 str16_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	u64 space = 2*in.count;
-	u16* str = (u16*)allocator->reserve((space+1)*sizeof(u16)); Assert(str, "failed to allocator memory");
+	u16* str = (u16*)allocator->reserve((space+1)*sizeof(u16)); Assert(str, "failed to allocate memory");
 	allocator->commit(str, (space+1)*sizeof(u16));
 	u8* ptr = in.str;
 	u8* opl = ptr + in.count; //one past last
@@ -369,7 +369,7 @@ str16_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneSc
 		size += utf16_from_codepoint(str + size, consume.codepoint);
 	}
 	str[size] = '\0';
-	str = (u16*)allocator->resize(str, (size+1)*sizeof(u16)); Assert(str, "failed to allocator memory");
+	str = (u16*)allocator->resize(str, (size+1)*sizeof(u16)); Assert(str, "failed to allocate memory");
 	return str16{str, size};
 }
 
@@ -377,7 +377,7 @@ str16_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneSc
 global str32
 str32_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	u64 space = in.count;
-	u32* str = (u32*)allocator->reserve((space+1)*sizeof(u32)); Assert(str, "failed to allocator memory");
+	u32* str = (u32*)allocator->reserve((space+1)*sizeof(u32)); Assert(str, "failed to allocate memory");
 	allocator->commit(str, (space+1)*sizeof(u32));
 	u8* ptr = in.str;
 	u8* opl = ptr + in.count; //one past last
@@ -863,7 +863,7 @@ str8_skip_int(str8 a){
 global str8
 str8_copy(str8 a, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	str8 result{(u8*)allocator->reserve((a.count+1)*sizeof(u8)), a.count};
-	Assert(result.str, "failed to allocator memory");
+	Assert(result.str, "failed to allocate memory");
 	CopyMemory(result.str, a.str, a.count*sizeof(u8));
 	return result;
 }
@@ -872,7 +872,7 @@ str8_copy(str8 a, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 global str8
 str8_concat(str8 a, str8 b, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	str8 result{(u8*)allocator->reserve((a.count+b.count+1)*sizeof(u8)), a.count+b.count};
-	Assert(result.str, "failed to allocator memory");
+	Assert(result.str, "failed to allocate memory");
 	CopyMemory(result.str,         a.str, a.count*sizeof(u8));
 	CopyMemory(result.str+a.count, b.str, b.count*sizeof(u8));
 	return result;
@@ -882,7 +882,7 @@ str8_concat(str8 a, str8 b, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZon
 global str8
 str8_concat3(str8 a, str8 b, str8 c, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	str8 result{(u8*)allocator->reserve((a.count+b.count+c.count+1)*sizeof(u8)), a.count+b.count+c.count};
-	Assert(result.str, "failed to allocator memory");
+	Assert(result.str, "failed to allocate memory");
 	CopyMemory(result.str,                 a.str, a.count*sizeof(u8));
 	CopyMemory(result.str+a.count,         b.str, b.count*sizeof(u8));
 	CopyMemory(result.str+a.count+b.count, c.str, c.count*sizeof(u8));
