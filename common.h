@@ -233,12 +233,6 @@ struct carray{
 	FORCE_INLINE const T* end()  const{ return &data[count]; }
 };
 
-struct CodeLocation{
-	cstring file;
-	u32     line;
-	u32     column;
-};
-
 //TODO(delle) function pointer signature macro
 typedef void* (*Allocator_ReserveMemory_Func)(upt size);
 typedef void  (*Allocator_ChangeMemory_Func)(void* ptr, upt size);
