@@ -368,7 +368,6 @@ to_str8(const str8& x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	return s.fin;
 }
 
-#define toStr8(...) (ToString8(KIGU_STRING_ALLOCATOR, __VA_ARGS__))
 template<class... T> global str8
 ToString8(Allocator* allocator, T... args){DPZoneScoped;
 	str8b str; str8_builder_init(&str, {0}, allocator);
