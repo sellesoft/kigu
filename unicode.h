@@ -977,6 +977,28 @@ str8_builder_remove_codepoint_at_byteoffset(str8_builder* builder, u64 byte_offs
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_hashing
 struct str8_static_t{const char* str; u64 count; template<u64 N> constexpr str8_static_t(const char(&a)[N]): str(a), count(N-1){}};
+
+//Returns a 32bit FNV-1a hash of the string `a` seeded with `seed` at compile-time
+constexpr u64
+str8_static_hash32(str8_static_t a, u64 seed = 2166136261){ //32bit FNV_offset_basis
+	while(a.count-- != 0){
+		seed ^= (u8)*a.str;
+		seed *= 16777619; //32bit FNV_prime
+		a.str++;
+	}
+	return seed;
+}
+
+//Returns a 32bit FNV-1a hash of the string `a` seeded with `seed`
+global u64
+str8_hash32(str8 a, u64 seed = 2166136261){DPZoneScoped; //32bit FNV_offset_basis
+	while(a.count-- != 0){
+		seed ^= *a.str++;
+		seed *= 16777619; //32bit FNV_prime
+	}
+	return seed;
+}
+
 //Returns a 64bit FNV-1a hash of the string `a` seeded with `seed` at compile-time
 constexpr u64
 str8_static_hash64(str8_static_t a, u64 seed = 14695981039346656037){ //64bit FNV_offset_basis
