@@ -429,11 +429,11 @@ global_const u64 wcharsize = sizeof(wchar);
 #define ReadBits16(var,start,numbits) ((var) >> (start)) & (((u16)1 << (numbits)) - 1)
 #define ReadBits8 (var,start,numbits) ((var) >> (start)) & (((u8) 1 << (numbits)) - 1)
 
-#define ENUM_LIST_ENUM(raw_enum) raw_enum
-#define ENUM_LIST_STRING(raw_enum) STRINGIZE(raw_enum)
-#define ENUM_LIST(list_name, list_macro)          \
-  enum list_name{ list_macro( ENUM_LIST_ENUM ) }; \
-  string list_name##strings{ lsit_macro( ENUM_LIST_STRING ) }
+#define ENUM_LIST_ENUM(prefix,raw_enum) prefix##_##raw_enum
+#define ENUM_LIST_STRING(prefix,raw_enum) STR8(STRINGIZE(raw_enum))
+#define ENUM_LIST(list_name, list_macro)                           \
+typedef enum list_name{ list_macro( ENUM_LIST_ENUM ) }list_name; \
+str8 list_name##_strings[] = { list_macro( ENUM_LIST_STRING ) }
 
 
 //// linkage macros ////
