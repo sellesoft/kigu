@@ -493,7 +493,7 @@ template<typename T> FORCE_INLINE T& deref_if_ptr(T* x){return *x;}
 /////////////////////// 
 #define AssertAlways(expression, ...) STMNT( if(!(expression)){*(volatile int*)0 = 0;} ) //works regardless of SLOW or INTERNAL
 #define AssertBreakpoint(expression, ...) STMNT( if(!(expression)){ DebugBreakpoint; } )
-#define StaticAssertAlways(expression, ...) char GLUE(__ignore__, GLUE(__LINE__,__default__))[(expression)?1:-1]
+#define StaticAssertAlways(expression, ...) char GLUE(GLUE(__ignore__, GLUE(__LINE__,__default__)),__COUNTER__)[(expression)?1:-1]
 
 #if BUILD_INTERNAL
 #  define Assert(expression, ...) AssertBreakpoint(expression)
