@@ -94,5 +94,10 @@
 		<Intrinsic Name="data" Expression="str" />
 		<DisplayString>{str,[count]}</DisplayString>
 	</Type>
+
+  <Type Name="mint">
+    <Intrinsic Name="val" Expression="(s8*)arr,b" />
+    <DisplayString>{(s8*)arr,b}</DisplayString>
+  </Type>
   
 </AutoVisualizer>

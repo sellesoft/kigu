@@ -183,6 +183,9 @@ decoded_codepoint_from_utf8(u8* str, u64 max_advance){DPZoneScoped;
 	}
 	return result;
 }
+#define utf8codepoint(x) decoded_codepoint_from_utf8(x,4).codepoint
+#define utf8advance(x) decoded_codepoint_from_utf8(x,4).advance
+
 
 //Returns the next codepoint and advance from the UTF-16 string `str`
 global DecodedCodepoint
