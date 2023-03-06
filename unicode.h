@@ -976,6 +976,22 @@ str8_builder_remove_codepoint_at_byteoffset(str8_builder* builder, u64 byte_offs
 	return 0;
 }
 
+// template<class... T> global str8
+// ToString8(Allocator* allocator, T... args){DPZoneScoped;
+// 	str8b str; str8_builder_init(&str, {0}, allocator);
+// 	constexpr auto arg_count{sizeof...(T)};
+// 	str8 arr[arg_count] = {to_str8(args, allocator)...};
+// 	forI(arg_count) str8_builder_append(&str, arr[i]);
+// 	return str.fin;
+// }
+
+template<class... T> global void
+str8_builder_append(str8_builder* builder, T... args){DPZoneScoped;
+	constexpr auto arg_count{sizeof...(T)};
+	str8 arr[arg_count] = {to_str8(args, builder->allocator)...};
+	forI(arg_count) str8_builder_append(builder, arr[i]);
+}
+
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_hashing
