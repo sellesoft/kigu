@@ -908,6 +908,13 @@ str8_builder_init(str8_builder* builder, str8 initial, Allocator* allocator = KI
 	if(initial.str) CopyMemory(builder->str, initial.str, initial.count*sizeof(u8));
 }
 
+// Deinitializes 'builder'
+global void
+str8_builder_deinit(str8_builder* builder){
+	builder->allocator->release(builder->str);
+	*builder = {0};
+}
+
 //Fits the allocation of `builder` to its `count` (+1 for null-terminator)
 global void
 str8_builder_fit(str8_builder* builder){DPZoneScoped;
@@ -992,6 +999,18 @@ str8_builder_append(str8_builder* builder, T... args){DPZoneScoped;
 	forI(arg_count) str8_builder_append(builder, arr[i]);
 }
 
+// replaces all instances of the codepoint 'find' with a different codepoint
+global
+void str8_builder_replace_codepoint(str8_builder* builder, u32 find, u32 replace){
+	str8 parse = builder->fin;
+	u32 offset = 0;
+	while(parse){
+		auto [codepoint, size] = str8_advance(&parse);
+		if(codepoint == find)
+			builder->str[offset] = replace;
+		offset += size;
+	}
+}
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @str8_hashing
