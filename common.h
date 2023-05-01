@@ -532,11 +532,11 @@ template<typename T> FORCE_INLINE T& deref_if_ptr(T* x){return *x;}
 
 //// stb array ////
 #if COMPILER_FEATURE_TYPEOF
-#  define for_array(a) for(typeof(*(a))* it = a; it < a+arrlen(a); ++it)
-#  define forX_array(x,a) for(typeof(*(a))* x = a; x < a+arrlen(a); ++x)
+#  define for_stb_array(a) for(typeof(*(a))* it = a; it < a+arrlen(a); ++it)
+#  define forX_stb_array(x,a) for(typeof(*(a))* x = a; x < a+arrlen(a); ++x)
 #elif COMPILER_FEATURE_CPP
-#  define for_array(a) for(auto it = a; it < a+arrlen(a); ++it)
-#  define forX_array(x,a) for(auto x = a; x < a+arrlen(a); ++x)
+#  define for_stb_array(a) for(auto it = a; it < a+arrlen(a); ++it)
+#  define forX_stb_array(x,a) for(auto x = a; x < a+arrlen(a); ++x)
 #endif //#if COMPILER_FEATURE_TYPEOF
 
 
