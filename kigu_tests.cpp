@@ -18,7 +18,7 @@
 #include "array.h"
 local void TEST_kigu_array(){
 	//// constructors ////
-	array<int> array1;
+	arrayT<int> array1;
 	AssertAlways(typeid(array1.data) == typeid(int*));
 	AssertAlways(array1.count == 0);
 	AssertAlways(array1.space == 0);
@@ -34,7 +34,7 @@ local void TEST_kigu_array(){
 		~TestType(){destruct_sum++;}
 		bool operator==(const TestType& rhs) const{return value==rhs.value;}
 	};
-	array<TestType> array2 = array<TestType>();
+	arrayT<TestType> array2 = arrayT<TestType>();
 	AssertAlways(typeid(array2.data) == typeid(TestType*));
 	AssertAlways(array2.count == 0);
 	AssertAlways(array2.space == 0);
@@ -44,7 +44,7 @@ local void TEST_kigu_array(){
 	AssertAlways(array2.iter == 0);
 	
 	Allocator test_allocator{malloc,Allocator_ChangeMemory_Noop,Allocator_ChangeMemory_Noop,free,realloc};
-	array<TestType> array3(&test_allocator);
+	arrayT<TestType> array3(&test_allocator);
 	AssertAlways(array3.count == 0);
 	AssertAlways(array3.space == 0);
 	AssertAlways(array3.data == 0);
@@ -54,7 +54,7 @@ local void TEST_kigu_array(){
 	AssertAlways(array3.allocator == &test_allocator);
 	AssertAlways(array3.allocator->reserve == malloc);
 	
-	array<TestType> array4(5);
+	arrayT<TestType> array4(5);
 	AssertAlways(array4.count == 0);
 	AssertAlways(array4.space == 8);
 	AssertAlways(array4.data != 0);
@@ -64,7 +64,7 @@ local void TEST_kigu_array(){
 	AssertAlways(array4.data[0].value == 0 && array4.data[1].value == 0 && array4.data[2].value == 0 && array4.data[3].value == 0);
 	AssertAlways(array4.data[4].value == 0 && array4.data[5].value == 0 && array4.data[6].value == 0 && array4.data[7].value == 0);
 	
-	array<TestType> array5({TestType(1), TestType(2), TestType(3)});
+	arrayT<TestType> array5({TestType(1), TestType(2), TestType(3)});
 	AssertAlways(destruct_sum == 3);
 	AssertAlways(array5.count == 3);
 	AssertAlways(array5.space == 4);
@@ -78,7 +78,7 @@ local void TEST_kigu_array(){
 	AssertAlways(PointerDifference(&array5.data[1], &array5.data[0]) == sizeof(TestType));
 	AssertAlways(array5.data[3].value == 0);
 	
-	array<TestType> array6(array5);
+	arrayT<TestType> array6(array5);
 	AssertAlways(array6.count == 3);
 	AssertAlways(array6.space == 4);
 	AssertAlways(array6.data != 0);
@@ -89,7 +89,7 @@ local void TEST_kigu_array(){
 	AssertAlways(array6.data[1].value == 4);
 	AssertAlways(array6.data[2].value == 6);
 	
-	array<TestType> array7(array5.data, 2);
+	arrayT<TestType> array7(array5.data, 2);
 	AssertAlways(array7.count == 2);
 	AssertAlways(array7.space == 4);
 	AssertAlways(array7.data != 0);
@@ -181,7 +181,7 @@ local void TEST_kigu_array(){
 	AssertAlways(array2[6].value == 4);
 	AssertAlways(array2[7].value == 6);
 	
-	array<TestType> array8;
+	arrayT<TestType> array8;
 	array8.emplace(10);
 	AssertAlways(destruct_sum == 12);
 	AssertAlways(array8.count == 1);
@@ -215,7 +215,7 @@ local void TEST_kigu_array(){
 	AssertAlways(array2[9].value == 10);
 	AssertAlways(array2.data[10].value == 0);
 	
-	array<TestType> array9;
+	arrayT<TestType> array9;
 	array9.insert(TestType(1), 0);
 	AssertAlways(destruct_sum == 15);
 	AssertAlways(array9.count == 1);
@@ -396,7 +396,7 @@ local void TEST_kigu_array_utils(){
 	
 	//bubble sort
 	srand(time(0));
-	array<s32> array1(1024);
+	arrayT<s32> array1(1024);
 	forI(1024) array1.add(rand() % 1024);
 	TEST_KIGU_TIMER_RESET(timer);
 	bubble_sort(array1, [](s32 a, s32 b){return a < b;});

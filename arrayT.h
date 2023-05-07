@@ -25,7 +25,7 @@
 
 
 template<typename T>
-struct array{
+struct arrayT{
 	u32 count;
 	u32 space; //number of items array can fit
 	T*  data;
@@ -34,23 +34,23 @@ struct array{
 	T*  iter;
 	Allocator* allocator;
 	
-	array();
-	array(Allocator* a);
-	array(u32 _count, Allocator* a = KIGU_ARRAY_ALLOCATOR);
-	array(std::initializer_list<T> l, Allocator* a = KIGU_ARRAY_ALLOCATOR);
-	array(const array<T>& array, Allocator* a = KIGU_ARRAY_ALLOCATOR);
-	array(T* _data, u32 _count, Allocator* a = KIGU_ARRAY_ALLOCATOR);
-	array(carray<T> arr, Allocator* a = KIGU_ARRAY_ALLOCATOR);
-	~array();
+	arrayT();
+	arrayT(Allocator* a);
+	arrayT(u32 _count, Allocator* a = KIGU_ARRAY_ALLOCATOR);
+	arrayT(std::initializer_list<T> l, Allocator* a = KIGU_ARRAY_ALLOCATOR);
+	arrayT(const arrayT<T>& array, Allocator* a = KIGU_ARRAY_ALLOCATOR);
+	arrayT(T* _data, u32 _count, Allocator* a = KIGU_ARRAY_ALLOCATOR);
+	arrayT(carray<T> arr, Allocator* a = KIGU_ARRAY_ALLOCATOR);
+	~arrayT();
 	
 	//copies the values and allocator from rhs
-	array<T>& operator= (const array<T>& rhs);
+	arrayT<T>& operator= (const arrayT<T>& rhs);
 	T& operator[](u32 i);
 	T  operator[](u32 i) const;
 	
 	u32  size() const;
 	void add(const T& t);
-	void add_array(const array<T>& t);
+	void add_array(const arrayT<T>& t);
 	//for taking in something without copying it
 	void emplace(const T& t);
 	//inserts before the specified idx
@@ -101,8 +101,8 @@ struct array{
 ///////////////////////
 //// @constructors ////
 ///////////////////////
-template<typename T> inline array<T>::
-array(){DPZoneScoped;
+template<typename T> inline arrayT<T>::
+arrayT(){DPZoneScoped;
 	allocator = KIGU_ARRAY_ALLOCATOR;
 	
 	space = 0;
@@ -113,8 +113,8 @@ array(){DPZoneScoped;
 	last  = 0;
 }
 
-template<typename T> inline array<T>::
-array(Allocator* a){DPZoneScoped;
+template<typename T> inline arrayT<T>::
+arrayT(Allocator* a){DPZoneScoped;
 	allocator = a;
 	
 	space = 0;
@@ -125,8 +125,8 @@ array(Allocator* a){DPZoneScoped;
 	last  = 0;
 }
 
-template<typename T> inline array<T>::
-array(u32 _count, Allocator* a){DPZoneScoped;
+template<typename T> inline arrayT<T>::
+arrayT(u32 _count, Allocator* a){DPZoneScoped;
 	allocator = a;
 	
 	count = 0;
@@ -138,8 +138,8 @@ array(u32 _count, Allocator* a){DPZoneScoped;
 	last  = 0;
 }
 
-template<typename T> inline array<T>::
-array(std::initializer_list<T> l, Allocator* a){DPZoneScoped;
+template<typename T> inline arrayT<T>::
+arrayT(std::initializer_list<T> l, Allocator* a){DPZoneScoped;
 	allocator = a;
 	
 	count = l.size();
@@ -157,8 +157,8 @@ array(std::initializer_list<T> l, Allocator* a){DPZoneScoped;
 //TODO this can probably be much better
 //its necessary so when we return elements the entire array copies properly
 //so we have to make sure everything in the array gets recreated
-template<typename T> inline array<T>::
-array(const array<T>& array, Allocator* a){DPZoneScoped;
+template<typename T> inline arrayT<T>::
+arrayT(const arrayT<T>& array, Allocator* a){DPZoneScoped;
 	allocator = a;
 	
 	count = array.count;
@@ -173,8 +173,8 @@ array(const array<T>& array, Allocator* a){DPZoneScoped;
 	last  = (array.last == 0) ? 0 : data+(array.count-1);
 }
 
-template<typename T> inline array<T>::
-array(T* _data, u32 _count, Allocator* a){DPZoneScoped;
+template<typename T> inline arrayT<T>::
+arrayT(T* _data, u32 _count, Allocator* a){DPZoneScoped;
 	allocator = a;
 	
 	count = _count;
@@ -188,8 +188,8 @@ array(T* _data, u32 _count, Allocator* a){DPZoneScoped;
 	last  = data + (_count-1);
 }
 
-template<typename T> inline array<T>::
-array(carray<T> arr, Allocator* a){DPZoneScoped;
+template<typename T> inline arrayT<T>::
+arrayT(carray<T> arr, Allocator* a){DPZoneScoped;
 	allocator = a;
 	
 	count = arr.count;
@@ -204,8 +204,8 @@ array(carray<T> arr, Allocator* a){DPZoneScoped;
 	last  = data+(arr.count-1);
 }
 
-template<typename T> inline array<T>::
-~array(){
+template<typename T> inline arrayT<T>::
+~arrayT(){
 	forI(count){ data[i].~T(); }
 	allocator->release(data);
 	space = 0;
@@ -219,8 +219,8 @@ template<typename T> inline array<T>::
 ////////////////////
 //// @operators ////
 ////////////////////
-template<typename T> inline array<T>& array<T>::
-operator= (const array<T>& rhs){
+template<typename T> inline arrayT<T>& arrayT<T>::
+operator= (const arrayT<T>& rhs){
 	if(!allocator) allocator = KIGU_ARRAY_ALLOCATOR;
 	forI(count){ data[i].~T(); }
 	allocator->release(data);  //TODO maybe resize rather than release and reserve
@@ -239,13 +239,13 @@ operator= (const array<T>& rhs){
 	return *this;
 }
 
-template<typename T> inline T& array<T>::
+template<typename T> inline T& arrayT<T>::
 operator[](u32 i){
 	Assert(i < count);
 	return data[i];
 }
 
-template<typename T> inline T array<T>::
+template<typename T> inline T arrayT<T>::
 operator[](u32 i) const {
 	Assert(i < count);
 	return data[i];
@@ -255,12 +255,12 @@ operator[](u32 i) const {
 ////////////////////
 //// @functions ////
 ////////////////////
-template<typename T> inline u32 array<T>::
+template<typename T> inline u32 arrayT<T>::
 size() const{
 	return count;
 }
 
-template<typename T> inline void array<T>::
+template<typename T> inline void arrayT<T>::
 add(const T& t){DPZoneScoped;
 	if(space == 0){ //if first item, allocate memory
 		space = KIGU_ARRAY_SPACE_ALIGNMENT;
@@ -292,19 +292,19 @@ add(const T& t){DPZoneScoped;
 	}
 }
 
-template<typename T> inline void array<T>::
-add_array(const array<T>& t){DPZoneScoped;
+template<typename T> inline void arrayT<T>::
+add_array(const arrayT<T>& t){DPZoneScoped;
 	for(const T& item : t){
 		this->add(item);
 	}
 }
 
-template<typename T> inline void array<T>::
+template<typename T> inline void arrayT<T>::
 emplace(const T& t){DPZoneScoped;
 	this->add(t); //TODO emplace function signature should mimic the type's constructor
 }
 
-template<typename T> inline void array<T>::
+template<typename T> inline void arrayT<T>::
 insert(const T& t, u32 idx){DPZoneScoped;
 	Assert(idx <= count);
 	if(space == 0){ //if first item, allocate memory
@@ -343,7 +343,7 @@ insert(const T& t, u32 idx){DPZoneScoped;
 	}
 }
 
-template<typename T> inline T array<T>::
+template<typename T> inline T arrayT<T>::
 pop(u32 _count){DPZoneScoped;
 	Assert(count >= _count, "attempted to pop more than array size");
 	T ret;
@@ -362,7 +362,7 @@ pop(u32 _count){DPZoneScoped;
 	return ret;
 }	
 
-template<typename T> inline void array<T>::
+template<typename T> inline void arrayT<T>::
 remove(u32 i){DPZoneScoped;
 	Assert(count > 0, "can't remove element from empty array");
 	Assert(i < count, "index is out of bounds");
@@ -380,7 +380,7 @@ remove(u32 i){DPZoneScoped;
 	}
 }
 
-template<typename T> inline void array<T>::
+template<typename T> inline void arrayT<T>::
 remove_unordered(u32 i){DPZoneScoped;
 	Assert(count > 0, "can't remove element from empty array");
 	Assert(i < count, "index is out of bounds");
@@ -410,7 +410,7 @@ remove_unordered(u32 i){DPZoneScoped;
 //	count--;
 //}
 
-template<typename T> inline void array<T>::
+template<typename T> inline void arrayT<T>::
 clear(){DPZoneScoped;
 	forI(count){ data[i].~T(); }
 	memset(data, 0, count*sizeof(T));
@@ -421,9 +421,9 @@ clear(){DPZoneScoped;
 	last  = 0;
 }
 
-template<typename T> inline void array<T>::
+template<typename T> inline void arrayT<T>::
 resize(u32 new_count){DPZoneScoped;
-	if(!new_count){ this->~array(); return; } //this may not be the appropriate thing to do here
+	if(!new_count){ this->~arrayT(); return; } //this may not be the appropriate thing to do here
 	if(new_count > space){
 		space = new_count;
 		data = (T*)allocator->resize(data, space*sizeof(T));
@@ -446,7 +446,7 @@ resize(u32 new_count){DPZoneScoped;
 	}
 }
 
-template<typename T> inline void array<T>::
+template<typename T> inline void arrayT<T>::
 reserve(u32 new_space){DPZoneScoped;
 	if(new_space > space){
 		space = RoundUpTo(new_space, KIGU_ARRAY_SPACE_ALIGNMENT);
@@ -459,7 +459,7 @@ reserve(u32 new_space){DPZoneScoped;
 	}
 }
 
-template<typename T> inline void array<T>::
+template<typename T> inline void arrayT<T>::
 swap(u32 idx1, u32 idx2){DPZoneScoped;
 	Assert(idx1 < count && idx2 < count, "index out of bounds");
 	Assert(idx1 != idx2, "can't swap an element with itself");
@@ -468,7 +468,7 @@ swap(u32 idx1, u32 idx2){DPZoneScoped;
 	data[idx2] = save;
 }
 
-template<typename T> inline bool array<T>::
+template<typename T> inline bool arrayT<T>::
 has(const T& value){DPZoneScoped;
 	for(const T& blahabuasjdas : *this){
 		if(blahabuasjdas == value){
@@ -478,13 +478,13 @@ has(const T& value){DPZoneScoped;
 	return false;
 }
 
-template<typename T> inline T& array<T>::
+template<typename T> inline T& arrayT<T>::
 at(u32 i){DPZoneScoped;
 	Assert(i < count);
 	return data[i];
 }
 
-template<typename T> inline T& array<T>::
+template<typename T> inline T& arrayT<T>::
 next(u32 count){DPZoneScoped;
 	if (last - iter + 1 >= 0) {
 		return iter += count, *iter;
@@ -492,13 +492,13 @@ next(u32 count){DPZoneScoped;
 	return *iter;
 }
 
-template<typename T> inline T& array<T>::
+template<typename T> inline T& arrayT<T>::
 peek(u32 i){DPZoneScoped;
 	if(last - iter + 1 >= 0) return *(iter + i);
 	return *iter;
 }
 
-template<typename T> inline T& array<T>::
+template<typename T> inline T& arrayT<T>::
 prev(u32 count){DPZoneScoped;
 	if (iter - first + 1 >= 0) {
 		return iter -= count, *iter;
@@ -506,36 +506,36 @@ prev(u32 count){DPZoneScoped;
 	return *--iter;
 }
 
-template<typename T> inline void array<T>::
+template<typename T> inline void arrayT<T>::
 setiter(u32 i) {
 	iter = data + i;
 }
 
-template<typename T> inline T& array<T>::
+template<typename T> inline T& arrayT<T>::
 lookback(u32 i){DPZoneScoped;
 	if(first - iter + 1 >= 0) return *(iter - i);
 }
 
-template<typename T> inline T* array<T>::
+template<typename T> inline T* arrayT<T>::
 nextptr(){DPZoneScoped;
 	if(iter + 1 - last >= 0) return iter++;
 	else return nullptr;
 }
 
 //TODO come up with a better name for this and the corresponding previous overload
-template<typename T> inline T* array<T>::
+template<typename T> inline T* arrayT<T>::
 peekptr(u32 i){DPZoneScoped;
 	if(iter + 1 - last >= 0) return iter + i;
 	else return nullptr;
 }
 
-template<typename T> inline T* array<T>::
+template<typename T> inline T* arrayT<T>::
 prevptr(){DPZoneScoped;
 	if(iter - 1 - first >= 0) return iter--;
 	else return nullptr;
 }
 
-template<typename T> inline T* array<T>::
+template<typename T> inline T* arrayT<T>::
 lookbackptr(u32 i){DPZoneScoped;
 	if(iter - 1 - first >= 0) return iter - i;
 	else return nullptr;

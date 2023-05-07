@@ -490,9 +490,9 @@ global cstring substr(const cstring& buf, u32 start, u32 end = npos){return subs
 global cstring substr(const string&  buf, u32 start, u32 end = npos){return substr(buf.str, buf.count, start,end);}
 global cstring substr(const char*    buf, u32 start, u32 end = npos){return substr((char*)buf, strlen(buf), start,end);}
 
-global array<cstring>
+global arrayT<cstring>
 chunkstr(char* buf, u32 buflen, char delimiter){
-	array<cstring> chunks;
+	arrayT<cstring> chunks;
 	char* start = buf;
 	forI(buflen){
 		if(buf[i]==delimiter){
@@ -504,8 +504,8 @@ chunkstr(char* buf, u32 buflen, char delimiter){
 	}
 	return chunks;
 }
-global array<cstring> chunkstr(const string&  buf, char delimiter) {return chunkstr(buf.str, buf.count, delimiter);}
-global array<cstring> chunkstr(const cstring& buf, char delimiter) {return chunkstr(buf.str, buf.count, delimiter);}
-global array<cstring> chunkstr(const char*    buf, char delimiter) {return chunkstr((char*)buf, strlen(buf), delimiter);}
+global arrayT<cstring> chunkstr(const string&  buf, char delimiter) {return chunkstr(buf.str, buf.count, delimiter);}
+global arrayT<cstring> chunkstr(const cstring& buf, char delimiter) {return chunkstr(buf.str, buf.count, delimiter);}
+global arrayT<cstring> chunkstr(const char*    buf, char delimiter) {return chunkstr((char*)buf, strlen(buf), delimiter);}
 
 #endif //KIGU_STRING_UTILS_H

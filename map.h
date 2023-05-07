@@ -10,8 +10,8 @@
 
 template<typename Key, typename Value, typename HashStruct = hash<Key>>
 struct map{
-	array<u32>   hashes;
-	array<Value> data;
+	arrayT<u32>   hashes;
+	arrayT<Value> data;
 	u32 count;
 	
 	map(Allocator* a = stl_allocator);

@@ -98,8 +98,8 @@ struct hash<const char*> {
 };
 
 template<class T> 
-struct hash<array<T>> {
-	inline u32 operator()(array<T>* s) {DPZoneScoped;
+struct hash<arrayT<T>> {
+	inline u32 operator()(arrayT<T>* s) {DPZoneScoped;
 		u32 seed = 2166136261;
 		u32 size = s->size;
 		while (size-- != 0) {
