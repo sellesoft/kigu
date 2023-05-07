@@ -3,7 +3,7 @@
 #define KIGU_ARRAY_UTILS_H
 
 #include "common.h"
-#include "array.h"
+#include "arrayT.h"
 
 
 //////////////////////

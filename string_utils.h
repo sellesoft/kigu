@@ -2,7 +2,7 @@
 #ifndef KIGU_STRING_UTILS_H
 #define KIGU_STRING_UTILS_H
 
-#include "array.h"
+#include "arrayT.h"
 #include "string.h"
 #include "cstring.h"
 #include "color.h"

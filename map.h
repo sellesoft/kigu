@@ -3,7 +3,7 @@
 #define KIGU_MAP_H
 
 #include "common.h"
-#include "array.h"
+#include "arrayT.h"
 #include "hash.h"
 #include "pair.h"
 #include "profiling.h"

@@ -2,7 +2,7 @@
 #ifndef KIGU_HASH_H
 #define KIGU_HASH_H
 
-#include "array.h"
+#include "arrayT.h"
 #include "common.h"
 #include "string.h"
 #include "unicode.h"

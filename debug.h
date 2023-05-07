@@ -2,7 +2,7 @@
 #ifndef KIGU_DEBUG_H
 #define KIGU_DEBUG_H
 
-#include "array.h"
+#include "arrayT.h"
 #include "common.h"
 #include "string.h"
 #include "string_utils.h"

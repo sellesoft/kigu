@@ -15,7 +15,7 @@
 
 #define KIGU_ARRAY_GROWTH_FACTOR 2
 #define KIGU_ARRAY_SPACE_ALIGNMENT 4
-#include "array.h"
+#include "arrayT.h"
 local void TEST_kigu_array(){
 	//// constructors ////
 	arrayT<int> array1;
