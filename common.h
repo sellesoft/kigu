@@ -123,6 +123,49 @@
 
 #if __cplusplus
 #  define COMPILER_FEATURE_CPP 1
+#  if   (__cplusplus >= 202002L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 20202L)
+#    define COMPILER_FEATURE_CPP_20 1
+#    define COMPILER_FEATURE_CPP_17 0
+#    define COMPILER_FEATURE_CPP_14 0
+#    define COMPILER_FEATURE_CPP_11 0
+#    define COMPILER_FEATURE_CPP_98 0
+#    define COMPILER_FEATURE_CPP_PRE98 0
+#  elif (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#    define COMPILER_FEATURE_CPP_20 0
+#    define COMPILER_FEATURE_CPP_17 1
+#    define COMPILER_FEATURE_CPP_14 0
+#    define COMPILER_FEATURE_CPP_11 0
+#    define COMPILER_FEATURE_CPP_98 0
+#    define COMPILER_FEATURE_CPP_PRE98 0
+#  elif (__cplusplus >= 201402L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201402L)
+#    define COMPILER_FEATURE_CPP_20 0
+#    define COMPILER_FEATURE_CPP_17 0
+#    define COMPILER_FEATURE_CPP_14 1
+#    define COMPILER_FEATURE_CPP_11 0
+#    define COMPILER_FEATURE_CPP_98 0
+#    define COMPILER_FEATURE_CPP_PRE98 0
+#  elif (__cplusplus >= 201103L)
+#    define COMPILER_FEATURE_CPP_20 0
+#    define COMPILER_FEATURE_CPP_17 0
+#    define COMPILER_FEATURE_CPP_14 0
+#    define COMPILER_FEATURE_CPP_11 1
+#    define COMPILER_FEATURE_CPP_98 0
+#    define COMPILER_FEATURE_CPP_PRE98 0
+#  elif (__cplusplus >= 199711L)
+#    define COMPILER_FEATURE_CPP_20 0
+#    define COMPILER_FEATURE_CPP_17 0
+#    define COMPILER_FEATURE_CPP_14 0
+#    define COMPILER_FEATURE_CPP_11 0
+#    define COMPILER_FEATURE_CPP_98 1
+#    define COMPILER_FEATURE_CPP_PRE98 0
+#  else
+#    define COMPILER_FEATURE_CPP_20 0
+#    define COMPILER_FEATURE_CPP_17 0
+#    define COMPILER_FEATURE_CPP_14 0
+#    define COMPILER_FEATURE_CPP_11 0
+#    define COMPILER_FEATURE_CPP_98 0
+#    define COMPILER_FEATURE_CPP_PRE98 1
+#  endif
 #else
 #  define COMPILER_FEATURE_CPP 0
 #endif //#if __cplusplus
@@ -176,7 +219,7 @@
 #  include <alloca.h>
 #  define StackAlloc(bytes) alloca(bytes)
 #else
-#  error "unhandled os"
+#  error "unhandled os for stack allocation"
 #endif //#if OS_WINDOWS
 
 
@@ -432,8 +475,8 @@ global_const u64 wcharsize = sizeof(wchar);
 #define ENUM_LIST_ENUM(prefix,raw_enum) prefix##_##raw_enum
 #define ENUM_LIST_STRING(prefix,raw_enum) STR8(STRINGIZE(raw_enum))
 #define ENUM_LIST(list_name, list_macro)                           \
-typedef enum list_name{ list_macro( ENUM_LIST_ENUM ) }list_name; \
-str8 list_name##_strings[] = { list_macro( ENUM_LIST_STRING ) }
+  typedef enum list_name{ list_macro( ENUM_LIST_ENUM ) }list_name; \
+  str8 list_name##_strings[] = { list_macro( ENUM_LIST_STRING ) }
 
 
 //// linkage macros ////
