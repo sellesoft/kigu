@@ -1,6 +1,6 @@
 #pragma once
-#ifndef KIGU_ARRAY_H
-#define KIGU_ARRAY_H
+#ifndef KIGU_ARRAYT_H
+#define KIGU_ARRAYT_H
 
 #ifndef KIGU_ARRAY_GROWTH_FACTOR
 #  define KIGU_ARRAY_GROWTH_FACTOR 2
@@ -541,4 +541,4 @@ lookbackptr(u32 i){DPZoneScoped;
 	else return nullptr;
 }
 
-#endif //KIGU_ARRAY_H
+#endif //KIGU_ARRAYT_H
