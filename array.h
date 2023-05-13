@@ -37,8 +37,10 @@ INDEX:
   array_deinit(T* array) -> void
 @array_modify
   array_push(T* array) -> T*
+  array_push_value(T* array, T value) -> T*
   array_pop(T* array) -> void
   array_insert(T* array, upt index) -> T*
+  array_insert_value(T* array, upt index, T value) -> T*
   array_remove_ordered(T* array, upt index) -> void
   array_remove_unordered(T* array, upt index) -> void
 @array_loop
@@ -56,7 +58,7 @@ TODO:
 
 REFERENCES:
 https://github.com/nothings/stb/blob/master/stb_ds.h  (Sean Barret, nothings, dynamic array)
-https://github.com/Jai-Community/Jai-Community-Library/wiki/Getting-Started#for_expansion (Jai, for loop expansion macro)
+https://github.com/Jai-Community/Jai-Community-Library/wiki/Getting-Started#for_expansion  (Jai, for loop expansion macro)
 
 LICENSE:
 Placed in the public domain and also MIT licensed. See end of file for detailed license information.
@@ -154,6 +156,7 @@ global void* kigu__array_grow(void* array, upt type_size, upt count){
 
 //Reserves (growing and reassigning `array` if necessary) and returns the next slot at the end of `array`
 #define array_push(array) ((array) = kigu__array_push_wrapper((array), sizeof(*(array))), array_last(array))
+#define array_push_value(array,value) (*array_push(array) = (value), array_last(array))
 global void* kigu__array_push(void* array, upt type_size){
 	ArrayHeader* header = array_header(array);
 	
@@ -184,6 +187,7 @@ global void kigu__array_pop(void* array, upt type_size){
 //Reserves (growing and reassigning `array` if necessary) the next slot at the end of `array`, shifts all items
 //  at and after `index` to the right, zeros the slot at `index`, and returns the slot at `index`
 #define array_insert(array,index) ((array) = kigu__array_insert_wrapper((array), sizeof(*(array)), (index)), (array)+(index))
+#define array_insert_value(array,index,value) (*array_insert((array),(index)) = (value), (array)+(index))
 global void* kigu__array_insert(void* array, upt type_size, upt index){
 	ArrayHeader* header = array_header(array);
 	
