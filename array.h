@@ -198,11 +198,12 @@ global void* kigu__array_insert(void* array, upt type_size, upt index){
 		array = kigu__array_grow(array, type_size, header->count*KIGU_ARRAY_GROWTH_FACTOR);
 		header = array_header(array);
 	}
+	header->count += 1;
 	
 	//copy each item to the next slot by iterating backwards from
 	//the last slot to the desired insert slot
-	u8* dst = (u8*)array + (header->count * type_size);
-	u8* src = (u8*)array + ((header->count-1) * type_size);
+	u8* dst = (u8*)array + (header->count * type_size) - 1;
+	u8* src = dst - type_size;
 	u8* stop = (u8*)array + (index * type_size);
 	while(src >= stop){
 		*dst = *src;
@@ -211,7 +212,7 @@ global void* kigu__array_insert(void* array, upt type_size, upt index){
 	}
 	
 	//zero the desired slot
-	ZeroMemory(dst, type_size);
+	ZeroMemory(src, type_size);
 	
 	//return the array incase it's moved
 	return array;
