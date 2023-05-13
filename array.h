@@ -56,7 +56,6 @@ TODO:
 	of memory (32, 64, 128, 256), but before pursuing that though, check if the CPU/compiler doesn't already optimize this away thru
 	some other means or if copying larger chunks of memory doesn't just decompose into u8 copies (unlikely on most modern hardware).
 - Rewrite the WHAT section to be more readable.
-- Unit tests.
 
 REFERENCES:
 https://github.com/nothings/stb/blob/master/stb_ds.h  (Sean Barret, nothings, dynamic array)
@@ -256,7 +255,7 @@ global void kigu__array_remove_unordered(void* array, upt type_size, upt index){
 #if COMPILER_FEATURE_TYPEOF
 #  define for_array(array) for(typeof(*(array))* it = (array); it < ((array) + array_count(array)); ++it)
 #  define forX_array(var,array) for(typeof(*(array))* var = (array); var < ((array) + array_count(array)); ++var)
-#elif COMPILER_FEATURE_CPP_11
+#elif COMPILER_FEATURE_CPP_AUTO
 #  define for_array(array) for(auto it = (array); it < ((array) + array_count(array)); ++it)
 #  define forX_array(var,array) for(auto var = (array); var < ((array) + array_count(array)); ++var)
 #endif //#if COMPILER_FEATURE_TYPEOF
@@ -301,15 +300,181 @@ global void kigu__array_unit_tests()
 	Allocator* libc_allocator = &libc_allocator_;
 	
 	{//// init ////
+		u64* array1 = 0;
+		array_init(array1, 32, libc_allocator);
+		AssertAlways(array1 != 0);
+		AssertAlways(array_header(array1) != 0);
+		AssertAlways(array_count(array1) == 0);
+		AssertAlways(array_space(array1) == 32);
+		AssertAlways(array_allocator(array1) == libc_allocator);
+		AssertAlways(array_last(array1) == array1-1);
 		
+		u64* array2 = array_create(u64, 16, libc_allocator);
+		AssertAlways(array2 != 0);
+		AssertAlways(array_header(array2) != 0);
+		AssertAlways(array_count(array2) == 0);
+		AssertAlways(array_space(array2) == 16);
+		AssertAlways(array_allocator(array2) == libc_allocator);
+		AssertAlways(array_last(array2) == array2-1);
+		
+		array_deinit(array1);
+		array_deinit(array2);
 	}
 	
 	{//// modify ////
+		u64* array1 = array_create(u64, 16, libc_allocator);{
+			for(u64 i = 0; i < 16; i += 1){
+				array1[i] = 0;
+			}
+			
+			u64* array1_backup = array1;
+			u64* v0 = array_push(array1);
+			AssertAlways(array1 == array1_backup);
+			AssertAlways(*v0 == 0);
+			*v0 = 5;
+			AssertAlways(array1 == v0);
+			AssertAlways(array1[0] == 5);
+			AssertAlways(array_count(array1) == 1);
+			AssertAlways(array_space(array1) == 16);
+			AssertAlways(array_last(array1) == array1);
+			
+			array_pop(array1);
+			AssertAlways(array1 == array1_backup);
+			AssertAlways(array1 == v0);
+			AssertAlways(array1[0] == 0);
+			AssertAlways(array_count(array1) == 0);
+			AssertAlways(array_space(array1) == 16);
+			AssertAlways(array_last(array1) == array1-1);
+			
+			v0 = array_push_value(array1, 5);
+			AssertAlways(array1 == array1_backup);
+			AssertAlways(array1 == v0);
+			AssertAlways(array1[0] == 5);
+			AssertAlways(array_count(array1) == 1);
+			AssertAlways(array_space(array1) == 16);
+			AssertAlways(array_last(array1) == array1);
+			array_pop(array1);
+		}array_deinit(array1);
 		
+		for(u64 i = 0; i < 20000; i += 50){
+			array_init(array1, 4, libc_allocator);
+			for(u64 j = 0; j < i; j += 1){
+				array_push_value(array1, j);
+			}
+			AssertAlways(array_count(array1) == i);
+			array_deinit(array1);
+		}
+		
+		for(u64 i = 0; i < 4; i += 1){
+			array_init(array1, 5, libc_allocator);
+			
+			array_push_value(array1, 1);
+			array_push_value(array1, 2);
+			array_push_value(array1, 3);
+			array_push_value(array1, 4);
+			
+			u64* v0 = array_insert(array1, i);
+			*v0 = 5;
+			
+			AssertAlways(array1 + i == v0);
+			AssertAlways(array1[i] == 5);
+			
+			if(i < 4){
+				AssertAlways(array1[4] == 4);
+			}
+			
+			array_deinit(array1);
+		}
+		
+		for(u64 i = 0; i < 4; i += 1){
+			array_init(array1, 5, libc_allocator);
+			
+			array_push_value(array1, 1);
+			array_push_value(array1, 2);
+			array_push_value(array1, 3);
+			array_push_value(array1, 4);
+			
+			u64* v0 = array_insert_value(array1, i, 5);
+			
+			AssertAlways(array1 + i == v0);
+			AssertAlways(array1[i] == 5);
+			
+			if(i < 4){
+				AssertAlways(array1[4] == 4);
+			}
+			
+			array_deinit(array1);
+		}
+		
+		for(u64 i = 0; i < 4; i += 1){
+			array_init(array1, 4, libc_allocator);
+			
+			array_push_value(array1, 1);
+			array_push_value(array1, 2);
+			array_push_value(array1, 3);
+			array_push_value(array1, 4);
+			
+			array_remove_ordered(array1, i);
+			
+			AssertAlways(array1[3] == 0);
+			AssertAlways(array_count(array1) == 3);
+			AssertAlways(array_space(array1) == 4);
+			
+			AssertAlways(array1[0] < array1[1]);
+			AssertAlways(array1[1] < array1[2]);
+			AssertAlways(array1[2] > array1[3]);
+			
+			if(i == 0){
+				AssertAlways(array1[i] == 2);
+			}else if(i < 3){
+				AssertAlways(array1[i] - array1[i-1] == 2);
+			}
+			
+			array_deinit(array1);
+		}
+		
+		for(u64 i = 0; i < 4; i += 1){
+			array_init(array1, 4, libc_allocator);
+			
+			array_push_value(array1, 1);
+			array_push_value(array1, 2);
+			array_push_value(array1, 3);
+			array_push_value(array1, 4);
+			
+			array_remove_unordered(array1, i);
+			
+			AssertAlways(array1[3] == 0);
+			AssertAlways(array_count(array1) == 3);
+			AssertAlways(array_space(array1) == 4);
+			
+			if(i < 3){
+				AssertAlways(array1[i] == 4);
+			}
+			
+			array_deinit(array1);
+		}
 	}
 	
 	{//// loop ////
+		u64* array1 = array_create(u64, 64, libc_allocator);{
+			for(u64 i = 0; i < 64; i += 1) array_push_value(array1, 0);
+			
+			for_array(array1) AssertAlways(*it == 0);
+			
+			for_array(array1) *it = it - array1;
+			
+			for(u64 i = 0; i < 64; i += 1) AssertAlways(array1[i] == i);
+		}array_deinit(array1);
 		
+		array_init(array1, 64, libc_allocator);{
+			for(u64 i = 0; i < 64; i += 1) array_push_value(array1, 0);
+			
+			forX_array(p,array1) AssertAlways(*p == 0);
+			
+			forX_array(p,array1) *p = p - array1;
+			
+			for(u64 i = 0; i < 64; i += 1) AssertAlways(array1[i] == i);
+		}array_deinit(array1);
 	}
 }
 
