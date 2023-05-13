@@ -44,6 +44,8 @@ INDEX:
   array_remove_ordered(T* array, upt index) -> void
   array_remove_unordered(T* array, upt index) -> void
 @array_loop
+  for_array(array){ it... }
+  for_array(var, array){ var... }
 @array_wrappers
 @array_tests
 @array_license
@@ -251,23 +253,11 @@ global void kigu__array_remove_unordered(void* array, upt type_size, upt index){
 
 
 #if COMPILER_FEATURE_TYPEOF
-#define for_array(array)                                                   \
-  for(typeof(*(array))* it = (array), typeof(*(array))* it_start = (array) \
-	  ; it < it_start + array_count(array)                                 \
-	  ; ++it)
-#define forX_array(var,array)                                                       \
-  for(typeof(*(array))* var = (array), typeof(*(array))* GLUE(var,_start) = (array) \
-	  ; var < GLUE(var,_start) + array_count(array)                                 \
-	  ; ++var)
+#  define for_array(array) for(typeof(*(array))* it = (array); it < ((array) + array_count(array)); ++it)
+#  define forX_array(var,array) for(typeof(*(array))* var = (array); var < ((array) + array_count(array)); ++var)
 #elif COMPILER_FEATURE_CPP_11
-#define for_array(array)                                      \
-  for(auto it = (array), typeof(*(array))* it_start = (array) \
-	  ; it < it_start + array_count(array)                    \
-	  ; ++it)
-#define forX_array(var,array)                                          \
-  for(auto var = (array), typeof(*(array))* GLUE(var,_start) = (array) \
-	  ; var < GLUE(var,_start) + array_count(array)                    \
-	  ; ++var)
+#  define for_array(array) for(auto it = (array); it < ((array) + array_count(array)); ++it)
+#  define forX_array(var,array) for(auto var = (array); var < ((array) + array_count(array)); ++var)
 #endif //#if COMPILER_FEATURE_TYPEOF
 
 
