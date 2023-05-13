@@ -227,8 +227,8 @@ global void kigu__array_remove_ordered(void* array, upt type_size, upt index){
 	//the index slot to the last slot
 	u8* src = (u8*)array + ((index+1) * type_size);
 	u8* dst = (u8*)array + (index * type_size);
-	u8* stop = (u8*)array + ((header->count-2) * type_size);
-	while(src <= stop){
+	u8* stop = (u8*)array + (header->count * type_size);
+	while(src < stop){
 		*dst = *src;
 		src += 1;
 		dst += 1;
