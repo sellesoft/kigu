@@ -28,7 +28,7 @@
 #    error "unhandled architecture"
 #  endif
 
-//// CLANG Compiler //// (used for mac)
+//// CLANG Compiler //// (used for mac/linux)
 #elif defined(__clang__) //_MSC_VER
 #  define COMPILER_CLANG 1
 //#  pragma message("Compiler: clang")
@@ -37,6 +37,10 @@
 #    define OS_MAC 1
 #  elif defined(_WIN32)
 #    define OS_WINDOWS 1
+#  elif defined(__gnu_linux__)
+#   undef M_PI
+#   undef M_E
+#	define OS_LINUX 1
 #  else //__APPLE__ || __MACH__
 #    error "unhandled compiler/platform combo"
 #  endif //__APPLE__ || __MACH__
@@ -116,7 +120,7 @@
 
 //// Supported Compiler Features ////
 #if COMPILER_CLANG || COMPILER_GCC
-#  define COMPILER_FEATURE_TYPEOF 1
+#  define COMPILER_FEATURE_TYPEOF 0
 #else
 #  define COMPILER_FEATURE_TYPEOF 0
 #endif //#if COMPILER_CLANG || COMPILER_GCC
@@ -387,11 +391,13 @@ global_const f32 M_ONESIXTH        = 0.16666666667f;
 global_const f32 M_EPSILON         = 0.00001f;
 global_const f32 M_FOURTHPI        = 0.78539816339f;
 global_const f32 M_HALFPI          = 1.57079632679f;
+#undef M_PI
 global_const f32 M_PI              = 3.14159265359f;
 global_const f64 M_PId             = 3.14159265358979323846;
 global_const f64 π                 = M_PId;
 global_const f32 M_2PI             = 6.28318530718f;
 global_const f32 M_TAU             = M_2PI;
+#undef M_E
 global_const f32 M_E               = 2.71828182846f;
 global_const f32 M_SQRT_TWO        = 1.41421356237f;
 global_const f32 M_SQRT_THREE      = 1.73205080757f;

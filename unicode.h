@@ -206,7 +206,8 @@ decoded_codepoint_from_wchar(wchar_t* str, u64 max_advance){DPZoneScoped;
 #if COMPILER_CL
 	return decoded_codepoint_from_utf16((u16*)str, max_advance);
 #elif COMPILER_CLANG || COMPILER_GCC
-	return DecodedCodepoint{str[0], 1};
+	return decoded_codepoint_from_utf16((u16*)str, max_advance);
+	//return DecodedCodepoint{str[0], 1};
 #else
 #  error "unhandled compiler"
 #endif
