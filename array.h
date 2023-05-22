@@ -280,6 +280,21 @@ FORCE_INLINE void* kigu__array_push_wrapper(void* array, upt type_size){ return 
 FORCE_INLINE void* kigu__array_insert_wrapper(void* array, upt type_size, upt index){ return kigu__array_insert(array, type_size, index); }
 #endif //#if COMPILER_FEATURE_CPP
 
+//-////////////////////////////////////////////////////////////////////////////////////////////////
+//// @array_shorthands
+
+#ifdef KIGU_ARRAY_SHORTHANDS
+#define arrlen(arr)   array_count(arr)
+#define arrspace(arr) array_space(arr)
+#define arrlast(arr) array_last(arr)
+#define arrpush(arr) array_push(arr)
+#define arrpushval(arr,val) array_push_value(arr,val)
+#define arrpop(arr) array_pop(arr)
+#define arrins(arr, idx) array_insert(arr, idx)
+#define arrinsval(arr, idx) array_insert_value(arr, idx, value)
+#define arrrmv(arr, idx) array_remove_unordered(arr, idx)
+#define arrrmvord(arr, idx) array_remove_ordered(arr,idx)
+#endif
 
 EndLinkageC();
 //-////////////////////////////////////////////////////////////////////////////////////////////////
