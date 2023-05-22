@@ -139,6 +139,28 @@ to_string(u32 x, Allocator* a = KIGU_STRING_ALLOCATOR){
 }
 
 global string 
+to_string(u64 x, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
+	s.count = snprintf(nullptr, 0, "%llu", x);
+	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
+	s.allocator->commit(s.str, s.count+1);
+	s.space = s.count+1;
+	snprintf(s.str, s.count+1, "%llu", x);
+	return s;
+}
+
+global string 
+to_string(long x, Allocator* a = KIGU_STRING_ALLOCATOR){
+	string s(a);
+	s.count = snprintf(nullptr, 0, "%ld", x);
+	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
+	s.allocator->commit(s.str, s.count+1);
+	s.space = s.count+1;
+	snprintf(s.str, s.count+1, "%ld", x);
+	return s;
+}
+
+global string 
 to_string(f32 x, bool trunc = true, Allocator* a = KIGU_STRING_ALLOCATOR){
 	string s(a);
 	if(trunc){
@@ -278,6 +300,29 @@ to_str8(u32 x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	s.allocator->commit(s.str, s.count+1);
 	s.space = s.count+1;
 	snprintf((char*)s.str, s.count+1, "%u", x);
+	return s.fin;
+}
+
+global str8
+to_str8(u64 x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
+	str8b s; s.allocator = a;
+	s.count = snprintf(nullptr, 0, "%llu", x);
+	s.str   = (u8*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
+	s.allocator->commit(s.str, s.count+1);
+	s.space = s.count+1;
+	snprintf((char*)s.str, s.count+1, "%llu", x);
+	return s.fin;
+}
+
+// NOTE(sushi) required for clang because it finds it to be ambiguous with 
+global str8
+to_str8(long x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
+	str8b s; s.allocator = a;
+	s.count = snprintf(nullptr, 0, "%ld", x);
+	s.str   = (u8*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
+	s.allocator->commit(s.str, s.count+1);
+	s.space = s.count+1;
+	snprintf((char*)s.str, s.count+1, "%ld", x);
 	return s.fin;
 }
 
