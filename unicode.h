@@ -809,6 +809,24 @@ str8_skip_until_last(str8 a, u32 c){DPZoneScoped;
 	return b;
 }
 
+global str8
+str8_skip_until_one_of(str8 a, int count, ...) {DPZoneScoped;
+	str8 b = a;
+	while(b) {
+		DecodedCodepoint decoded = decoded_codepoint_from_utf8(b.str, 4);
+		va_list args; va_start(args, count);
+		forI(count){
+			if(decoded.codepoint == va_arg(args, u32)) {
+				goto found_one;
+			}
+		}
+		va_end(args);
+		str8_increment(&b, decoded.advance);
+	}
+	found_one:;
+	return b;
+}
+
 //Returns a slice of the utf8 string `a` starting at the first occurance of a codepoint that is not the codepoint `c` until the end of the string
 global str8
 str8_skip_while(str8 a, u32 c){DPZoneScoped;
