@@ -162,16 +162,16 @@ ToString(T... args){DPZoneScoped;
 /////////////////////
 template<typename T> global str8
 to_str8(T x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
-	str8_builder builder = {};
+	dstr8 builder = {};
 	builder.allocator = a;
 	if constexpr      (std::is_same_v<T, char*> || std::is_same_v<T, const char*>){
-		str8_builder_init(&builder, {(u8*)x, (s64)strlen(x)}, a);
+		dstr8_init(&builder, {(u8*)x, (s64)strlen(x)}, a);
 	}else if constexpr(std::is_same_v<T, str8> || std::is_same_v<T, const str8&>){
-		str8_builder_init(&builder, x, a);
+		dstr8_init(&builder, x, a);
 	}else if constexpr(std::is_same_v<T, const std::string&>){
-		str8_builder_init(&builder, {(u8*)x.c_str(), (s64)x.size()}, a);
+		dstr8_init(&builder, {(u8*)x.c_str(), (s64)x.size()}, a);
 	}else if constexpr(std::is_same_v<T, char>){
-		str8_builder_init(&builder, {(u8*)&x, 1}, a);
+		dstr8_init(&builder, {(u8*)&x, 1}, a);
 	}else if constexpr(std::is_same_v<T, s32>){
 		builder.count = snprintf(nullptr, 0, "%d", x);
 		builder.space = builder.count+1;
@@ -227,15 +227,15 @@ to_str8(T x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 		Assert(builder.str, "Failed to allocate memory");
 		snprintf((char*)builder.str, builder.count+1, "{r:%u, g:%u, b:%u, a:%u}", x.r, x.g, x.b, x.a);
 	}
-	return str8_builder_peek(&builder);
+	return dstr8_peek(&builder);
 }
 
 template<class... T> global str8
 ToString8(Allocator* allocator, T... args){DPZoneScoped;
-	str8b str; str8_builder_init(&str, {0}, allocator);
+	str8b str; dstr8_init(&str, {0}, allocator);
 	constexpr auto arg_count{sizeof...(T)};
 	str8 arr[arg_count] = {to_str8(args, allocator)...};
-	forI(arg_count) str8_builder_append(&str, arr[i]);
+	forI(arg_count) dstr8_append(&str, arr[i]);
 	return str.fin;
 }
 

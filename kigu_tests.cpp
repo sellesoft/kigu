@@ -1298,63 +1298,63 @@ local void TEST_kigu_unicode(){
 		AssertAlways(str8_equal(str8_lit(""), str8_from_cstr("")));
 		AssertAlways(str8_equal(str8_lit("abc"), str8_from_cstr("abc")));
 		
-		str8_builder builder1;
-		str8_builder_init(&builder1, {});
+		dstr8 builder1;
+		dstr8_init(&builder1, {});
 		AssertAlways(builder1.count == 0);
 		AssertAlways(builder1.space == 8);
 		AssertAlways(builder1.str != 0);
 		AssertAlways(builder1.allocator == KIGU_UNICODE_ALLOCATOR);
-		str8_builder builder2;
-		str8_builder_init(&builder2, test8);
+		dstr8 builder2;
+		dstr8_init(&builder2, test8);
 		AssertAlways(builder2.count == 90);
 		AssertAlways(builder2.space == 96);
 		AssertAlways(builder2.str != 0);
 		AssertAlways(builder2.str != test8.str);
 		AssertAlways(builder2.allocator == KIGU_UNICODE_ALLOCATOR);
 		
-		str8_builder_fit(&builder2);
+		dstr8_fit(&builder2);
 		AssertAlways(builder2.count == 90);
 		AssertAlways(builder2.space == 91);
 		AssertAlways(builder2.str != 0);
 		AssertAlways(builder2.allocator == KIGU_UNICODE_ALLOCATOR);
 		
-		str8_builder_append(&builder2, str8{});
+		dstr8_append(&builder2, str8{});
 		AssertAlways(builder2.count == 90);
 		AssertAlways(builder2.space == 91);
 		AssertAlways(builder2.str != 0);
 		AssertAlways(str8_length(str8{builder2.str, builder2.count}) == 56);
 		AssertAlways(str8_equal(str8{builder2.str, builder2.count}, str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
-		str8_builder_append(&builder2, str8_lit(""));
+		dstr8_append(&builder2, str8_lit(""));
 		AssertAlways(builder2.count == 90);
 		AssertAlways(builder2.space == 91);
 		AssertAlways(builder2.str != 0);
 		AssertAlways(str8_length(str8{builder2.str, builder2.count}) == 56);
 		AssertAlways(str8_equal(str8{builder2.str, builder2.count}, str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌")));
-		str8_builder_append(&builder2, str8_lit("a"));
+		dstr8_append(&builder2, str8_lit("a"));
 		AssertAlways(builder2.count == 91);
 		AssertAlways(builder2.space == 96);
 		AssertAlways(builder2.str != 0);
 		AssertAlways(str8_length(str8{builder2.str, builder2.count}) == 57);
 		AssertAlways(str8_equal(str8{builder2.str, builder2.count}, str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌a")));
-		str8_builder_append(&builder2, str8_lit("Д"));
+		dstr8_append(&builder2, str8_lit("Д"));
 		AssertAlways(builder2.count == 93);
 		AssertAlways(builder2.space == 96);
 		AssertAlways(builder2.str != 0);
 		AssertAlways(str8_length(str8{builder2.str, builder2.count}) == 58);
 		AssertAlways(str8_equal(str8{builder2.str, builder2.count}, str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌aД")));
-		str8_builder_append(&builder2, str8_lit("Ω"));
+		dstr8_append(&builder2, str8_lit("Ω"));
 		AssertAlways(builder2.count == 96);
 		AssertAlways(builder2.space == 104);
 		AssertAlways(builder2.str != 0);
 		AssertAlways(str8_length(str8{builder2.str, builder2.count}) == 59);
 		AssertAlways(str8_equal(str8{builder2.str, builder2.count}, str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌aДΩ")));
-		str8_builder_append(&builder2, str8_lit("🍌"));
+		dstr8_append(&builder2, str8_lit("🍌"));
 		AssertAlways(builder2.count == 100);
 		AssertAlways(builder2.space == 104);
 		AssertAlways(builder2.str != 0);
 		AssertAlways(str8_length(str8{builder2.str, builder2.count}) == 60);
 		AssertAlways(str8_equal(str8{builder2.str, builder2.count}, str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌aДΩ🍌")));
-		str8_builder_append(&builder2, str8_lit("abc"));
+		dstr8_append(&builder2, str8_lit("abc"));
 		AssertAlways(builder2.count == 103);
 		AssertAlways(builder2.space == 104);
 		AssertAlways(builder2.str != 0);
@@ -1362,77 +1362,77 @@ local void TEST_kigu_unicode(){
 		AssertAlways(str8_equal(str8{builder2.str, builder2.count}, str8_lit("a b c d Д Е Ж З И Й К Л У Ф Х ≤ ≥ ♪ ♫ ╞ ╟ ╠ ╡ ╢ ╣      🍌aДΩ🍌abc")));
 		
 		s64 builder2_count = builder2.count;
-		str8_builder_clear(&builder2);
+		dstr8_clear(&builder2);
 		AssertAlways(builder2.count == 0);
 		forI(builder2_count) AssertAlways(builder2.str[i] == 0);
 		
 		AssertAlways(builder2.space == 104);
-		str8_builder_grow(&builder2, 1);
+		dstr8_grow(&builder2, 1);
 		AssertAlways(builder2.space == 112);
 		u8* builder2_str = builder2.str;
-		str8_builder_grow(&builder2, 0);
+		dstr8_grow(&builder2, 0);
 		AssertAlways(builder2.space == 112);
 		AssertAlways(builder2.str == builder2_str);
 		
-		str8_builder_append(&builder2, str8_lit("aaaccc"));
+		dstr8_append(&builder2, str8_lit("aaaccc"));
 		builder2_str = builder2.str;
-		str8_builder_insert_byteoffset(&builder2, 3, str8_lit("bbb"));
+		dstr8_insert_byteoffset(&builder2, 3, str8_lit("bbb"));
 		AssertAlways(builder2.str == builder2_str);
 		AssertAlways(builder2.count == 9);
 		AssertAlways(builder2.space == 112);
-		AssertAlways(str8_equal(str8_builder_peek(&builder2), str8_lit("aaabbbccc")));
-		str8_builder_insert_byteoffset(&builder2, 3, str8_lit("Д"));
+		AssertAlways(str8_equal(dstr8_peek(&builder2), str8_lit("aaabbbccc")));
+		dstr8_insert_byteoffset(&builder2, 3, str8_lit("Д"));
 		AssertAlways(builder2.str == builder2_str);
 		AssertAlways(builder2.count == 11);
 		AssertAlways(builder2.space == 112);
-		AssertAlways(str8_equal(str8_builder_peek(&builder2), str8_lit("aaaДbbbccc")));
-		str8_builder_insert_byteoffset(&builder2, 100, str8_lit("Д")); //it should do nothing if offset is greater than count
+		AssertAlways(str8_equal(dstr8_peek(&builder2), str8_lit("aaaДbbbccc")));
+		dstr8_insert_byteoffset(&builder2, 100, str8_lit("Д")); //it should do nothing if offset is greater than count
 		AssertAlways(builder2.str == builder2_str);
 		AssertAlways(builder2.count == 11);
 		AssertAlways(builder2.space == 112);
-		AssertAlways(str8_equal(str8_builder_peek(&builder2), str8_lit("aaaДbbbccc")));
-		str8_builder_insert_byteoffset(&builder2, 4, str8_lit("")); //it should do nothing if insertion string is empty
+		AssertAlways(str8_equal(dstr8_peek(&builder2), str8_lit("aaaДbbbccc")));
+		dstr8_insert_byteoffset(&builder2, 4, str8_lit("")); //it should do nothing if insertion string is empty
 		AssertAlways(builder2.str == builder2_str);
 		AssertAlways(builder2.count == 11);
 		AssertAlways(builder2.space == 112);
-		AssertAlways(str8_equal(str8_builder_peek(&builder2), str8_lit("aaaДbbbccc")));
-		str8_builder_insert_byteoffset(&builder2, 0, str8_lit("Д"));
+		AssertAlways(str8_equal(dstr8_peek(&builder2), str8_lit("aaaДbbbccc")));
+		dstr8_insert_byteoffset(&builder2, 0, str8_lit("Д"));
 		AssertAlways(builder2.str == builder2_str);
 		AssertAlways(builder2.count == 13);
 		AssertAlways(builder2.space == 112);
-		AssertAlways(str8_equal(str8_builder_peek(&builder2), str8_lit("ДaaaДbbbccc")));
+		AssertAlways(str8_equal(dstr8_peek(&builder2), str8_lit("ДaaaДbbbccc")));
 		
-		str8_builder_remove_codepoint_at_byteoffset(&builder2, 0);
+		dstr8_remove_codepoint_at_byteoffset(&builder2, 0);
 		AssertAlways(builder2.str == builder2_str);
 		AssertAlways(builder2.count == 11);
 		AssertAlways(builder2.space == 112);
-		AssertAlways(str8_equal(str8_builder_peek(&builder2), str8_lit("aaaДbbbccc")));
-		str8_builder_remove_codepoint_at_byteoffset(&builder2, 0);
+		AssertAlways(str8_equal(dstr8_peek(&builder2), str8_lit("aaaДbbbccc")));
+		dstr8_remove_codepoint_at_byteoffset(&builder2, 0);
 		AssertAlways(builder2.str == builder2_str);
 		AssertAlways(builder2.count == 10);
 		AssertAlways(builder2.space == 112);
-		AssertAlways(str8_equal(str8_builder_peek(&builder2), str8_lit("aaДbbbccc")));
-		str8_builder_remove_codepoint_at_byteoffset(&builder2, 2);
+		AssertAlways(str8_equal(dstr8_peek(&builder2), str8_lit("aaДbbbccc")));
+		dstr8_remove_codepoint_at_byteoffset(&builder2, 2);
 		AssertAlways(builder2.str == builder2_str);
 		AssertAlways(builder2.count == 8);
 		AssertAlways(builder2.space == 112);
-		AssertAlways(str8_equal(str8_builder_peek(&builder2), str8_lit("aabbbccc")));
-		str8_builder_remove_codepoint_at_byteoffset(&builder2, 5);
+		AssertAlways(str8_equal(dstr8_peek(&builder2), str8_lit("aabbbccc")));
+		dstr8_remove_codepoint_at_byteoffset(&builder2, 5);
 		AssertAlways(builder2.str == builder2_str);
 		AssertAlways(builder2.count == 7);
 		AssertAlways(builder2.space == 112);
-		AssertAlways(str8_equal(str8_builder_peek(&builder2), str8_lit("aabbbcc")));
-		str8_builder_remove_codepoint_at_byteoffset(&builder2, 100); //it should do nothing if byte offset is greater than count
+		AssertAlways(str8_equal(dstr8_peek(&builder2), str8_lit("aabbbcc")));
+		dstr8_remove_codepoint_at_byteoffset(&builder2, 100); //it should do nothing if byte offset is greater than count
 		AssertAlways(builder2.str == builder2_str);
 		AssertAlways(builder2.count == 7);
 		AssertAlways(builder2.space == 112);
-		AssertAlways(str8_equal(str8_builder_peek(&builder2), str8_lit("aabbbcc")));
-		str8_builder_insert_byteoffset(&builder2, 0, str8_lit("Д"));
-		str8_builder_remove_codepoint_at_byteoffset(&builder2, 1); //it should do nothing if byte offset is in a continuation byte
+		AssertAlways(str8_equal(dstr8_peek(&builder2), str8_lit("aabbbcc")));
+		dstr8_insert_byteoffset(&builder2, 0, str8_lit("Д"));
+		dstr8_remove_codepoint_at_byteoffset(&builder2, 1); //it should do nothing if byte offset is in a continuation byte
 		AssertAlways(builder2.str == builder2_str);
 		AssertAlways(builder2.count == 9);
 		AssertAlways(builder2.space == 112);
-		AssertAlways(str8_equal(str8_builder_peek(&builder2), str8_lit("Дaabbbcc")));
+		AssertAlways(str8_equal(dstr8_peek(&builder2), str8_lit("Дaabbbcc")));
 		
 		print_verbose("[KIGU-TEST] PASSED: unicode/building\n");
 	}

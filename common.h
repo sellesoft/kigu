@@ -340,14 +340,14 @@ struct str8{
 #define str8null str8{0,0}
 };
 
-struct str8_builder{
+struct dstr8{
 	union{
 		struct{u8* str; s64 count;};
 		str8 fin;
 	};
 	s64 space;
 	Allocator* allocator;
-}; typedef str8_builder str8b;
+}; typedef dstr8 str8b;
 
 struct str16{
 	u16* str;

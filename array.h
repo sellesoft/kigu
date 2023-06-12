@@ -83,6 +83,9 @@ StartLinkageC();
 
 
 typedef struct ArrayHeader{
+#ifdef KIGU_ARRAY_MAGIC
+	u64 magic;
+#endif
 	upt count;
 	upt space;
 	Allocator* allocator;
@@ -120,6 +123,9 @@ global void* kigu__array_init(upt type_size, upt count, Allocator* allocator){
 	header->count = 0;
 	header->space = count;
 	header->allocator = allocator;
+#ifdef KIGU_ARRAY_MAGIC
+	header->magic = 0xf0f0f0f0f0f0f0f0
+#endif
 	return header+1;
 }
 
@@ -168,6 +174,7 @@ global void* kigu__array_push(void* array, upt type_size){
 	}
 	
 	//reserve next slot
+	// NOTE(sushi) it appears that this value is never actually used
 	void* item = (u8*)array + header->count*type_size;
 	header->count += 1;
 	

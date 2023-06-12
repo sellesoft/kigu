@@ -71,14 +71,14 @@ Index:
   str8_concat(str8 a, str8 b, Allocator* allocator) -> str8
   str8_concat3(str8 a, str8 b, str8 c, Allocator* allocator) -> str8
   str8_from_cstr(const char* a) -> str8
-  str8_builder_init(str8_builder* builder, str8 initial, Allocator* allocator) -> void
-  str8_builder_fit(str8_builder* builder) -> void
-  str8_builder_append(str8_builder* builder, str8 a) -> void
-  str8_builder_clear(str8_builder* builder) -> void
-  str8_builder_peek(str8_builder* builder) -> str8
-  str8_builder_grow(str8_builder* builder, u64 bytes) -> void
-  str8_builder_insert_byteoffset(str8_builder* builder, u64 byte_offset, str8 a) -> void
-  str8_builder_remove_codepoint_at_byteoffset(str8_builder* builder, u64 byte_offset) -> void
+  dstr8_init(dstr8* builder, str8 initial, Allocator* allocator) -> void
+  dstr8_fit(dstr8* builder) -> void
+  dstr8_append(dstr8* builder, str8 a) -> void
+  dstr8_clear(dstr8* builder) -> void
+  dstr8_peek(dstr8* builder) -> str8
+  dstr8_grow(dstr8* builder, u64 bytes) -> void
+  dstr8_insert_byteoffset(dstr8* builder, u64 byte_offset, str8 a) -> void
+  dstr8_remove_codepoint_at_byteoffset(dstr8* builder, u64 byte_offset) -> void
 @str8_hashing
   str8_static_t
   str8_static_hash64(str8_static_t a, u64 seed) constexpr -> u64
@@ -919,7 +919,7 @@ str8_from_cstr(const char* a){DPZoneScoped;
 
 //Initializes `builder` with the string `initial` using `allocator`
 global void
-str8_builder_init(str8_builder* builder, str8 initial, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
+dstr8_init(dstr8* builder, str8 initial, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	builder->count     = initial.count;
 	builder->space     = RoundUpTo(builder->count+1, KIGU_STR8BUILDER_BYTE_ALIGNMENT);
 	builder->str       = (u8*)allocator->reserve(builder->space*sizeof(u8)); Assert(builder->str, "Failed to allocate memory");
@@ -929,22 +929,21 @@ str8_builder_init(str8_builder* builder, str8 initial, Allocator* allocator = KI
 
 // Deinitializes 'builder'
 global void
-str8_builder_deinit(str8_builder* builder){
+dstr8_deinit(dstr8* builder){
 	builder->allocator->release(builder->str);
 	*builder = {0};
 }
 
 //Fits the allocation of `builder` to its `count` (+1 for null-terminator)
 global void
-str8_builder_fit(str8_builder* builder){DPZoneScoped;
+dstr8_fit(dstr8* builder){DPZoneScoped;
 	builder->space = builder->count+1;
 	builder->str   = (u8*)builder->allocator->resize(builder->str, builder->space*sizeof(u8)); Assert(builder->str, "Failed to allocate memory");
 }
 
 //Appends `a` to the end of `builder`
 global void
-str8_builder_append(str8_builder* builder, str8 a){DPZoneScoped;
-	if(!a) return;
+dstr8_append(dstr8* builder, str8 a){DPZoneScoped;
 	s64 offset = builder->count;
 	builder->count += a.count;
 	if(builder->space < builder->count+1){
@@ -956,20 +955,20 @@ str8_builder_append(str8_builder* builder, str8 a){DPZoneScoped;
 
 //Zeros the allocation of `builder` and sets `count` to `0`, but does not affect `space`
 global void
-str8_builder_clear(str8_builder* builder){DPZoneScoped;
+dstr8_clear(dstr8* builder){DPZoneScoped;
 	ZeroMemory(builder->str, builder->count);
 	builder->count = 0;
 }
 
 //Returns a str8 of the internal string of `builder`
 FORCE_INLINE str8
-str8_builder_peek(str8_builder* builder){DPZoneScoped;
+dstr8_peek(dstr8* builder){DPZoneScoped;
 	return str8{builder->str, builder->count};
 }
 
 //Grows the buffer of `builder` by at least `bytes` (`space` will be aligned to `KIGU_STR8BUILDER_BYTE_ALIGNMENT`)
 global void
-str8_builder_grow(str8_builder* builder, u64 bytes){DPZoneScoped;
+dstr8_grow(dstr8* builder, u64 bytes){DPZoneScoped;
 	if(bytes){
 		builder->space = RoundUpTo(builder->space+bytes, KIGU_STR8BUILDER_BYTE_ALIGNMENT);
 		builder->str   = (u8*)builder->allocator->resize(builder->str, builder->space*sizeof(u8)); Assert(builder->str, "Failed to allocate memory");
@@ -979,10 +978,10 @@ str8_builder_grow(str8_builder* builder, u64 bytes){DPZoneScoped;
 //Inserts the utf8 string `a` at `byte_offset` into the buffer of `builder`
 //    does no error checking to see if `byte_offset` is in the middle of a multi-byte codepoint
 global void
-str8_builder_insert_byteoffset(str8_builder* builder, u64 byte_offset, str8 a){DPZoneScoped;
+dstr8_insert_byteoffset(dstr8* builder, u64 byte_offset, str8 a){DPZoneScoped;
 	if(a && byte_offset <= builder->count){
 		s64 required_space = builder->count + a.count + 1;
-		if(required_space > builder->space) str8_builder_grow(builder, required_space - builder->space);
+		if(required_space > builder->space) dstr8_grow(builder, required_space - builder->space);
 		MoveMemory(builder->str + byte_offset + a.count, builder->str + byte_offset, ((builder->count - byte_offset) + 1)*sizeof(u8));
 		CopyMemory(builder->str + byte_offset,           a.str,                      a.count*sizeof(u8));
 		builder->count += a.count;
@@ -990,9 +989,9 @@ str8_builder_insert_byteoffset(str8_builder* builder, u64 byte_offset, str8 a){D
 }
 
 //Removes one codepoint starting at `byte_offset` into the buffer of `builder`
-//    does nothing if `byte_offset` is greater than `str8_builder.count` or `byte_offset` is a UTF8 continuation byte
+//    does nothing if `byte_offset` is greater than `dstr8.count` or `byte_offset` is a UTF8 continuation byte
 global u64
-str8_builder_remove_codepoint_at_byteoffset(str8_builder* builder, u64 byte_offset){DPZoneScoped;
+dstr8_remove_codepoint_at_byteoffset(dstr8* builder, u64 byte_offset){DPZoneScoped;
 	if((byte_offset < builder->count) && !utf8_continuation_byte(*(builder->str+byte_offset))){
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(builder->str + byte_offset, 4);
 		CopyMemory(builder->str + byte_offset, builder->str + byte_offset + decoded.advance, builder->count - byte_offset);
@@ -1004,23 +1003,23 @@ str8_builder_remove_codepoint_at_byteoffset(str8_builder* builder, u64 byte_offs
 
 // template<class... T> global str8
 // ToString8(Allocator* allocator, T... args){DPZoneScoped;
-// 	str8b str; str8_builder_init(&str, {0}, allocator);
+// 	str8b str; dstr8_init(&str, {0}, allocator);
 // 	constexpr auto arg_count{sizeof...(T)};
 // 	str8 arr[arg_count] = {to_str8(args, allocator)...};
-// 	forI(arg_count) str8_builder_append(&str, arr[i]);
+// 	forI(arg_count) dstr8_append(&str, arr[i]);
 // 	return str.fin;
 // }
 
 template<class... T> global void
-str8_builder_append(str8_builder* builder, T... args){DPZoneScoped;
+dstr8_append(dstr8* builder, T... args){DPZoneScoped;
 	constexpr auto arg_count{sizeof...(T)};
 	str8 arr[arg_count] = {to_str8(args, builder->allocator)...};
-	forI(arg_count) str8_builder_append(builder, arr[i]);
+	forI(arg_count) dstr8_append(builder, arr[i]);
 }
 
 // replaces all instances of the codepoint 'find' with a different codepoint
 global
-void str8_builder_replace_codepoint(str8_builder* builder, u32 find, u32 replace){
+void dstr8_replace_codepoint(dstr8* builder, u32 find, u32 replace){
 	str8 parse = builder->fin;
 	u32 offset = 0;
 	while(parse){
