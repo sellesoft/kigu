@@ -160,8 +160,8 @@ ToString(T... args){DPZoneScoped;
 /////////////////////
 //// @to_string8 ////
 /////////////////////
-template<typename T> global str8
-to_str8(T x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
+template<typename T> global dstr8
+to_dstr8(T x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	dstr8 builder = {};
 	builder.allocator = a;
 	if constexpr      (std::is_same_v<T, char*> || std::is_same_v<T, const char*>){
@@ -227,16 +227,19 @@ to_str8(T x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 		Assert(builder.str, "Failed to allocate memory");
 		snprintf((char*)builder.str, builder.count+1, "{r:%u, g:%u, b:%u, a:%u}", x.r, x.g, x.b, x.a);
 	}
-	return dstr8_peek(&builder);
+	return builder;
 }
 
-template<class... T> global str8
-ToString8(Allocator* allocator, T... args){DPZoneScoped;
-	str8b str; dstr8_init(&str, {0}, allocator);
+template<class... T> global dstr8
+to_dstr8v(Allocator* allocator, T... args){DPZoneScoped;
+	dstr8 str; dstr8_init(&str, {0}, allocator);
 	constexpr auto arg_count{sizeof...(T)};
-	str8 arr[arg_count] = {to_str8(args, allocator)...};
-	forI(arg_count) dstr8_append(&str, arr[i]);
-	return str.fin;
+	dstr8 arr[arg_count] = {to_dstr8(args, allocator)...};
+	forI(arg_count){
+		dstr8_append(&str, arr[i].fin);
+		dstr8_deinit(&arr[i]);
+	} 
+	return str;
 }
 
 ///////////////

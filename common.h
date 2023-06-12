@@ -347,7 +347,7 @@ struct dstr8{
 	};
 	s64 space;
 	Allocator* allocator;
-}; typedef dstr8 str8b;
+};
 
 struct str16{
 	u16* str;

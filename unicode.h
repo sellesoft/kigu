@@ -1002,10 +1002,10 @@ dstr8_remove_codepoint_at_byteoffset(dstr8* builder, u64 byte_offset){DPZoneScop
 }
 
 // template<class... T> global str8
-// ToString8(Allocator* allocator, T... args){DPZoneScoped;
+// to_dstr8v(Allocator* allocator, T... args){DPZoneScoped;
 // 	str8b str; dstr8_init(&str, {0}, allocator);
 // 	constexpr auto arg_count{sizeof...(T)};
-// 	str8 arr[arg_count] = {to_str8(args, allocator)...};
+// 	str8 arr[arg_count] = {to_dstr8(args, allocator)...};
 // 	forI(arg_count) dstr8_append(&str, arr[i]);
 // 	return str.fin;
 // }
@@ -1013,8 +1013,11 @@ dstr8_remove_codepoint_at_byteoffset(dstr8* builder, u64 byte_offset){DPZoneScop
 template<class... T> global void
 dstr8_append(dstr8* builder, T... args){DPZoneScoped;
 	constexpr auto arg_count{sizeof...(T)};
-	str8 arr[arg_count] = {to_str8(args, builder->allocator)...};
-	forI(arg_count) dstr8_append(builder, arr[i]);
+	dstr8 arr[arg_count] = {to_dstr8(args, builder->allocator)...};
+	forI(arg_count){
+		dstr8_append(builder, arr[i].fin);
+		dstr8_deinit(&arr[i]);
+	}
 }
 
 // replaces all instances of the codepoint 'find' with a different codepoint
