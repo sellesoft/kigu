@@ -68,7 +68,6 @@ template<typename T>
 inline void ring_array<T>::init(u32 new_capacity, Allocator* a){
 	allocator = a;
 	data = (T*)allocator->reserve(new_capacity*sizeof(T));
-	allocator->commit(data, new_capacity*sizeof(T));
 	start = 0;
 	end = -1;
 	count = 0;
@@ -209,7 +208,6 @@ template<typename T>
 inline void ring_array<T>::grow(u32 new_capacity){
 	if(new_capacity && new_capacity > capacity){
 		T* temp = (T*)allocator->reserve(new_capacity*sizeof(T));
-		allocator->commit(data, new_capacity*sizeof(T));
 		if(count){
 			memcpy(temp, data+start, sizeof(T)*(capacity-start));
 			memcpy(temp+(capacity-start), data, sizeof(T)*(start));

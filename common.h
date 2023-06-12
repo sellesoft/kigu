@@ -324,8 +324,6 @@ global void  Allocator_ReleaseMemory_Noop(void* ptr){}
 
 struct Allocator{
 	Allocator_ReserveMemory_Func reserve;  //reserves address space from OS
-	Allocator_ChangeMemory_Func  commit;   //allocates memory from reserved space
-	Allocator_ChangeMemory_Func  decommit; //returns the memory to reserved state
 	Allocator_ReleaseMemory_Func release;  //release the reserved memory back to OS
 	Allocator_ResizeMemory_Func  resize;   //resizes reserved memory and moves memory if a new location is required
 };
@@ -628,8 +626,6 @@ global void  STLAllocator_Release(void* ptr){free(ptr);}
 global void* STLAllocator_Resize(void* ptr, upt size){void* a = realloc(ptr,size); Assert(a); return a;}
 global Allocator stl_allocator_{
 	STLAllocator_Reserve,
-	Allocator_ChangeMemory_Noop,
-	Allocator_ChangeMemory_Noop,
 	STLAllocator_Release,
 	STLAllocator_Resize
 };

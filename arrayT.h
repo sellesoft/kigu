@@ -145,7 +145,6 @@ arrayT(std::initializer_list<T> l, Allocator* a){DPZoneScoped;
 	count = l.size();
 	space = RoundUpTo(l.size(), KIGU_ARRAY_SPACE_ALIGNMENT);
 	data  = (T*)allocator->reserve(space*sizeof(T));
-	allocator->commit(data, count*sizeof(T));
 	
 	forI(l.size()) data[i] = *(l.begin()+i);
 	
@@ -164,7 +163,6 @@ arrayT(const arrayT<T>& array, Allocator* a){DPZoneScoped;
 	count = array.count;
 	space = array.space;
 	data  = (T*)allocator->reserve(space*sizeof(T));
-	allocator->commit(data, count*sizeof(T));
 	
 	forI(array.count) data[i] = array.data[i];
 	
@@ -180,7 +178,6 @@ arrayT(T* _data, u32 _count, Allocator* a){DPZoneScoped;
 	count = _count;
 	space = RoundUpTo(_count, KIGU_ARRAY_SPACE_ALIGNMENT);
 	data  = (T*)allocator->reserve(space*sizeof(T));
-	allocator->commit(data, count*sizeof(T));
 	memcpy(data, _data, _count*sizeof(T));
 	
 	first = data;
@@ -195,7 +192,6 @@ arrayT(carray<T> arr, Allocator* a){DPZoneScoped;
 	count = arr.count;
 	space = RoundUpTo(arr.count, KIGU_ARRAY_SPACE_ALIGNMENT);
 	data  = (T*)allocator->reserve(space*sizeof(T));
-	allocator->commit(data, count*sizeof(T));
 	
 	forI(arr.count) data[i] = arr.data[i];
 	
@@ -229,7 +225,6 @@ operator= (const arrayT<T>& rhs){
 	space = rhs.space;
 	count = rhs.count;
 	data  = (T*)allocator->reserve(space*sizeof(T));
-	allocator->commit(data, count*sizeof(T));
 	
 	forI(rhs.count) data[i] = rhs.data[i];
 	
@@ -265,7 +260,6 @@ add(const T& t){DPZoneScoped;
 	if(space == 0){ //if first item, allocate memory
 		space = KIGU_ARRAY_SPACE_ALIGNMENT;
 		data  = (T*)allocator->reserve(space*sizeof(T));
-		allocator->commit(data, 1*sizeof(T));
 		
 		first = data;
 		iter  = data;
@@ -277,7 +271,6 @@ add(const T& t){DPZoneScoped;
 		space *= KIGU_ARRAY_GROWTH_FACTOR;
 		data = (T*)allocator->resize(data, space*sizeof(T));
 		memset(data+count, 0, (space-count)*sizeof(T)); //NOTE STL doesnt guarantee memory is zero on realloc
-		allocator->commit(data+count, 1*sizeof(T));
 		
 		iter  = data + (iter - first);
 		first = data;
@@ -310,7 +303,6 @@ insert(const T& t, u32 idx){DPZoneScoped;
 	if(space == 0){ //if first item, allocate memory
 		space = KIGU_ARRAY_SPACE_ALIGNMENT;
 		data  = (T*)allocator->reserve(space*sizeof(T));
-		allocator->commit(data, 1*sizeof(T));
 		
 		first = data;
 		iter  = data;
@@ -322,7 +314,6 @@ insert(const T& t, u32 idx){DPZoneScoped;
 		space *= KIGU_ARRAY_GROWTH_FACTOR;
 		data = (T*)allocator->resize(data, space*sizeof(T));
 		memset(data+count, 0, (space-count)*sizeof(T)); //NOTE STL doesnt guarantee memory is zero on realloc
-		allocator->commit(data+count, 1*sizeof(T));
 		memmove(data+idx+1, data+idx, (count-idx)*sizeof(T));
 		memset(data+idx, 0, 1*sizeof(T));
 		

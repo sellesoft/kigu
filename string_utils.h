@@ -20,7 +20,6 @@ stringf(const char* fmt, ...){
 	string s;
 	s.count = vsnprintf(nullptr, 0, fmt, argptr);
 	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
-	s.allocator->commit(s.str, s.count+1);
 	s.space = s.count+1;
 	vsnprintf(s.str, s.count+1, fmt, argptr);
 	va_end(argptr);
@@ -34,7 +33,6 @@ stringf(Allocator* a, const char* fmt, ...){
 	string s(a);
 	s.count = vsnprintf(nullptr, 0, fmt, argptr);
 	s.str   = (char*)s.allocator->reserve(s.count+1); Assert(s.str, "Failed to allocate memory");
-	s.allocator->commit(s.str, s.count+1);
 	s.space = s.count+1;
 	vsnprintf(s.str, s.count+1, fmt, argptr);
 	va_end(argptr);

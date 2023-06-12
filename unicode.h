@@ -309,7 +309,6 @@ global str8
 str8_from_str16(str16 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	u64 space = 3*in.count;
 	u8* str = (u8*)allocator->reserve((space+1)*sizeof(u8)); Assert(str, "failed to allocate memory");
-	allocator->commit(str, (space+1)*sizeof(u8));
 	u16* ptr = in.str;
 	u16* opl = ptr + in.count; //one past last
 	s64 size = 0;
@@ -329,7 +328,6 @@ global str8
 str8_from_str32(str32 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	u64 space = 4*in.count;
 	u8* str = (u8*)allocator->reserve((space+1)*sizeof(u8)); Assert(str, "failed to allocate memory");
-	allocator->commit(str, (space+1)*sizeof(u8));
 	u32* ptr = in.str;
 	u32* opl = ptr + in.count; //one past last
 	s64 size = 0;
@@ -362,7 +360,6 @@ global str16
 str16_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	u64 space = 2*in.count;
 	u16* str = (u16*)allocator->reserve((space+1)*sizeof(u16)); Assert(str, "failed to allocate memory");
-	allocator->commit(str, (space+1)*sizeof(u16));
 	u8* ptr = in.str;
 	u8* opl = ptr + in.count; //one past last
 	s64 size = 0;
@@ -382,7 +379,6 @@ global str32
 str32_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
 	u64 space = in.count;
 	u32* str = (u32*)allocator->reserve((space+1)*sizeof(u32)); Assert(str, "failed to allocate memory");
-	allocator->commit(str, (space+1)*sizeof(u32));
 	u8* ptr = in.str;
 	u8* opl = ptr + in.count; //one past last
 	s64 size = 0;

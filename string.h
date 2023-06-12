@@ -94,7 +94,6 @@ inline string::string(const CHAR* s, Allocator* a){
 	count = strlen(s);
 	space = RoundUpTo(count+1, 4);
 	str   = (CHAR*)allocator->reserve(space*CHAR_SIZE); Assert(str, "Failed to allocate memory");
-	allocator->commit(str, space*CHAR_SIZE);
 	memcpy(str, s, count*CHAR_SIZE);
 }
 
@@ -103,7 +102,6 @@ inline string::string(const CHAR* s, u32 _size, Allocator* a){DPZoneScoped;
 	count  = _size;
 	space  = RoundUpTo(count+1, 4);
 	str    = (CHAR*)allocator->reserve(space*CHAR_SIZE); Assert(str, "Failed to allocate memory");
-	allocator->commit(str, space*CHAR_SIZE);
 	memcpy(str, s, count*CHAR_SIZE);
 }
 
@@ -112,7 +110,6 @@ inline string::string(const string& s, Allocator* a){DPZoneScoped;
 	count = s.count;
 	space = RoundUpTo(count + 1, 4);
 	str   = (CHAR*)allocator->reserve(space * CHAR_SIZE); Assert(str, "Failed to allocate memory");
-	allocator->commit(str, space * CHAR_SIZE);
 	memcpy(str, s.str, count * CHAR_SIZE);
 }
 
@@ -121,7 +118,6 @@ inline string::string(const cstring& s, Allocator* a){DPZoneScoped;
 	count = s.count;
 	space = RoundUpTo(count + 1, 4);
 	str   = (CHAR*)allocator->reserve(space * CHAR_SIZE); Assert(str, "Failed to allocate memory");
-	allocator->commit(str, space * CHAR_SIZE);
 	memcpy(str, s.str, count * CHAR_SIZE);
 }
 
@@ -155,7 +151,6 @@ inline void string::operator= (const CHAR* s){DPZoneScoped;
 	count = strlen(s);
 	space = RoundUpTo(count+1, 4);
 	str   = (CHAR*)allocator->reserve(space*CHAR_SIZE); Assert(str, "Failed to allocate memory");
-	allocator->commit(str, space*CHAR_SIZE);
 	memcpy(str, s, count*CHAR_SIZE);
 }
 
@@ -166,7 +161,6 @@ inline void string::operator= (const string& s){DPZoneScoped;
 	count = s.count;
 	space = RoundUpTo(count+1, 4);
 	str   = (CHAR*)allocator->reserve(space*CHAR_SIZE); Assert(str, "Failed to allocate memory");
-	allocator->commit(str, space*CHAR_SIZE); 
 	memcpy(str, s.str, count*CHAR_SIZE);
 }
 
@@ -180,7 +174,6 @@ inline void string::operator+=(const CHAR* s){DPZoneScoped;
 	if(space == 0){
 		space = RoundUpTo(count+1, 4);
 		str   = (CHAR*)allocator->reserve(space*CHAR_SIZE); Assert(str, "Failed to allocate memory");
-		allocator->commit(str, space*CHAR_SIZE);
 		memcpy(str, s, count*CHAR_SIZE);
 	}else if(space < count+1){
 		space = RoundUpTo(count+1, 4);
@@ -201,7 +194,6 @@ inline void string::operator+=(const string& s){DPZoneScoped;
 	if(space == 0){
 		space = RoundUpTo(count+1, 4);
 		str = (CHAR*)allocator->reserve(space*CHAR_SIZE); Assert(str, "Failed to allocate memory");
-		allocator->commit(str, space*CHAR_SIZE);
 		memcpy(str, s.str, count*CHAR_SIZE);
 	}else if(space < count+1){
 		space = RoundUpTo(count+1, 4);
@@ -227,7 +219,6 @@ inline string string::operator+ (const CHAR* c) const{DPZoneScoped;
 	result.count  = count + str_len;
 	result.space = RoundUpTo(result.count+1, 4);
 	result.str = (CHAR*)result.allocator->reserve(result.space*CHAR_SIZE); Assert(result.str, "Failed to allocate memory");
-	result.allocator->commit(result.str, result.space*CHAR_SIZE);
 	memcpy(result.str,       str, count*CHAR_SIZE);
 	memcpy(result.str+count, c,   str_len*CHAR_SIZE);
 	return result;
@@ -240,7 +231,6 @@ inline string string::operator+(const string& s) const{DPZoneScoped;
 	result.count  = count + s.count;
 	result.space = RoundUpTo(result.count+1, 4);
 	result.str = (CHAR*)result.allocator->reserve(result.space*CHAR_SIZE); Assert(result.str, "Failed to allocate memory");
-	result.allocator->commit(result.str, result.space*CHAR_SIZE);
 	memcpy(result.str,       str,   count*CHAR_SIZE);
 	memcpy(result.str+count, s.str, s.count*CHAR_SIZE);
 	return result;
@@ -305,7 +295,6 @@ inline void string::insert(CHAR c, u32 idx){DPZoneScoped;
 	if(space == 0){
 		space = 4;
 		str = (CHAR*)allocator->reserve(space*CHAR_SIZE); Assert(str, "Failed to allocate memory");
-		allocator->commit(str, space*CHAR_SIZE);
 		str[0] = c;
 	}else if(space < count+1){
 		space = RoundUpTo(count+1, 4);
