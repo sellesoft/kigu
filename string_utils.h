@@ -162,7 +162,7 @@ template<typename T> global dstr8
 to_dstr8(T x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 	dstr8 builder = {};
 	builder.allocator = a;
-	if constexpr      (std::is_same_v<T, char*> || std::is_same_v<T, const char*>){
+	if       constexpr(std::is_same_v<T, char*> || std::is_same_v<T, const char*>){
 		dstr8_init(&builder, {(u8*)x, (s64)strlen(x)}, a);
 	}else if constexpr(std::is_same_v<T, str8> || std::is_same_v<T, const str8&>){
 		dstr8_init(&builder, x, a);
@@ -232,7 +232,7 @@ template<class... T> global dstr8
 to_dstr8v(Allocator* allocator, T... args){DPZoneScoped;
 	dstr8 str; dstr8_init(&str, {0}, allocator);
 	constexpr auto arg_count{sizeof...(T)};
-	dstr8 arr[arg_count] = {to_dstr8(args, allocator)...};
+	dstr8 arr[arg_count] = { to_dstr8(args, allocator)... };
 	forI(arg_count){
 		dstr8_append(&str, arr[i].fin);
 		dstr8_deinit(&arr[i]);

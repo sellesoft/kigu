@@ -25,6 +25,8 @@ class str8_printer:
         if c == 0:
             return "\"\""
         s = str(self.val['str']).split('"')[1][:min(c,32)] 
+        if s is None:
+            return "{error}"
         if c > 32:
             s += "..."
         return f"\"{s}\""
