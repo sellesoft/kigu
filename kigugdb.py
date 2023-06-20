@@ -19,18 +19,22 @@ class str8_printer:
         self.val = val
 
     def to_string(self):
-        if not self.val['str']:
+        if not self.val['str'] or not self.val['count']:
             return "{empty}"
         c = self.val['count']
-        if c == 0:
-            return "\"\""
-        s = str(self.val['str']).split('"')[1][:min(c,32)] 
+        s = str(self.val['str']).split('"')[1] 
         if s is None:
             return "{error}"
-        if c > 32:
-            s += "..."
         return f"\"{s}\""
 pp.add_printer("str8", "^str8$", str8_printer)
+
+class dstr8_printer:
+    def __init__(self, val):
+        self.val = val
+    
+    def to_string(self):
+        return f"{self.val['fin']}"
+pp.add_printer("dstr8", "^dstr8$", dstr8_printer)
 
 class kigu_array_printer:
     def __init__(self,val):
