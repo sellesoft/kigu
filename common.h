@@ -191,6 +191,7 @@
 ///////////////////////// //NOTE this file is included is almost every other file of the project, so be frugal with includes here
 //// common includes ////
 /////////////////////////
+#include <stdio.h>
 #include <stddef.h> //size_t, ptrdiff_t
 #include <stdlib.h> //malloc, calloc, free
 #include <stdarg.h> //va_start, va_list, va_arg, va_end
@@ -338,6 +339,10 @@ struct str8{
 #define STR8(s) str8{(u8*)GLUE(u8,s), sizeof(GLUE(u8,s))-1}
 #define str8null str8{0,0}
 };
+
+#ifndef KIGU_STRING_ALLOCATOR
+#define KIGU_STRING_ALLOCATOR stl_allocator
+#endif
 
 struct dstr8{
 	union{

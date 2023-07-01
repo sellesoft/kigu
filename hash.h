@@ -52,19 +52,6 @@ struct hash {
 };
 
 template<> 
-struct hash<string> {
-	inline u32 operator()(const string& s) {DPZoneScoped;
-		u32 seed = 2166136261;
-		u32 size = s.count+1;
-		while (size-- != 0) {
-			seed ^= s.str[size];
-			seed *= 16777619;
-		}
-		return seed;
-	}
-};
-
-template<> 
 struct hash<str8> {
 	inline u32 operator()(str8 s) {DPZoneScoped;
 		return str8_hash64(s);

@@ -52,4 +52,7 @@ class print_kigu_array(gdb.Command):
         gdb.execute(f"p *{arg}@{count}")
 print_kigu_array()
 
+gdb.printing.register_pretty_printer(gdb.current_objfile(), pp)
+
+
         
