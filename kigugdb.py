@@ -19,13 +19,16 @@ class str8_printer:
         self.val = val
 
     def to_string(self):
-        if not self.val['str'] or not self.val['count']:
-            return "{empty}"
-        c = self.val['count']
-        s = str(self.val['str']).split('"')[1] 
-        if s is None:
-            return "{error}"
-        return f"\"{s}\""
+        try:
+            if not self.val['str'] or not self.val['count']:
+                return "{empty}"
+            c = self.val['count']
+            s = str(self.val['str']).split('"')[1] 
+            if s is None:
+                return "{error}"
+            return f"\"{s[:c]}\""
+        except Exception as e:
+            print(f"error: {e}")
 pp.add_printer("str8", "^str8$", str8_printer)
 
 class dstr8_printer:
