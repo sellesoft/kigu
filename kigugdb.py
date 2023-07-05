@@ -23,10 +23,16 @@ class str8_printer:
             if not self.val['str'] or not self.val['count']:
                 return "{empty}"
             c = self.val['count']
-            s = str(self.val['str']).split('"')[1] 
+            s = str(self.val['str'])
+            s = s[s.find('"'):]
             if s is None:
                 return "{error}"
-            return f"\"{s[:c]}\""
+            i = 0
+            while i < c:
+                if s[i] == '\\':
+                    c += 1
+                i += 1
+            return f"\"{s[1:c+1]}\""
         except Exception as e:
             print(f"error: {e}")
 pp.add_printer("str8", "^str8$", str8_printer)
