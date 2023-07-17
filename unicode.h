@@ -106,7 +106,9 @@ https://unicode-table.com/
 
 
 #ifdef TRACY_ENABLE
-#include "Tracy.hpp"
+#undef global
+#include "tracy/Tracy.hpp"
+#define global static
 #endif
 
 #ifndef KIGU_UNICODE_ALLOCATOR

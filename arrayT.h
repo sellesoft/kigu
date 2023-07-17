@@ -13,7 +13,7 @@
 #endif
 
 #ifdef TRACY_ENABLE
-#include "Tracy.hpp"
+#include "tracy/Tracy.hpp"
 #endif
 
 #include "common.h"
