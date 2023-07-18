@@ -4,6 +4,12 @@
 
 import gdb
 pp = gdb.printing.RegexpCollectionPrettyPrinter("kigu")
+import time
+
+def dbgmsg(s):
+    t = time.perf_counter()
+    gdb.write(f"dbg:{t}: {s}"); gdb.flush()
+
 
 class color_printer:
     def __init__(self, val):
@@ -18,6 +24,10 @@ class str8_printer:
     def __init__(self, val):
         self.val = val
 
+    # TODO(sushi) this needs to be changed to directly read the string's 'str' value'
+    #             in memory so that we only extract 'count' amount of memory
+    #             so when we have a 10k line file with a str8 pointing into it,
+    #             we dont read the entire file 
     def to_string(self):
         try:
             if not self.val['str'] or not self.val['count']:
@@ -34,7 +44,7 @@ class str8_printer:
                 i += 1
             return f"\"{s[1:c+1]}\""
         except Exception as e:
-            print(f"error: {e}")
+            print(f"{self.__class__.__name__} error: {e}")
 pp.add_printer("str8", "^str8$", str8_printer)
 
 class dstr8_printer:
