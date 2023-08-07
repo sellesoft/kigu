@@ -357,6 +357,18 @@ str8_from_wchar(wchar_t* in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZo
 #endif
 }
 
+//Converts and returns a utf8 string from the wchar_t string `in` of size `in_count` using `allocator`
+global str8
+str8_from_counted_wchar(wchar_t* in, s64 in_count, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
+#if COMPILER_CL
+	return str8_from_str16(str16{(u16*)in, in_count}, allocator);
+#elif COMPILER_CLANG || COMPILER_GCC
+	return str8_from_str32(str32{(u32*)in, in_count}, allocator);
+#else
+#  error "unhandled compiler"
+#endif
+}
+
 //Converts and returns a utf16 string from the utf8 string `in` using `allocator`
 global str16
 str16_from_str8(str8 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
