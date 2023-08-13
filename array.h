@@ -36,6 +36,8 @@ INDEX:
   array_create(T type, upt count, Allocator* allocator) -> void
   array_deinit(T* array) -> void
 @array_modify
+  array_grow(T* array, upt count) -> T*
+  array_clear(T* array) -> void
   array_push(T* array) -> T*
   array_push_value(T* array, T value) -> T*
   array_pop(T* array) -> void
@@ -158,6 +160,15 @@ global void* kigu__array_grow(void* array, upt type_size, upt count){
 	
 	//copy old array to new array
 	return header+1;
+}
+
+
+//Clears the `array` by zeroing the used memory, setting the `count` to zero, and leaving the `space` alone
+#define array_clear(array) kigu__array_clear((array), sizeof(*(array)))
+global void kigu__array_clear(void* array, upt type_size){
+	ArrayHeader* header = array_header(array);
+	ZeroMemory(array, header->count*type_size);
+	header->count = 0;
 }
 
 
