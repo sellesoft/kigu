@@ -13,7 +13,7 @@
 #define COLORU32_GSHIFT 8
 #define COLORU32_BSHIFT 16
 #define COLORU32_ASHIFT 24
-#define PackColorU32(R,G,B,A) PackU32(R,G,B,A)
+#define PackColorU32(R,G,B,A) PackU32(A,B,G,R)
 
 #define randcolor color(rand() % 255, rand() % 255, rand() % 255)
 
