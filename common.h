@@ -467,6 +467,7 @@ global_const u64 wcharsize = sizeof(wchar);
 #define ToggleBool(variable) variable = !variable
 #define ArrayCount(arr) (sizeof((arr)) / sizeof(((arr))[0])) //length of a static-size c-array
 #define RoundUpTo(value,multiple) (((upt)((value) + (((upt)(multiple))-1)) / (upt)(multiple)) * (upt)(multiple))
+#define RoundDownTo(value,multiple) ((upt)(value) - (((upt)(value)) % (upt)(multiple)))
 #define AlignToPow2(value,power) (((value) + ((power)-1)) & ~((power)-1))
 #define PackU32(x,y,z,w) (((u32)(x) << 24) | ((u32)(y) << 16) | ((u32)(z) << 8) | ((u32)(w) << 0))
 
