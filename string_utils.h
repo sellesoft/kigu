@@ -110,6 +110,8 @@ to_dstr8(T x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 		builder.str   = (u8*)a->reserve(builder.count+1);
 		Assert(builder.str, "Failed to allocate memory");
 		snprintf((char*)builder.str, builder.count+1, "{r:%u, g:%u, b:%u, a:%u}", x.r, x.g, x.b, x.a);
+	} else {
+		Assert(0, "unhandled to_dstr8 case");
 	}
 	return builder;
 }
