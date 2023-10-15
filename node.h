@@ -157,4 +157,61 @@ global void remove(TNode* node) {
 	remove_horizontally(node);
 }
 
+// replaces the node 'below' with 'above' and inserts
+// 'below' into 'above's children
+global void 
+insert_above(TNode* below, TNode* above) {
+	if(!below->parent) {
+		change_parent(above, below);
+		return;
+	}
+	TNode copy = *below;
+	copy.parent->child_count++;
+	change_parent(0, below);
+
+	if(copy.parent){
+		above->parent = copy.parent;
+		
+		if(copy.next && copy.prev){
+			insert_after(copy.prev, above);
+		}else if( copy.next && !copy.prev){
+			insert_before(copy.next, above);
+			copy.parent->first_child = above;
+		}else if(!copy.next &&  copy.prev){
+			insert_after(copy.prev, above);
+			copy.parent->last_child = above;
+		}else{
+			copy.parent->first_child = copy.parent->last_child = above;
+		}
+	}
+
+	change_parent(above, below);
+}
+
+global void
+replace(TNode* with, TNode* me) {
+	TNode* my = me;
+	TNode* their = with;
+
+	*their = *my;
+
+	for(TNode* n = my->first_child; n; n = n->next) {
+		n->parent = their;
+	}
+
+	if(my->parent) {
+		if(my->parent->first_child == my) {
+			my->parent->first_child = their;
+		} 
+		if(my->parent->last_child == my) {
+			my->parent->last_child = their;
+		}
+	}
+
+	if(my->prev) my->prev->next = their;
+	if(my->next) my->next->prev = their;
+	
+	*me = {0};
+}
+
 #endif //KIGU_NODE_H
