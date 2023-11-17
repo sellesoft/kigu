@@ -41,6 +41,10 @@ stod(char* s) {
 FORCE_INLINE f64 stod(cstring s){ return stod(s.str); }
 FORCE_INLINE f64 stod(str8 s){ return stod((char*)s.str); }
 
+// https://stackoverflow.com/questions/301330/determine-if-type-is-a-pointer-in-a-template-function
+template<typename T> struct is_ptr { static const bool value = false; };
+template<typename T> struct is_ptr<T*> { static const bool value = true; };
+
 /////////////////////
 //// @to_string8 ////
 /////////////////////
@@ -52,9 +56,13 @@ to_dstr8(T x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 		dstr8_init(&builder, {(u8*)x, (s64)strlen(x)}, a);
 	}else if constexpr(std::is_same_v<T, str8> || std::is_same_v<T, const str8&>){
 		dstr8_init(&builder, x, a);
+	}else if constexpr(std::is_same_v<T, dstr8>) {
+		dstr8_init(&builder, x.fin, a);
 	}else if constexpr(std::is_same_v<T, const std::string&>){
 		dstr8_init(&builder, {(u8*)x.c_str(), (s64)x.size()}, a);
 	}else if constexpr(std::is_same_v<T, char>){
+		dstr8_init(&builder, {(u8*)&x, 1}, a);
+	}else if constexpr(std::is_same_v<T, unsigned char>) {
 		dstr8_init(&builder, {(u8*)&x, 1}, a);
 	}else if constexpr(std::is_same_v<T, s32>){
 		builder.count = snprintf(nullptr, 0, "%d", x);
@@ -110,6 +118,12 @@ to_dstr8(T x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 		builder.str   = (u8*)a->reserve(builder.count+1);
 		Assert(builder.str, "Failed to allocate memory");
 		snprintf((char*)builder.str, builder.count+1, "{r:%u, g:%u, b:%u, a:%u}", x.r, x.g, x.b, x.a);
+	} else if constexpr(is_ptr<T>::value) {
+		builder.count = snprintf(nullptr, 0, "%p", (void*)x);
+		builder.space = builder.count + 1;
+		builder.str = (u8*)a->reserve(builder.count+1);
+		Assert(builder.str, "Failed to allocate memory");
+		snprintf((char*)builder.str, builder.count+1, "%p", (void*)x);
 	} else {
 		Assert(0, "unhandled to_dstr8 case");
 	}
