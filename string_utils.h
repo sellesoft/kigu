@@ -106,25 +106,19 @@ to_dstr8(T x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
 		builder.str   = (u8*)a->reserve(builder.count+1);
 		Assert(builder.str, "Failed to allocate memory");
 		snprintf((char*)builder.str, builder.count+1, "%zu", x);
-	}else if constexpr(std::is_same_v<T, void*>){
-		builder.count = snprintf(nullptr, 0, "%p", x);
-		builder.space = builder.count+1;
-		builder.str   = (u8*)a->reserve(builder.count+1);
-		Assert(builder.str, "Failed to allocate memory");
-		snprintf((char*)builder.str, builder.count+1, "%p", x);
 	}else if constexpr(std::is_same_v<T, color> || std::is_same_v<T, const color&>){
 		builder.count = snprintf(nullptr, 0, "{r:%u, g:%u, b:%u, a:%u}", x.r, x.g, x.b, x.a);
 		builder.space = builder.count+1;
 		builder.str   = (u8*)a->reserve(builder.count+1);
 		Assert(builder.str, "Failed to allocate memory");
 		snprintf((char*)builder.str, builder.count+1, "{r:%u, g:%u, b:%u, a:%u}", x.r, x.g, x.b, x.a);
-	} else if constexpr(is_ptr<T>::value) {
-		builder.count = snprintf(nullptr, 0, "%p", (void*)x);
-		builder.space = builder.count + 1;
-		builder.str = (u8*)a->reserve(builder.count+1);
+	}else if constexpr(std::is_pointer_v<T>){
+		builder.count = snprintf(nullptr, 0, "%p", x);
+		builder.space = builder.count+1;
+		builder.str   = (u8*)a->reserve(builder.count+1);
 		Assert(builder.str, "Failed to allocate memory");
-		snprintf((char*)builder.str, builder.count+1, "%p", (void*)x);
-	} else {
+		snprintf((char*)builder.str, builder.count+1, "%p", x);
+	}else{
 		Assert(0, "unhandled to_dstr8 case");
 	}
 	return builder;
