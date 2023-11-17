@@ -221,8 +221,12 @@
 #  define ByteSwap64(x) _byteswap_uint64(x)
 #elif COMPILER_CLANG || COMPILER_GCC
 #  define FORCE_INLINE inline __attribute__((always_inline))
-#include "signal.h"
-#  define DebugBreakpoint raise(SIGTRAP)
+#  if defined(__i386__) || defined(__x86_64__)
+#    define DebugBreakpoint __builtin_debugtrap()
+#  else
+#    include "signal.h"
+#    define DebugBreakpoint raise(SIGTRAP)
+#  endif
 #  define ByteSwap16(x) __builtin_bswap16(x)
 #  define ByteSwap32(x) __builtin_bswap32(x)
 #  define ByteSwap64(x) __builtin_bswap64(x)
@@ -501,7 +505,6 @@ global_const u64 wcharsize = sizeof(wchar);
 #define ENUM_LIST(list_name, list_macro)                           \
   typedef enum list_name{ list_macro( ENUM_LIST_ENUM ) }list_name; \
   str8 list_name##_strings[] = { list_macro( ENUM_LIST_STRING ) }
-
 
 //// linkage macros ////
 #if COMPILER_FEATURE_CPP
