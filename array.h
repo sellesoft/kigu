@@ -354,7 +354,11 @@ struct array {
 	// Destroy this array, freeing its memory.
 	void
 	destroy();
-	
+		
+	// Push a new element to the end of the array and return a pointer to it.
+	T*
+	push();
+
 	// Push a value to the end of the array
 	void
 	push(const T& v);
@@ -454,6 +458,11 @@ from(T* ptr) {
 template<typename T> void array<T>::
 destroy() {
 	array_deinit(ptr);
+}
+
+template<typename T> T* array<T>::
+push() {
+	return array_push(ptr);
 }
 
 template<typename T> void array<T>::
