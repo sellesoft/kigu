@@ -516,7 +516,7 @@ recount(u32 n) {
 
 template<typename T> u32 array<T>::
 count() {
-	return array_count(ptr);
+	return (ptr? array_count(ptr) : 0);
 }
 
 template<typename T> u32 array<T>::
@@ -580,6 +580,11 @@ array_copy(T* ptr) {
 	forI(out.count())
 		out[i] = ptr[i];
 	return out;
+}
+
+template<typename T> void
+array_init_with_elements(T*& ptr, std::initializer_list<T> l, Allocator* a = KIGU_ARRAY_ALLOCATOR) {
+	ptr = array<T>::create(l, a).ptr;
 }
 
 #endif
