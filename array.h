@@ -19,8 +19,8 @@ structure, we rely on kigu's common.h which defines an Allocator struct used all
 
 NOTES:
 - None of the functions do error checking on the values you give them.
+- The space of an array doubles in size if necessary when pushing new slots.
 - Memory movement and copying operations don't call C++ constructors or destructor, just pure memory copying.
-- The default growth factor is 2, but this can be changed by defining the macro KIGU_ARRAY_GROWTH_FACTOR.
 - Allocation does not zero the memory of new slots as that is left up to the allocator provided (popping and inserting does though).
 
 INDEX:
@@ -49,6 +49,8 @@ INDEX:
   for_array(array){ it... }
   for_array(var, array){ var... }
 @array_wrappers
+@array_shorthands
+@array_cpp
 @array_tests
 @array_license
 
@@ -66,15 +68,10 @@ https://github.com/Jai-Community/Jai-Community-Library/wiki/Getting-Started#for_
 LICENSE:
 Placed in the public domain and also MIT licensed. See end of file for detailed license information.
 */
-
-
 #pragma once
 #ifndef KIGU_ARRAY_H
 #define KIGU_ARRAY_H
 
-#ifndef KIGU_ARRAY_GROWTH_FACTOR
-#  define KIGU_ARRAY_GROWTH_FACTOR 2
-#endif
 
 #include "common.h"
 
@@ -87,7 +84,7 @@ StartLinkageC();
 typedef struct ArrayHeader{
 #ifdef KIGU_ARRAY_MAGIC
 	u64 magic;
-#endif
+#endif //#ifdef KIGU_ARRAY_MAGIC
 	upt count;
 	upt space;
 	Allocator* allocator;
@@ -119,15 +116,16 @@ typedef struct ArrayHeader{
 
 
 //Assigns `array` to an allocation of `count` contiguous slots allocated using `allocator`
+//
 #define array_init(array,count,allocator) ((array) = kigu__array_init_wrapper((array), sizeof(*(array)), (count), (allocator)))
 global void* kigu__array_init(upt type_size, upt count, Allocator* allocator){
 	ArrayHeader* header = (ArrayHeader*)allocator->reserve(sizeof(ArrayHeader) + count*type_size);
+#ifdef KIGU_ARRAY_MAGIC
+	header->magic = 0xf0f0f0f0f0f0f0f0;
+#endif //#ifdef KIGU_ARRAY_MAGIC
 	header->count = 0;
 	header->space = count;
 	header->allocator = allocator;
-#ifdef KIGU_ARRAY_MAGIC
-	header->magic = 0xf0f0f0f0f0f0f0f0
-#endif
 	return header+1;
 }
 
@@ -180,13 +178,11 @@ global void* kigu__array_push(void* array, upt type_size){
 	
 	//grow if needed
 	if(header->count >= header->space){
-		array = kigu__array_grow(array, type_size, header->count*KIGU_ARRAY_GROWTH_FACTOR);
+		array = kigu__array_grow(array, type_size, Max(header->count, 1));
 		header = array_header(array);
 	}
 	
 	//reserve next slot
-	// NOTE(sushi) it appears that this value is never actually used
-	void* item = (u8*)array + header->count*type_size;
 	header->count += 1;
 	
 	//return the array incase it's moved
@@ -212,7 +208,7 @@ global void* kigu__array_insert(void* array, upt type_size, upt index){
 	
 	//grow if needed
 	if(header->count >= header->space){
-		array = kigu__array_grow(array, type_size, header->count*KIGU_ARRAY_GROWTH_FACTOR);
+		array = kigu__array_grow(array, type_size, Max(header->count, 1));
 		header = array_header(array);
 	}
 	header->count += 1;
@@ -273,10 +269,10 @@ global void kigu__array_remove_unordered(void* array, upt type_size, upt index){
 #if COMPILER_FEATURE_TYPEOF
 #  define for_array(array) for(typeof(*(array))* it = (array); it < ((array) + array_count(array)); ++it)
 #  define forX_array(var,array) for(typeof(*(array))* var = (array); var < ((array) + array_count(array)); ++var)
-#elif COMPILER_FEATURE_CPP_AUTO
+#elif COMPILER_FEATURE_CPP_AUTO //#if COMPILER_FEATURE_TYPEOF
 #  define for_array(array) for(auto it = (array); it < ((array) + array_count(array)); ++it)
 #  define forX_array(var,array) for(auto var = (array); var < ((array) + array_count(array)); ++var)
-#endif //#if COMPILER_FEATURE_TYPEOF
+#endif //#elif COMPILER_FEATURE_CPP_AUTO //#if COMPILER_FEATURE_TYPEOF
 
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
@@ -291,257 +287,229 @@ template<class T> FORCE_INLINE T* kigu__array_grow_wrapper(T* array, upt type_si
 template<class T> FORCE_INLINE T* kigu__array_push_wrapper(T* array, upt type_size){ return (T*)kigu__array_push(array, type_size); }
 template<class T> FORCE_INLINE T* kigu__array_insert_wrapper(T* array, upt type_size, upt index){ return (T*)kigu__array_insert(array, type_size, index); }
 StartLinkageC();
-#else
+#else //#if COMPILER_FEATURE_CPP
 FORCE_INLINE void* kigu__array_init_wrapper(void* array, upt type_size, upt count, Allocator* allocator){ return  kigu__array_init(type_size, count, allocator); }
 FORCE_INLINE void* kigu__array_grow_wrapper(void* array, upt type_size, upt count){ return kigu__array_grow(array, type_size, count); }
 FORCE_INLINE void* kigu__array_push_wrapper(void* array, upt type_size){ return kigu__array_push(array, type_size); }
 FORCE_INLINE void* kigu__array_insert_wrapper(void* array, upt type_size, upt index){ return kigu__array_insert(array, type_size, index); }
-#endif //#if COMPILER_FEATURE_CPP
+#endif //#else //#if COMPILER_FEATURE_CPP
+
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @array_shorthands
 
+
 #ifdef KIGU_ARRAY_SHORTHANDS
-#define arrlen(arr)   array_count(arr)
-#define arrspace(arr) array_space(arr)
-#define arrlast(arr) array_last(arr)
-#define arrpush(arr) array_push(arr)
-#define arrpushval(arr,val) array_push_value(arr,val)
-#define arrpop(arr) array_pop(arr)
-#define arrins(arr, idx) array_insert(arr, idx)
-#define arrinsval(arr, idx) array_insert_value(arr, idx, value)
-#define arrrmv(arr, idx) array_remove_unordered(arr, idx)
-#define arrrmvord(arr, idx) array_remove_ordered(arr,idx)
-#endif
+#  define arrlen(arr)   array_count(arr)
+#  define arrspace(arr) array_space(arr)
+#  define arrlast(arr) array_last(arr)
+#  define arrpush(arr) array_push(arr)
+#  define arrpushval(arr,val) array_push_value(arr,val)
+#  define arrpop(arr) array_pop(arr)
+#  define arrins(arr, idx) array_insert(arr, idx)
+#  define arrinsval(arr, idx) array_insert_value(arr, idx, value)
+#  define arrrmv(arr, idx) array_remove_unordered(arr, idx)
+#  define arrrmvord(arr, idx) array_remove_ordered(arr,idx)
+#endif //#ifdef KIGU_ARRAY_SHORTHANDS
+
 
 EndLinkageC();
-
+//-////////////////////////////////////////////////////////////////////////////////////////////////
+//// @array_cpp
 #if COMPILER_FEATURE_CPP
+
+
 #include <initializer_list>
 
-#ifndef KIGU_ARRAY_ALLOCATOR
-#	define KIGU_ARRAY_ALLOCATOR stl_allocator
-#endif
 
-template<typename T>
-struct scoped_array;
+template<typename T> struct scoped_array;
+
+
+#ifndef KIGU_ARRAY_ALLOCATOR
+#  define KIGU_ARRAY_ALLOCATOR stl_allocator
+#endif //#ifndef KIGU_ARRAY_ALLOCATOR
+
 
 // cpp wrapper over kigu array
-template<typename T>
-struct array {
+template<typename T> struct array{
 	T* ptr;
-
-	// Create an empty array with space for one element
-	static FORCE_INLINE array<T> 
-	create(Allocator* a = KIGU_ARRAY_ALLOCATOR);
-
-	// Create an array with space
-	static FORCE_INLINE array<T>
-	create(u32 space, Allocator* a = KIGU_ARRAY_ALLOCATOR);
-
-	// Create an array from an initializer list
-	static array<T>
-	create(std::initializer_list<T> l, Allocator* a = KIGU_ARRAY_ALLOCATOR);
-
-	// Creates an array with 'count' elements zero initialized
-	static array<T>
-	create_with_count(u32 count, Allocator* a = KIGU_ARRAY_ALLOCATOR);
-
-	// Create an array from an already existing kigu array pointer
-	static FORCE_INLINE array<T>
-	from(T* ptr);
-
-	// Destroy this array, freeing its memory.
-	void
-	destroy();
-		
-	// Push a new element to the end of the array and return a pointer to it.
-	T*
-	push();
-
-	// Push a value to the end of the array
-	void
-	push(const T& v);
 	
-	void
-	push(std::initializer_list<T> l);
+	// Create an empty array with space for one element
+	static FORCE_INLINE array<T> create(Allocator* a = KIGU_ARRAY_ALLOCATOR);
+	
+	// Create an array with space
+	static FORCE_INLINE array<T> create(u32 space, Allocator* a = KIGU_ARRAY_ALLOCATOR);
+	
+	// Create an array from an initializer list
+	static array<T> create(std::initializer_list<T> l, Allocator* a = KIGU_ARRAY_ALLOCATOR);
+	
+	// Creates an array with 'count' elements zero initialized
+	static array<T> create_with_count(u32 count, Allocator* a = KIGU_ARRAY_ALLOCATOR);
+	
+	// Create an array from an already existing kigu array pointer
+	static FORCE_INLINE array<T> from(T* ptr);
+	
+	// Destroy this array, freeing its memory.
+	void destroy();
+	
+	// Push a new element to the end of the array and return a pointer to it.
+	T* push();
+	
+	// Push a value to the end of the array
+	void push(const T& v);
+	
+	void push(std::initializer_list<T> l);
 	
 	// Pop 'count' elements from the end of the array returning a copy of the last item.
-	T
-	pop(u32 count = 1);
+	T pop(u32 count = 1);
 	
 	// Inserts 'v' at 'idx'
-	void
-	insert(u32 idx, const T& v);
+	void insert(u32 idx, const T& v);
 	
 	// Removes element at 'idx' and moves all following elements backwards.
-	void
-	remove(u32 idx);
+	void remove(u32 idx);
 	
 	// Removes element at 'idx' and fills the empty slot with the last element.
-	void
-	remove_unordered(u32 idx);
-
+	void remove_unordered(u32 idx);
+	
 	// Removes all elements
-	void
-	clear();
+	void clear();
 	
 	// Resizes the array to hold 'n' elements and 
 	// zero inits any new elements. If n is less than
 	// the amount of already existing items, does nothing.
-	void
-	recount(u32 n);
+	void recount(u32 n);
 	
 	// returns the number of elements currently in the array
-	u32
-	count();
+	u32 count();
 	
 	// returns the amount of space currently allocated for this array
-	u32
-	space();
+	u32 space();
 	
 	// returns a pointer to the last element of the array
-	T*
-	last();
-
+	T* last();
+	
 	T& operator[](u32 i);
 	T  operator[](u32 i) const;
-
-	scoped_array<T> 
-	scoped();
+	
+	scoped_array<T> scoped();
 };
 
-template<typename T> array<T> array<T>::
-create(Allocator* a) {
-	array<T> out = {};
-	array_init(out.ptr, 1, a);
-	return out;
-}
-
-template<typename T> array<T> array<T>::
-create(u32 count, Allocator* a) {
+template<typename T> array<T> array<T>::create(Allocator* a){
 	array<T> out = {};
 	array_init(out.ptr, 0, a);
-	array_grow(out.ptr, count);
 	return out;
 }
 
-template<typename T> array<T> array<T>::
-create(std::initializer_list<T> l, Allocator* a) {
+template<typename T> array<T> array<T>::create(u32 count, Allocator* a){
 	array<T> out = {};
-	array_init(out.ptr, 1, a);
-	array_grow(out.ptr, l.size());
-	array_count(out.ptr) = l.size();
-
-	forI(l.size()) {
-		out.ptr[i] = *(l.begin()+i);
-	}
-
+	array_init(out.ptr, count, a);
 	return out;
 }
 
-template<typename T> array<T> array<T>::
-create_with_count(u32 count, Allocator* a) {
+template<typename T> array<T> array<T>::create(std::initializer_list<T> l, Allocator* a){
+	array<T> out = {};
+	array_init(out.ptr, l.size(), a);
+	array_count(out.ptr) = l.size();
+	forI(l.size()){
+		out.ptr[i] = *(l.begin() + i);
+	}
+	return out;
+}
+
+template<typename T> array<T> array<T>::create_with_count(u32 count, Allocator* a){
 	array<T> out = {};
 	array_init(out.ptr, count, a);
 	array_count(out.ptr) = count;
 	return out;
 }
 
-template<typename T> array<T> array<T>::
-from(T* ptr) {
+template<typename T> array<T> array<T>::from(T* ptr){
 	array<T> out = {};
 	out.ptr = ptr;
 	return out;
 }
 
-template<typename T> void array<T>::
-destroy() {
+template<typename T> void array<T>::destroy(){
 	array_deinit(ptr);
 }
 
-template<typename T> T* array<T>::
-push() {
+template<typename T> T* array<T>::push(){
 	return array_push(ptr);
 }
 
-template<typename T> void array<T>::
-push(const T& v) {
+template<typename T> void array<T>::push(const T& v){
 	array_push_value(ptr, v);
 }
 
-template<typename T> void array<T>::
-push(std::initializer_list<T> l) {
-	forI(l.size()) {
+template<typename T> void array<T>::push(std::initializer_list<T> l){
+	forI(l.size()){
 		push(*(l.begin() + i));
 	}
 }
 
-template<typename T> T array<T>::
-pop(u32 count) {
-	forI(count-1) array_pop(ptr);
+template<typename T> T array<T>::pop(u32 count){
+	forI(count-1){
+		array_pop(ptr);
+	}
 	T out = *ptr[array_count(ptr)-1];
 	array_pop(ptr);
 	return out;
 }
 
-template<typename T> void array<T>::
-insert(u32 idx, const T& v) {
+template<typename T> void array<T>::insert(u32 idx, const T& v){
 	array_insert_value(ptr, idx, v);
 }
 
-template<typename T> void array<T>::
-remove(u32 idx) {
+template<typename T> void array<T>::remove(u32 idx){
 	array_remove_ordered(ptr, idx);
 }
 
-template<typename T> void array<T>::
-remove_unordered(u32 idx) {
+template<typename T> void array<T>::remove_unordered(u32 idx){
 	array_remove_unordered(ptr, idx);
 }
 
-template<typename T> void array<T>::
-clear() {
+template<typename T> void array<T>::clear(){
 	array_clear(ptr);
 }
 
-template<typename T> void array<T>::
-recount(u32 n) {
-	if(n <= count()) return;
-	u32 n_new = n - count();
-	forI(n_new) {
-		*array_push(ptr) = {};
+template<typename T> void array<T>::recount(u32 n){
+	u32 old_count = count();
+	if(n > old_count){
+		forI(n - old_count){
+			*array_push(ptr) = {};
+		}
 	}
 }
 
-template<typename T> u32 array<T>::
-count() {
-	return (ptr? array_count(ptr) : 0);
+template<typename T> u32 array<T>::count(){
+	return (ptr ? array_count(ptr) : 0);
 }
 
-template<typename T> u32 array<T>::
-space() {
+template<typename T> u32 array<T>::space(){
 	return array_space(ptr);
 }
 
-template<typename T> T& array<T>::
-operator[](u32 i) {
+template<typename T> T& array<T>::operator[](u32 i){
 	return ptr[i];
 }
 
-template<typename T> T array<T>::
-operator[](u32 i) const {
+template<typename T> T array<T>::operator[](u32 i)const{
 	return ptr[i];
 }
 
 template<typename T>
-struct scoped_array : public array<T> {
-	scoped_array(const array<T>& in) { CopyMemory(this, (void*)&in, sizeof(array<T>)); }
-	~scoped_array() { this->destroy(); }
+struct scoped_array : public array<T>{
+	scoped_array(const array<T>& in){
+		CopyMemory(this, (void*)&in, sizeof(array<T>));
+	}
+	
+	~scoped_array(){
+		this->destroy();
+	}
 };
 
-template<typename T> scoped_array<T> array<T>::
-scoped() {
+template<typename T> scoped_array<T> array<T>::scoped(){
 	return scoped_array(*this);
 }
 
@@ -550,8 +518,7 @@ scoped() {
 // Note that modifying this array will likely separate it from
 // the pointer it was created from. It should really only 
 // be used to wrap a kigu array for easier reading.
-template<typename T> array<T>
-array_from(T* ptr) {
+template<typename T> array<T> array_from(T* ptr){
 	return array<T>::from(ptr);
 }
 
@@ -560,35 +527,32 @@ array_from(T* ptr) {
 // as arguments to array_push_value (because C sucks really bad), so this is here
 // to prevent writing the extremely ugly 
 //  	*array_push(ptr) = {...};
-template<typename T> void
-array_wrap_and_push(T*& ptr, const T& v) {
+template<typename T> void array_wrap_and_push(T*& ptr, const T& v){
 	array_push_value(ptr, v);
 }
 
 // Util for pushing several values to a kigu array.
-template<typename T> void
-array_wrap_and_push(T*& ptr, std::initializer_list<T> l) {
-	forI(l.size()) {
+template<typename T> void array_wrap_and_push(T*& ptr, std::initializer_list<T> l){
+	forI(l.size()){
 		array_push_value(ptr, *(l.begin()+i));
 	}
 }
 
 // Util for creating a new array with the same contents as the one provided
-template<typename T> array<T>
-array_copy(T* ptr) {
+template<typename T> array<T> array_copy(T* ptr){
 	auto out = array<T>::create_with_count(array_count(ptr), array_allocator(ptr));
-	forI(out.count())
+	forI(out.count()){
 		out[i] = ptr[i];
+	}
 	return out;
 }
 
-template<typename T> void
-array_init_with_elements(T*& ptr, std::initializer_list<T> l, Allocator* a = KIGU_ARRAY_ALLOCATOR) {
+template<typename T> void array_init_with_elements(T*& ptr, std::initializer_list<T> l, Allocator* a = KIGU_ARRAY_ALLOCATOR){
 	ptr = array<T>::create(l, a).ptr;
 }
 
-#endif
 
+#endif //#if COMPILER_FEATURE_CPP
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @array_tests
 #ifdef KIGU_UNIT_TESTS
