@@ -25,6 +25,7 @@ Index:
   wchar_from_codepoint(wchar_t* out, u32 codepoint) -> u32
   utf8_continuation_byte(u8 byte) -> b32
 @utf_conversion
+  str8_from_cstr(const char* a) -> str8
   str8_from_str16(str16 in, Allocator* allocator) -> str8
   str8_from_str32(str32 in, Allocator* allocator) -> str8
   str8_from_wchar(wchar_t* in, Allocator* allocator) -> str8
@@ -70,7 +71,6 @@ Index:
   str8_copy(str8 a, Allocator* allocator) -> str8
   str8_concat(str8 a, str8 b, Allocator* allocator) -> str8
   str8_concat3(str8 a, str8 b, str8 c, Allocator* allocator) -> str8
-  str8_from_cstr(const char* a) -> str8
   dstr8_init(dstr8* builder, str8 initial, Allocator* allocator) -> void
   dstr8_fit(dstr8* builder) -> void
   dstr8_append(dstr8* builder, str8 a) -> void
@@ -306,6 +306,18 @@ utf8_continuation_byte(u8 byte){DPZoneScoped;
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 //// @utf_conversion
+//Returns a utf8 string of the null-terminated C-string `a`
+FORCE_INLINE str8
+str8_from_cstr(const char* a){DPZoneScoped;
+	return str8{(u8*)a, (s64)strlen(a)};
+}
+
+//Returns a utf8 string of the first `count` characters of the null-terminated C-string `a`
+FORCE_INLINE str8
+str8_from_counted_cstr(const char* a, s64 count){DPZoneScoped;
+	return str8{(u8*)a, count};
+}
+
 //Converts and returns a utf8 string from the utf16 string `in` using `allocator`
 global str8
 str8_from_str16(str16 in, Allocator* allocator = KIGU_UNICODE_ALLOCATOR){DPZoneScoped;
@@ -919,12 +931,6 @@ str8_concat3(str8 a, str8 b, str8 c, Allocator* allocator = KIGU_UNICODE_ALLOCAT
 	CopyMemory(result.str+a.count,         b.str, b.count*sizeof(u8));
 	CopyMemory(result.str+a.count+b.count, c.str, c.count*sizeof(u8));
 	return result;
-}
-
-//Allocates and returns a utf8 string of the null-terminated c string `a` using `allocator`
-FORCE_INLINE str8
-str8_from_cstr(const char* a){DPZoneScoped;
-	return str8{(u8*)a, (s64)strlen(a)};
 }
 
 //Initializes `builder` with the string `initial` using `allocator`
