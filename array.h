@@ -115,23 +115,23 @@ typedef struct ArrayHeader{
 //// @array_init
 
 
-//Assigns `array` to an allocation of `count` contiguous slots allocated using `allocator`
+//Assigns `array` to an allocation of `space` contiguous slots allocated using `allocator`
 //
-#define array_init(array,count,allocator) ((array) = kigu__array_init_wrapper((array), sizeof(*(array)), (count), (allocator)))
-global void* kigu__array_init(upt type_size, upt count, Allocator* allocator){
-	ArrayHeader* header = (ArrayHeader*)allocator->reserve(sizeof(ArrayHeader) + count*type_size);
+#define array_init(array,space,allocator) ((array) = kigu__array_init_wrapper((array), sizeof(*(array)), (space), (allocator)))
+global void* kigu__array_init(upt type_size, upt space, Allocator* allocator){
+	ArrayHeader* header = (ArrayHeader*)allocator->reserve(sizeof(ArrayHeader) + space*type_size);
 #ifdef KIGU_ARRAY_MAGIC
 	header->magic = 0xf0f0f0f0f0f0f0f0;
 #endif //#ifdef KIGU_ARRAY_MAGIC
 	header->count = 0;
-	header->space = count;
+	header->space = space;
 	header->allocator = allocator;
 	return header+1;
 }
 
 
-//Creates and returns a `T*` to an allocation of `count` contiguous slots allocated using `allocator`
-#define array_create(T,count,allocator) ((T*)kigu__array_init(sizeof(T), (count), (allocator)))
+//Creates and returns a `T*` to an allocation of `space` contiguous slots allocated using `allocator`
+#define array_create(T,space,allocator) ((T*)kigu__array_init(sizeof(T), (space), (allocator)))
 
 
 //Deallocates `array` using the allocator set on init
@@ -401,9 +401,9 @@ template<typename T> array<T> array<T>::create(Allocator* a){
 	return out;
 }
 
-template<typename T> array<T> array<T>::create(u32 count, Allocator* a){
+template<typename T> array<T> array<T>::create(u32 space, Allocator* a){
 	array<T> out = {};
-	array_init(out.ptr, count, a);
+	array_init(out.ptr, space, a);
 	return out;
 }
 
