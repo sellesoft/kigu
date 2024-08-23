@@ -38,7 +38,9 @@ Index:
   str8_advance(str8* a) -> DecodedCodepoint
   str8_nadvance(str8* a, u64 n) -> DecodedCodepoint
   str8_advance_until(str8* a, u32 c) -> void
+  str8_advance_until_one_of(str8* a, int count, ...) -> void
   str8_advance_while(str8* a, u32 c) -> void
+  str8_advance_beyond(str8* a, u32 c) -> void
 @str8_indexing
   str8_index(str8 a, u64 n) -> DecodedCodepoint
   str8_length(str8 a) -> s64
@@ -66,6 +68,7 @@ Index:
   str8_skip_count(str8 a, u64 n) -> str8
   str8_skip_until(str8 a, u32 c) -> str8
   str8_skip_until_last(str8 a, u32 c) -> str8
+  str8_skip_until_one_of(str8 a, int count, ...) -> str8
   str8_skip_while(str8 a, u32 c) -> str8
 @str8_building
   str8_copy(str8 a, Allocator* allocator) -> str8
@@ -87,9 +90,10 @@ Index:
   str8_valid(str8 a) -> b32
 
 TODOs:
-rename str8_advance to str8_eat and str8_eat to str8_slice. make the new str8_eat return like it currently does but edits the input string
-is there a point in doing non-lazy comparison?
-scanning functions
+- rename str8_advance to str8_eat and str8_eat to str8_slice. make the new str8_eat return like it currently does but edits the input string
+- is there a point in doing non-lazy comparison?
+- scanning functions
+- replace usage of str8's implicit bool function with str8_valid
 
 References:
 https://github.com/Dion-Systems/metadesk/blob/master/source/md.h
@@ -483,7 +487,28 @@ str8_advance_until(str8* a, u32 c){DPZoneScoped;
 	if(a){
 		while(*a){
 			DecodedCodepoint decoded = decoded_codepoint_from_utf8(a->str, 4);
-			if(decoded.codepoint == c) break;
+			if(decoded.codepoint == c) return;
+			str8_increment(a, decoded.advance);
+		}
+	}
+}
+
+//Advances the utf8 string `a` until before the first occurance of the one of the `count` codepoints passed
+//    `count` should equal the number of arguments you pass to the variadic (...)
+//    (...) should only contain characters with the type `char`
+//    if no (...) codepoints are not encountered, `a` is returned
+global void
+str8_advance_until_one_of(str8* a, int count, ...){DPZoneScoped;
+	if(a){
+		while(*a){
+			DecodedCodepoint decoded = decoded_codepoint_from_utf8(a->str, 4);
+			va_list args; va_start(args, count);
+			forI(count){
+				if(decoded.codepoint == (u32)va_arg(args, char)){
+					return;
+				}
+			}
+			va_end(args);
 			str8_increment(a, decoded.advance);
 		}
 	}
@@ -495,8 +520,20 @@ str8_advance_while(str8* a, u32 c){DPZoneScoped;
 	if(a){
 		while(*a){
 			DecodedCodepoint decoded = decoded_codepoint_from_utf8(a->str, 4);
-			if(decoded.codepoint != c) break;
+			if(decoded.codepoint != c) return;
 			str8_increment(a, decoded.advance);
+		}
+	}
+}
+
+//Advances the utf8 string `a` until the codepoint `c` is encountered and advances past that codepoint
+global void
+str8_advance_beyond(str8* a, u32 c){DPZoneScoped;
+	if(a){
+		while(*a){
+			DecodedCodepoint decoded = decoded_codepoint_from_utf8(a->str, 4);
+			str8_increment(a, decoded.advance);
+			if(decoded.codepoint == c) return;
 		}
 	}
 }
@@ -511,7 +548,7 @@ str8_index(str8 a, u64 n){DPZoneScoped;
 	return str8_nadvance(&a, n+1);
 }
 
-//Returns the number of codepoints in the unicode string `a`
+//Returns the number of codepoints in the utf8 string `a`
 global inline s64
 str8_length(str8 a){DPZoneScoped;
 	s64 result = 0;
@@ -620,7 +657,7 @@ utf8_move_back(u8* start){DPZoneScoped;
 //returns the last occurance of 'codepoint' in a string 'a' as a byte offset
 //returns npos if it is not found
 global u32
-str8_find_last(str8 a, u32 codepoint) {DPZoneScoped;
+str8_find_last(str8 a, u32 codepoint){DPZoneScoped;
 	u32 iter = 0;
 	while(iter < a.count){
 		iter += utf8_move_back(a.str+a.count-iter);
@@ -681,6 +718,7 @@ str8_eat_until_last(str8 a, u32 c){DPZoneScoped;
 
 //Returns a slice of the utf8 string `a` ending before the first occurance of the one of the `count` codepoints passed
 //    `count` should equal the number of arguments you pass to the variadic (...)
+//    (...) should only contain characters with the type `char`
 //    if no (...) codepoints are not encountered, `a` is returned
 global str8
 str8_eat_until_one_of(str8 a, int count, ...){DPZoneScoped;
@@ -689,16 +727,14 @@ str8_eat_until_one_of(str8 a, int count, ...){DPZoneScoped;
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(b.str, 4);
 		va_list args; va_start(args, count);
 		forI(count){
-			if(decoded.codepoint == va_arg(args, u32)){
-				goto found_one;
+			if(decoded.codepoint == (u32)va_arg(args, char)){
+				return str8{a.str, a.count-b.count};
 			}
 		}
 		va_end(args);
 		str8_increment(&b, decoded.advance);
 	}
-	found_one:;
-	if(!b) return a;
-	return str8{a.str, a.count-b.count};
+	return a;
 }
 
 //Returns a slice of the utf8 string `a` ending before the first occurance of the string `c`
@@ -831,21 +867,24 @@ str8_skip_until_last(str8 a, u32 c){DPZoneScoped;
 	return b;
 }
 
+//Returns a slice of the utf8 string `a` starting at the last occurance of the one of the `count` codepoints until the end of the string
+//    `count` should equal the number of arguments you pass to the variadic (...)
+//    (...) should only contain characters with the type `char`
+//    if no (...) codepoints are not encountered, `a` is returned
 global str8
-str8_skip_until_one_of(str8 a, int count, ...) {DPZoneScoped;
+str8_skip_until_one_of(str8 a, int count, ...){DPZoneScoped;
 	str8 b = a;
-	while(b) {
+	while(b){
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(b.str, 4);
 		va_list args; va_start(args, count);
 		forI(count){
-			if(decoded.codepoint == va_arg(args, u32)) {
-				goto found_one;
+			if(decoded.codepoint == (u32)va_arg(args, char)){
+				return b;
 			}
 		}
 		va_end(args);
 		str8_increment(&b, decoded.advance);
 	}
-	found_one:;
 	return b;
 }
 
