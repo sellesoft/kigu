@@ -3,7 +3,6 @@
 #define KIGU_COLOR_H
 
 #include "common.h"
-#include "math/vector.h"
 
 #define COLORU32_RMASK 0x000000FF
 #define COLORU32_GMASK 0x0000FF00
