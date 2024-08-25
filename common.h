@@ -317,8 +317,8 @@ typedef void* (*Allocator_ResizeMemory_Func)(void* ptr, upt size);
 global void* Allocator_ReserveMemory_Noop(upt size){return 0;}
 global void* Allocator_ResizeMemory_Noop(void* ptr, upt size){return 0;}
 #else
-global void* Allocator_ReserveMemory_Noop(upt size){}
-global void* Allocator_ResizeMemory_Noop(void* ptr, upt size){}
+global void* Allocator_ReserveMemory_Noop(upt size){return 0;}
+global void* Allocator_ResizeMemory_Noop(void* ptr, upt size){return 0;}
 #endif //#if BUILD_INTERNAL
 global void  Allocator_ChangeMemory_Noop(void* ptr, upt size){}
 global void  Allocator_ReleaseMemory_Noop(void* ptr){}
