@@ -504,7 +504,7 @@ str8_advance_until_one_of(str8* a, int count, ...){DPZoneScoped;
 			DecodedCodepoint decoded = decoded_codepoint_from_utf8(a->str, 4);
 			va_list args; va_start(args, count);
 			forI(count){
-				if(decoded.codepoint == (u32)va_arg(args, char)){
+				if(decoded.codepoint == (u32)va_arg(args, int)){
 					return;
 				}
 			}
@@ -727,7 +727,7 @@ str8_eat_until_one_of(str8 a, int count, ...){DPZoneScoped;
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(b.str, 4);
 		va_list args; va_start(args, count);
 		forI(count){
-			if(decoded.codepoint == (u32)va_arg(args, char)){
+			if(decoded.codepoint == (u32)va_arg(args, int)){
 				return str8{a.str, a.count-b.count};
 			}
 		}
@@ -878,7 +878,7 @@ str8_skip_until_one_of(str8 a, int count, ...){DPZoneScoped;
 		DecodedCodepoint decoded = decoded_codepoint_from_utf8(b.str, 4);
 		va_list args; va_start(args, count);
 		forI(count){
-			if(decoded.codepoint == (u32)va_arg(args, char)){
+			if(decoded.codepoint == (u32)va_arg(args, int)){
 				return b;
 			}
 		}
