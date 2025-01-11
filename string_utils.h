@@ -50,74 +50,51 @@ template<typename T> struct is_ptr<T*> { static const bool value = true; };
 /////////////////////
 template<typename T> global dstr8
 to_dstr8(T x, Allocator* a = KIGU_STRING_ALLOCATOR){DPZoneScoped;
-	dstr8 builder = {};
+	dstr8 builder;
 	builder.allocator = a;
 	if       constexpr(std::is_same_v<T, char*> || std::is_same_v<T, const char*>){
 		dstr8_init(&builder, {(u8*)x, (s64)strlen(x)}, a);
-	}else if constexpr(std::is_same_v<T, str8> || std::is_same_v<T, const str8&>){
-		dstr8_init(&builder, x, a);
-	}else if constexpr(std::is_same_v<T, dstr8>) {
-		dstr8_init(&builder, x.fin, a);
 	}else if constexpr(std::is_same_v<T, const std::string&>){
 		dstr8_init(&builder, {(u8*)x.c_str(), (s64)x.size()}, a);
-	}else if constexpr(std::is_same_v<T, char>){
-		dstr8_init(&builder, {(u8*)&x, 1}, a);
-	}else if constexpr(std::is_same_v<T, unsigned char>) {
-		dstr8_init(&builder, {(u8*)&x, 1}, a);
-	}else if constexpr(std::is_same_v<T, s32>){
-		builder.count = snprintf(nullptr, 0, "%d", x);
+	}else if constexpr(std::is_same_v<T, str8> || std::is_same_v<T, const str8&>){
+		dstr8_init(&builder, x, a);
+	}else if constexpr(std::is_same_v<T, dstr8>){
+		dstr8_init(&builder, dstr8_peek(&x), a);
+	}else if constexpr(std::is_same_v<T, s8> || std::is_same_v<T, s16> || std::is_same_v<T, s32> || std::is_same_v<T, s64>){
+		builder.count = snprintf(nullptr, 0, "%lld", (s64)x);
 		builder.space = builder.count+1;
 		builder.str   = (u8*)a->reserve(builder.count+1);
-		Assert(builder.str, "Failed to allocate memory");
-		snprintf((char*)builder.str, builder.count+1, "%d", x);
-	}else if constexpr(std::is_same_v<T, long>){
-		builder.count = snprintf(nullptr, 0, "%ld", x);
+		if(builder.str != 0){
+			snprintf((char*)builder.str, builder.count+1, "%lld", (s64)x);
+		}
+	}else if constexpr(std::is_same_v<T, u8> || std::is_same_v<T, u16> || std::is_same_v<T, u32> || std::is_same_v<T, u64>){
+		builder.count = snprintf(nullptr, 0, "%llu", (u64)x);
 		builder.space = builder.count+1;
 		builder.str   = (u8*)a->reserve(builder.count+1);
-		Assert(builder.str, "Failed to allocate memory");
-		snprintf((char*)builder.str, builder.count+1, "%ld", x);
-	}else if constexpr(std::is_same_v<T, s64>){
-		builder.count = snprintf(nullptr, 0, "%lld", x);
-		builder.space = builder.count+1;
-		builder.str   = (u8*)a->reserve(builder.count+1);
-		Assert(builder.str, "Failed to allocate memory");
-		snprintf((char*)builder.str, builder.count+1, "%lld", x);
-	}else if constexpr(std::is_same_v<T, u32>){
-		builder.count = snprintf(nullptr, 0, "%u", x);
-		builder.space = builder.count+1;
-		builder.str   = (u8*)a->reserve(builder.count+1);
-		Assert(builder.str, "Failed to allocate memory");
-		snprintf((char*)builder.str, builder.count+1, "%u", x);
-	}else if constexpr(std::is_same_v<T, u64>){
-		builder.count = snprintf(nullptr, 0, "%llu", x);
-		builder.space = builder.count+1;
-		builder.str   = (u8*)a->reserve(builder.count+1);
-		Assert(builder.str, "Failed to allocate memory");
-		snprintf((char*)builder.str, builder.count+1, "%llu", x);
+		if(builder.str != 0){
+			snprintf((char*)builder.str, builder.count+1, "%llu", (u64)x);
+		}
 	}else if constexpr(std::is_same_v<T, f32> || std::is_same_v<T, f64>){
-		builder.count = snprintf(nullptr, 0, "%g", x);
+		builder.count = snprintf(nullptr, 0, "%g", (f64)x);
 		builder.space = builder.count+1;
 		builder.str   = (u8*)a->reserve(builder.count+1);
-		Assert(builder.str, "Failed to allocate memory");
-		snprintf((char*)builder.str, builder.count+1, "%g", x);
-	}else if constexpr(std::is_same_v<T, upt>){
-		builder.count = snprintf(nullptr, 0, "%zu", x);
+		if(builder.str != 0){
+			snprintf((char*)builder.str, builder.count+1, "%g", (f64)x);
+		}
+	}else if constexpr(std::is_pointer_v<T> || std::is_same_v<T, spt> || std::is_same_v<T, upt>){
+		builder.count = snprintf(nullptr, 0, "0x%p", (void*)x);
 		builder.space = builder.count+1;
 		builder.str   = (u8*)a->reserve(builder.count+1);
-		Assert(builder.str, "Failed to allocate memory");
-		snprintf((char*)builder.str, builder.count+1, "%zu", x);
+		if(builder.str != 0){
+			snprintf((char*)builder.str, builder.count+1, "0x%p", (void*)x);
+		}
 	}else if constexpr(std::is_same_v<T, color> || std::is_same_v<T, const color&>){
 		builder.count = snprintf(nullptr, 0, "{r:%u, g:%u, b:%u, a:%u}", x.r, x.g, x.b, x.a);
 		builder.space = builder.count+1;
 		builder.str   = (u8*)a->reserve(builder.count+1);
-		Assert(builder.str, "Failed to allocate memory");
-		snprintf((char*)builder.str, builder.count+1, "{r:%u, g:%u, b:%u, a:%u}", x.r, x.g, x.b, x.a);
-	}else if constexpr(std::is_pointer_v<T>){
-		builder.count = snprintf(nullptr, 0, "%p", x);
-		builder.space = builder.count+1;
-		builder.str   = (u8*)a->reserve(builder.count+1);
-		Assert(builder.str, "Failed to allocate memory");
-		snprintf((char*)builder.str, builder.count+1, "%p", x);
+		if(builder.str != 0){
+			snprintf((char*)builder.str, builder.count+1, "{r:%u, g:%u, b:%u, a:%u}", x.r, x.g, x.b, x.a);
+		}
 	}else{
 		Assert(0, "unhandled to_dstr8 case");
 	}

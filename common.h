@@ -261,6 +261,7 @@ typedef unsigned long long u64;
 typedef size_t             upt;   //unsigned pointer type
 typedef float              f32;
 typedef double             f64;
+typedef s8                 b8;    //sized boolean type
 typedef s32                b32;   //sized boolean type
 typedef wchar_t            wchar;
 
@@ -430,6 +431,7 @@ global_const u64 u64size   = sizeof(u64);
 global_const u64 uptsize   = sizeof(upt);
 global_const u64 f32size   = sizeof(f32);
 global_const u64 f64size   = sizeof(f64);
+global_const u64 b8size    = sizeof(b8);
 global_const u64 b32size   = sizeof(b32);
 global_const u64 wcharsize = sizeof(wchar);
 
