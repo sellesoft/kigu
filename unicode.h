@@ -49,6 +49,7 @@ Index:
   str8_ncompare(str8 a, str8 b, u64 n) -> s64
   str8_equal(str8 a, str8 b) -> b32
   str8_equal_lazy(str8 a, str8 b) -> b32
+  str8_equal_exact(str8 a, str8 b) -> b32
   str8_nequal(str8 a, str8 b) -> b32
 @str8_searching
   str8_begins_with(str8 a, str8 b) -> b32
@@ -593,6 +594,12 @@ str8_equal(str8 a, str8 b){DPZoneScoped;
 global inline b32
 str8_equal_lazy(str8 a, str8 b){DPZoneScoped;
 	return a.count == b.count && memcmp(a.str, b.str, a.count) == 0;
+}
+
+//Returns true if the utf8 strings `a` and `b` have the same memory address and count
+global inline b32
+str8_equal_exact(str8 a, str8 b){DPZoneScoped;
+	return a.str == b.str && a.count == b.count;
 }
 
 //Returns true if the utf8 strings `a` and `b` are equal for `n` codepoints
