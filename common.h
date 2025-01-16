@@ -529,7 +529,7 @@ FORCE_INLINE void MoveMemory(void* dst, void* src, upt bytes){memmove(dst,src,by
 FORCE_INLINE b32 IsPow2(u64 value){return (value != 0) && ((value & (value-1)) == 0);}
 FORCE_INLINE upt roundUpToPow2(upt x){return (upt)1 << (upt)((upt)log2(f64(--x)) + 1); }
 
-FORCE_INLINE char bytesUnit(upt bytes){return (bytes > Kilobytes(1) ? bytes > Megabytes(1) ? bytes > Gigabytes(1) ? bytes > Terabytes(1) ? 'T' : 'G' : 'M' : 'K' : 'B'); }
+FORCE_INLINE str8 bytesUnit(upt bytes){return (bytes > Kilobytes(1) ? bytes > Megabytes(1) ? bytes > Gigabytes(1) ? bytes > Terabytes(1) ? STR8("TB") : STR8("GB") : STR8("MB") : STR8("KB") : STR8("B")); }
 FORCE_INLINE f32 bytesDivisor(upt bytes){return (bytes > Kilobytes(1) ? bytes > Megabytes(1) ? bytes > Gigabytes(1) ? bytes > Terabytes(1) ? Terabytes(1) : Gigabytes(1) : Megabytes(1) : Kilobytes(1) : 1); }
 
 template<typename T> FORCE_INLINE void Swap(T& a, T& b){T temp = a; a = b; b = temp;}
